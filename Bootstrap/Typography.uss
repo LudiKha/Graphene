@@ -1,0 +1,19 @@
+:root .title {
+    font-size: 36px;
+}
+
+:root .subtitle {
+    font-size: 30px;
+}
+
+:root .h1 {
+    font-size: 24px;
+}
+
+:root .h2 {
+    font-size: 18px;
+}
+
+:root .h3 {
+    font-size: 16px;
+}

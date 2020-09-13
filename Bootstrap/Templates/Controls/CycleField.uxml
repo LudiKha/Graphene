@@ -1,0 +1,7 @@
+<ui:UXML xmlns:gr="Graphene" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+  <gr:CycleField class="h1" focusable="true" label="CycleField" binding-path="Value">
+    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Tailwind.uss" />
+    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Globals.uss" />
+    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Typography.uss" />
+  </gr:CycleField>
+</ui:UXML>

@@ -1,0 +1,19 @@
+<ui:UXML xmlns:gr="Graphene" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+  <ui:VisualElement name="Layout" class="layout1 bg-grey-light">
+    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Tailwind.uss" />
+    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Globals.uss" />
+    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Typography.uss" />
+    <Style src="Layouts.uss" />
+
+    <gr:View id="Top" name="Top" />
+
+    <ui:VisualElement name="Body" class="flex-row flex-grow justify-center">
+      <ui:VisualElement name="Inner" class="inner flex-grow justify-center">
+        <gr:View id="Content" name="GR__Content" class="plate__content-container layout-column justify-center" />
+        <gr:View id="Children" default="true" name="GR__Children" class="plate__child-container layout-column justify-center" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+
+  </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,25 @@
+{
+  "name": "Graphene.Runtime",
+  "references": [
+      "GUID:7104629240eb8a645904aa070efcaeb8",
+      "GUID:8c09aa1e4b73db04094be9d510142dd2",
+      "GUID:734d92eba21c94caba915361bd5ac177",
+      "GUID:84651a3751eca9349aac36a66bba901b",
+      "GUID:7fb4912ff648ad44ea15a31901aa9ede",
+      "GUID:c4c7827bf635e10429485d4d5efca502",
+      "GUID:06ed76ba081941a4aa079c8d310e1895",
+      "GUID:f51e177f8763d7a4ba4609efea7938df",
+      "GUID:f8277b8932879fd4db827e88f3c0d113",
+      "GUID:b43363faaede4a44d87e199f624c3da2",
+      "GUID:0b2cc0b34570a2247ae360ab103f281d"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

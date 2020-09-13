@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+
+  <ui:Button focusable="true" class="gr-button p-16 bg-orange-dark hover_bg-orange-lighter focus_bg-orange-darker hover_border-red" binding-path="Label">
+
+    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Tailwind.uss" />
+    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Globals.uss" />
+    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Typography.uss" />
+    <Style src="Button.uss" />
+  </ui:Button>
+</ui:UXML>

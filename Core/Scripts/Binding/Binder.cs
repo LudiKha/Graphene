@@ -1,0 +1,468 @@
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace Graphene
+{
+  using Kinstrife.Core.ReflectionHelpers;
+
+  public interface IRoute
+  {
+  }
+
+  public static class Binder
+  {
+    public static event System.Action<BindableElement> OnBindElement;
+
+    /// <summary>
+    /// Binds the tree recursively
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="element"></param>
+    /// <param name="context"></param>
+    public static VisualElement Instantiate(in object context, Template template, Plate panel)
+    {
+      var clone = template.VisualTreeAsset.CloneTree();
+
+      if (context.GetType().IsPrimitive)
+      {
+      }
+      // Bind class with its own context
+      else
+      {
+        // Get members
+        List<ValueWithAttribute<BindAttribute>> members = new List<ValueWithAttribute<BindAttribute>>();
+        TypeInfoCache.GetMemberValuesWithAttribute<BindAttribute>(context, members);
+        Binder.BindRecursive(clone, context, members, panel, false);
+      }
+      return clone;
+    }
+
+
+
+    /// <summary>
+    /// Binds the tree recursively
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="element"></param>
+    /// <param name="fieldValue"></param>
+    public static VisualElement InstantiatePrimitive(in object context, ref ValueWithAttribute<BindAttribute> bindableMember, Template template, Plate panel)
+    {
+      var clone = template.VisualTreeAsset.CloneTree();
+
+      if (bindableMember.Attribute == null)
+      {
+        Debug.LogError($"Drawing {template.name} for primitive on {context} without Bind Attribute", template);
+        return clone;
+      }
+
+      // Get members
+      List<ValueWithAttribute<BindAttribute>> members = new List<ValueWithAttribute<BindAttribute>>();
+      members.Add(bindableMember);
+
+      // Bind without scope drilldown
+      Binder.BindRecursive(clone, context, members, panel, false);
+
+      return clone;
+    }
+
+    // We need the panel or the persistent bindings
+
+    /// <summary>
+    /// Binds the tree recursively
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="element"></param>
+    /// <param name="context"></param>
+    public static void BindRecursive(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel, bool scopeDrillDown)
+    {
+      if (members == null)
+      {
+        // Get members
+        members = new List<ValueWithAttribute<BindAttribute>>();
+        TypeInfoCache.GetMemberValuesWithAttribute<BindAttribute>(context, members);
+      }
+
+      // Is bindable with binding-path in uxml
+      if (element is BindableElement el && !string.IsNullOrWhiteSpace(el.bindingPath))
+      {
+        // Should drill down to a child's scope (based on binding-path '.')
+        bool branched = scopeDrillDown && TryBranch(el, context, panel);
+        if (branched) // Started branch via drilled down scope branch
+          return;
+
+        BindElementValues(el, ref context, members, panel);
+
+        // Potentially has routing (TODO remove interface check)
+        if (context is IRoute && panel.StateHandle && panel.StateHandle.Router)
+          panel.StateHandle.Router.BindRouteToContext(el, context);
+      }
+
+      //element.BindValues(data);
+      if (element.childCount == 0)
+      {
+        return;
+      }
+
+      // Loop through children and bind data to them
+      foreach (var child in element.Children())
+      {
+        BindRecursive(child, context, members, panel, scopeDrillDown);
+      }
+    }
+
+    /// <summary>
+    /// Binds values of a particular VisualElement to an IBindable
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="el"></param>
+    /// <param name="data"></param>
+    private static void BindElementValues<V>(V el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel) where V : BindableElement
+    {
+      // Pass in list of properties for possible custom logic spanning multiple properties
+      if (el is Label)
+        BindLabel(el as Label, ref context, members, panel);
+      else if (el is Route)
+        BindRoute(el as Route, ref context, members, panel);
+      else if (el is Button)
+        BindButton(el as Button, ref context, members, panel);
+      else if (el is CycleField)
+        BindCycleField(el as CycleField, ref context, members, panel);
+      else if (el is ListView)
+        BindListView(el as ListView, ref context, members, panel);
+      else if (el is SelectField)
+        BindSelectField(el as SelectField, ref context, members, panel);
+      else if (el is Toggle)
+        BindBaseField<bool>(el as Toggle, ref context, members, panel);
+      else if (el is Slider)
+        BindSlider(el as Slider, ref context, members, panel);
+      else if (el is SliderInt)
+        BindSlider(el as SliderInt, ref context, members, panel);
+      else if (el is TextField)
+        BindTextField(el as TextField, ref context, members, panel);
+      else if (el is TextElement)
+        BindTextElement(el as TextElement, ref context, members, panel);
+    }
+
+    private static void BindTextElement(TextElement el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      foreach (var item in members)
+      {
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          if (item.Value is string)
+            BindText(el, ref context, item.Value as string, in item, panel);
+        }
+      }
+    }
+    private static void BindLabel(Label el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      foreach (var item in members)
+      {
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          if (item.Value is string)
+            BindText(el, ref context, item.Value as string, in item, panel);
+
+          //if (item.Attribute.Mode != BindingMode.OneTime)
+          //  BindingManager.Create(el, ref context, in item, panel);
+        }
+      }
+    }
+
+
+    private static void BindButton(Button el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      foreach (var item in members)
+      {
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          if (item.Value is string)
+            BindText(el, ref context, item.Value as string, in item, panel);
+          else if (item.Value is System.Action)
+            BindClick(el, (System.Action)item.Value);
+          else if (item.Value is UnityEngine.Events.UnityEvent)
+            BindClick(el, (UnityEngine.Events.UnityEvent)item.Value);
+        }
+      }
+    }
+
+    private static void BindRoute(Route el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      // Let the (generic) router handle the way it binds routes
+      panel.StateHandle.Router.BindRoute(el, context);
+    }
+
+    private static void BindSlider(Slider el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      // Slider specifics
+      foreach (var item in members)
+      {
+        // Primary
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          if (item.Attribute is BindFloatAttribute floatAttribute)
+          {
+            el.value = floatAttribute.startingValue;
+            el.lowValue = floatAttribute.lowValue;
+            el.highValue = floatAttribute.highValue;
+            el.showInputField = floatAttribute.showInputField;
+            break;
+          }
+        }
+      }
+
+      // Bind base field value & callback
+      BindBaseField(el, ref context, members, panel);
+    }
+
+    private static void BindSlider(SliderInt el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      // Slider specifics
+      foreach (var item in members)
+      {
+        // Primary
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          if (item.Attribute is BindIntAttribute att)
+          {
+            el.value = att.startingValue;
+            el.lowValue = att.lowValue;
+            el.highValue = att.highValue;
+            el.showInputField = att.showInputField;
+            break;
+          }
+        }
+      }
+
+      // Bind base field value & callback
+      BindBaseField(el, ref context, members, panel);
+    }
+
+    private static void BindSlider<TValueType>(BaseSlider<TValueType> el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel) where TValueType : IComparable<TValueType>
+    {
+      foreach (var item in members)
+      {
+        // Primary
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          //if (item.Attribute is BindFloatAttribute floatAttribute)
+          //{
+          //  el.value = floatAttribute.startingValue;
+          //  el.lowValue = floatAttribute.minMax.x;
+          //  el.highValue = floatAttribute.minMax.y;
+          //  el.showInputField = floatAttribute.showInputField;
+          //}
+          //else 
+          if (item.Attribute is BindValueChangeCallbackAttribute callbackAttribute)
+          {
+            el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<TValueType>>);
+          }
+          if (item.Value is TValueType)
+            el.SetValueWithoutNotify((TValueType)item.Value);
+        }
+        // Label
+        else if (item.Attribute.Path == "Label")
+          BindText(el.labelElement, ref context, (string)item.Value, in item, panel);
+      }
+
+      // Bind base field value & callback
+      BindBaseField(el, ref context, members, panel);
+    }
+
+
+    private static void BindTextField(TextField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      foreach (var item in members)
+      {
+        // Primary
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          if (item.Attribute is BindStringAttribute stringAttribute)
+          {
+            el.value = stringAttribute.startingValue;
+            el.isPasswordField = stringAttribute.password;
+            el.isReadOnly = stringAttribute.readOnly;
+            el.multiline = stringAttribute.multiLine;
+
+            if (stringAttribute.maxLength >= 0)
+              el.maxLength = stringAttribute.maxLength;
+            break;
+          }
+        }
+      }
+
+      BindBaseField(el, ref context, members, panel);
+    }
+
+    private static void BindBaseField<T>(BaseField<T> el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      bool labelFromAttribute = false;
+      foreach (var item in members)
+      {
+        // Primary (value)
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          if (item.Value is T)
+          {
+            el.SetValueWithoutNotify((T)item.Value);
+            BindingManager.TryCreate(el, ref context, in item, panel);
+          }
+
+          // Set label from attribute
+          if (item.Attribute is BindBaseFieldAttribute att)
+          {
+            if (!string.IsNullOrWhiteSpace(att.label))
+            {
+              el.label = att.label;
+              labelFromAttribute = true;
+            }
+          }
+        }
+        // Set register callback event
+        else if (item.Attribute is BindValueChangeCallbackAttribute callbackAttribute)
+          el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<T>>);
+        // Set label from field
+        else if (!labelFromAttribute && item.Attribute.Path == "Label" && item.Value is string labelText && !string.IsNullOrWhiteSpace(labelText))
+          BindText(el.labelElement, ref context, labelText, in item, panel);
+        else if (item.Attribute is BindTooltip)
+          el.tooltip = (string)item.Value;
+      }
+    }
+
+    private static void BindSelectField(SelectField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      // Then bind the items
+      foreach (var item in members)
+      {
+        // Model items
+        if (item.Attribute.Path.Equals(SelectField.itemsPath))
+        {
+          el.items = item.Value as List<string>;
+        }
+      }
+
+      // First bind base field (int)
+      BindBaseField(el, ref context, members, panel);
+    }
+
+    private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      // Then bind the items
+      foreach (var item in members)
+      {
+        // Model items
+        if (item.Attribute.Path.Equals(CycleField.itemsPath))
+        {
+          el.items = item.Value as List<string>;
+        }
+      }
+
+      // First bind base field (int)
+      BindBaseField(el, ref context, members, panel);
+    }
+
+    private static void BindListView(ListView el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      foreach (var item in members)
+      {
+        // Primary
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          Func<VisualElement> makeItem = () => new Label("ListViewItem");
+          Action<VisualElement, int> bindItem = (e, i) => (e as Label).text = (e as Label).text + " " + i;
+
+          var options = item.Value as List<string>;
+          bindItem = (e, i) => (e as Label).text = options[i];
+          el.itemsSource = options;
+          //if (item.Value is T)
+          //  el.SetValueWithoutNotify((T)item.Value);
+          //else if (item.Attribute is BindValueChangeCallbackAttribute callbackAttribute)
+          //  el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<T>>);
+
+          el.makeItem = makeItem;
+          el.bindItem = bindItem;
+
+          // Scale in accordance with number of items
+          el.style.height = el.itemHeight * el.itemsSource.Count;
+        }
+      }
+    }
+
+
+    private static void BindText(TextElement el, ref object context, string text, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    {
+      // Add translation here
+      el.text = text;
+
+      BindingManager.TryCreate(el, ref context, in member, panel);
+    }
+
+    private static void BindClick(Button el, System.Action action)
+    {
+      el.clicked += action;
+      OnBindElement?.Invoke(el);
+    }
+
+    private static void BindClick(Button el, UnityEngine.Events.UnityEvent unityEvent)
+    {
+      el.clicked += delegate { unityEvent.Invoke(); };
+      OnBindElement?.Invoke(el);
+    }
+
+    public const char nestedScopeChar = '.';
+    private static bool TryBranch(BindableElement el, object data, Plate owner)
+    {
+      var scopes = el.bindingPath.Split(nestedScopeChar);
+      if (scopes.Length == 1)
+        return false;
+
+      return DrillDownToChildScopeRecursive(el, data, owner, el.bindingPath);
+    }
+
+
+    private static bool DrillDownToChildScopeRecursive(BindableElement el, object data, Plate owner, string currentScope)
+    {
+      if (data == null)
+      {
+        Debug.LogError($"Data was null for scope {currentScope}");
+        return false;
+      }
+
+      //Debug.Log($"Drilling down to child scope {currentScope} {data} ({el})", data as UnityEngine.Object);
+
+      // Get binding members info
+      List<ValueWithAttribute<BindAttribute>> members = new List<ValueWithAttribute<BindAttribute>>();
+      TypeInfoCache.GetMemberValuesWithAttribute<BindAttribute>(data, members);
+
+      var scopes = currentScope.Split('/');
+      // We're at the leaf scope - bind
+      if (scopes.Length == 1)
+      {
+        // Override the element's path now we found the scope
+        el.bindingPath = currentScope;
+        BindRecursive(el, data, members, owner, false);
+        return true;
+      }
+
+      // Select the topmost scope
+      string targetScope = scopes[0];
+
+      ValueWithAttribute<BindAttribute>[] matchingMembers = members.Where(x => x.Attribute.Path.ToLower() == targetScope.ToLower()).ToArray();
+      // Might need/want to throw an error here
+      if (matchingMembers.Length == 0)
+        return false;
+
+      bool startedBranch = false;
+      string newPath = currentScope.Substring(currentScope.IndexOf(nestedScopeChar) + 1);
+      foreach (var member in matchingMembers)
+      {
+        if (DrillDownToChildScopeRecursive(el, member.Value, owner, newPath))
+          startedBranch = true;
+      }
+      return startedBranch;
+    }
+  }
+}

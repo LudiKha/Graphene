@@ -1,0 +1,3 @@
+.gh {
+  background-color: var(--primary-color);
+}
