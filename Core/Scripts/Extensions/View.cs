@@ -5,7 +5,6 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
-  [System.Serializable]
   public class View : BindableElement
   {
     /// <summary>

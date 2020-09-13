@@ -26,9 +26,9 @@ namespace Graphene
 
     [SerializeField] bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
 
-    [SerializeField] View defaultView;
-    [SerializeField] List<View> views = new List<View>();
-    
+    View defaultView;
+    List<View> views = new List<View>();
+
     [SerializeField] Plate parent;
     [SerializeField] List<Plate> children = new List<Plate>();
 
