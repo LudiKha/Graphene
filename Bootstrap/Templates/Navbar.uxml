@@ -1,8 +1,8 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
 
   <ui:VisualElement name="Navbar" class="navbar p-16 graphene-navbar__content flex-row justify-between flex-grow">
-    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Globals.uss" />
-    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Typography.uss" />
+    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
+    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />
     <Style src="Navbar.uss" />
     <ui:VisualElement class="flex-row justify-around">
       <ui:Button focusable="true" name="Previous" text="Previous" class="button" />

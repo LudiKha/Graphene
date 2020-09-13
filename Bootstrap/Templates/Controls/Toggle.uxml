@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-  <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Tailwind.uss" />
-  <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Globals.uss" />
-  <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Typography.uss" />
+  <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
+  <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
+  <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />
   <ui:Toggle class="h1" focusable="true" label="ToggleTemplate" binding-path="Value">
   </ui:Toggle>
 </ui:UXML>
