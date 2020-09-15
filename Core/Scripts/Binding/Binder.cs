@@ -1,6 +1,6 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -68,15 +68,13 @@ namespace Graphene
       return clone;
     }
 
-    // We need the panel or the persistent bindings
-
     /// <summary>
     /// Binds the tree recursively
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="element"></param>
     /// <param name="context"></param>
-    public static void BindRecursive(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel, bool scopeDrillDown)
+    public static void BindRecursive(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel, bool notFullyDrilledDown)
     {
       if (members == null)
       {
@@ -88,8 +86,8 @@ namespace Graphene
       // Is bindable with binding-path in uxml
       if (element is BindableElement el && !string.IsNullOrWhiteSpace(el.bindingPath))
       {
-        // Should drill down to a child's scope (based on binding-path '.')
-        bool branched = scopeDrillDown && TryBranch(el, context, panel);
+        // Should drill down to a child's scope (based on binding-path '.', and scope ovveride '~')
+        bool branched = notFullyDrilledDown && TryBranch(el, context, panel);
         if (branched) // Started branch via drilled down scope branch
           return;
 
@@ -100,11 +98,16 @@ namespace Graphene
           panel.Router.BindRouteToContext(el, context);
       }
       // Rout el special case
-      else if (element is Route route) 
+      else if (element is Route route)
       {
         BindRoute(route, ref context, panel);
       }
 
+      BindChildren(element, context, members, panel, notFullyDrilledDown);
+    }
+
+    static void BindChildren(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel, bool scopeDrillDown)
+    {
       //element.BindValues(data);
       if (element.childCount == 0)
       {
@@ -131,6 +134,8 @@ namespace Graphene
         BindLabel(el as Label, ref context, members, panel);
       else if (el is Button)
         BindButton(el as Button, ref context, members, panel);
+      else if (el is If)
+        BindIf(el as If, ref context, members, panel);
       else if (el is CycleField)
         BindCycleField(el as CycleField, ref context, members, panel);
       else if (el is ListView)
@@ -193,9 +198,9 @@ namespace Graphene
     }
 
     private static void BindRoute(Route el, ref object context, Plate panel)
-    {      
+    {
       // Check if parent is a button -> propagate click
-      if(el.parent is Button button)
+      if (el.parent is Button button)
         button.clicked += el.clicked;
 
       // Let the (generic) router handle the way it binds routes
@@ -242,37 +247,6 @@ namespace Graphene
             break;
           }
         }
-      }
-
-      // Bind base field value & callback
-      BindBaseField(el, ref context, members, panel);
-    }
-
-    private static void BindSlider<TValueType>(BaseSlider<TValueType> el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel) where TValueType : IComparable<TValueType>
-    {
-      foreach (var item in members)
-      {
-        // Primary
-        if (el.bindingPath.Equals(item.Attribute.Path))
-        {
-          //if (item.Attribute is BindFloatAttribute floatAttribute)
-          //{
-          //  el.value = floatAttribute.startingValue;
-          //  el.lowValue = floatAttribute.minMax.x;
-          //  el.highValue = floatAttribute.minMax.y;
-          //  el.showInputField = floatAttribute.showInputField;
-          //}
-          //else 
-          if (item.Attribute is BindValueChangeCallbackAttribute callbackAttribute)
-          {
-            el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<TValueType>>);
-          }
-          if (item.Value is TValueType)
-            el.SetValueWithoutNotify((TValueType)item.Value);
-        }
-        // Label
-        else if (item.Attribute.Path == "Label")
-          BindText(el.labelElement, ref context, (string)item.Value, in item, panel);
       }
 
       // Bind base field value & callback
@@ -398,6 +372,20 @@ namespace Graphene
       }
     }
 
+    private static void BindIf(If el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      // Then bind the items
+      foreach (var item in members)
+      {
+        // Model items
+        if (el.bindingPath.Equals(item.Attribute.Path))
+        {
+          el.OnModelChange(item.Value);
+          BindingManager.TryCreate<object>(el, ref context, in item, panel);
+          return;
+        }
+      }
+    }
 
     private static void BindText(TextElement el, ref object context, string text, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
@@ -419,22 +407,36 @@ namespace Graphene
       OnBindElement?.Invoke(el);
     }
 
+    public static string[] stringSplitOptions = new string[]{ ".", "~", "::"};
+
     public const char nestedScopeChar = '.';
+    public const char relativeScopeChar = '~';
+    public const string oneTimeBindingChar = "::";
+
     private static bool TryBranch(BindableElement el, object data, Plate owner)
     {
       var scopes = el.bindingPath.Split(nestedScopeChar);
       if (scopes.Length == 1)
         return false;
 
-      return DrillDownToChildScopeRecursive(el, data, owner, el.bindingPath);
+      // Create sub scope '~'
+      bool createSubScope = false;
+      string bindingPath = el.bindingPath;
+      if (el.bindingPath.IndexOf(relativeScopeChar) == 0)
+      {
+        createSubScope = true;
+        bindingPath = bindingPath.Remove(0, 1);
+      }
+
+      return DrillDownToChildScopeRecursive(el, data, owner, bindingPath, createSubScope);
     }
 
 
-    private static bool DrillDownToChildScopeRecursive(BindableElement el, object data, Plate owner, string currentScope)
+    private static bool DrillDownToChildScopeRecursive(BindableElement el, object data, Plate owner, string currentScope, bool createSubScope)
     {
       if (data == null)
       {
-        Debug.LogError($"Data was null for scope {currentScope}");
+        Debug.LogError($"Data was null for scope {currentScope} {owner}", owner);
         return false;
       }
 
@@ -444,17 +446,29 @@ namespace Graphene
       List<ValueWithAttribute<BindAttribute>> members = new List<ValueWithAttribute<BindAttribute>>();
       TypeInfoCache.GetMemberValuesWithAttribute<BindAttribute>(data, members);
       // Context doesn't have any bindable members
-      if(members.Count == 0)
+      if (members.Count == 0)
         return false;
 
-      var scopes = currentScope.Split(nestedScopeChar);
+      // Split it & remove '~' and '::'
+      var scopes = currentScope.Split(stringSplitOptions, StringSplitOptions.RemoveEmptyEntries);
       // We're at the leaf scope - bind
       if (scopes.Length == 1)
       {
         // Override the element's path now we found the scope
         el.bindingPath = currentScope;
-        BindRecursive(el, data, members, owner, false);
-        return true;
+
+        // Start a new binding branch here and terminate the one we came from
+        if (createSubScope)
+        {
+          BindRecursive(el, data, members, owner, createSubScope);
+          return true;
+        }
+        // Only bind the element values, and carry on with the child binding as usual
+        else
+        {
+          BindElementValues(el, ref data, members, owner);
+          return false;
+        }
       }
 
       // Select the topmost scope
@@ -469,7 +483,7 @@ namespace Graphene
       string newPath = currentScope.Substring(currentScope.IndexOf(nestedScopeChar) + 1);
       foreach (var member in matchingMembers)
       {
-        if (DrillDownToChildScopeRecursive(el, member.Value, owner, newPath))
+        if (DrillDownToChildScopeRecursive(el, member.Value, owner, newPath, createSubScope))
           startedBranch = true;
       }
       return startedBranch;

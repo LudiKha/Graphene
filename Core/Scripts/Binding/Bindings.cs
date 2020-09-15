@@ -103,6 +103,23 @@ namespace Graphene
       CreateBinding<TValueType>(el, ref context, in member, panel);
     }
 
+
+    /// <summary>
+    /// Creates a continuous binding between a TextElement and a member variable on a context (scope) and panel
+    /// </summary>
+    /// <param name="el"></param>
+    /// <param name="context"></param>
+    /// <param name="bindingPath"></param>
+    /// <param name="panel"></param>
+    public static void TryCreate<TValueType>(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    {
+      // Specifically set to one-time -> cancel binding
+      if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value == BindingMode.OneTime)
+        return;
+
+      CreateBinding<TValueType>(el, ref context, in member, panel);
+    }
+
     internal static void CreateBinding<TValueType>(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       Binding binding = null;
@@ -180,7 +197,7 @@ namespace Graphene
       else
       {
         // Can't two-way bind a label
-        if (this.element is Label)
+        if (this.element is Label || element is If)
           return;
         else if (this.element is INotifyValueChanged<T>)
           RegisterTwoWayValueChangeCallback();
@@ -215,6 +232,8 @@ namespace Graphene
           baseField.SetValueWithoutNotify(newValue);
         else if (newValue is string text && element is TextElement textEl)
           textEl.text = text;
+        else if (element is IBindableElement<object> bindableEl)
+          bindableEl.OnModelChange(newValue);
       }
 
       lastValue = newValue;
