@@ -2,6 +2,6 @@
   <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
   <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
   <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />
-  <ui:Toggle class="h1" focusable="true" label="ToggleTemplate" binding-path="Value">
+  <ui:Toggle focusable="true" label="ToggleTemplate" binding-path="Value">
   </ui:Toggle>
 </ui:UXML>

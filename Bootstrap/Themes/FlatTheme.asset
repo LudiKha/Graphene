@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6165e74a0b2ef7b45b84a5607e26c87d, type: 3}
+  m_Name: FlatTheme
+  m_EditorClassIdentifier: 
+  parent: {fileID: 11400000, guid: aa0bacd2e1794254faff54ffba0ce4ad, type: 2}
+  styleSheets:
+  - {fileID: 7433441132597879392, guid: 30cb361a39d6a5a45b2049289797f560, type: 3}

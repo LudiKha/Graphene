@@ -1,13 +1,15 @@
-:root {
-  --primary-color: rgba(200, 50, 50, 1);
+.p-16 {
+  padding: 16px;
 }
 
-.p-16,
 .md-padding {
   padding: 16px;
 }
 
-.p-8,
+.p-8 {
+  padding: 8px;
+}
+
 .md-padding-small {
   padding: 8px;
 }
@@ -96,21 +98,4 @@
   bottom: 0;
   left: 0;
   right: 0;
-}
-
-.unity-toggle {
-  align-content: stretch;
-}
-
-.unity-toggle__input {
-  justify-content: flex-end;
-  align-content: flex-end;
-  align-items: flex-end;
-}
-
-.unity-cycle-field__input {
-  flex-direction: row;
-  align-items: stretch;
-  justify-content: space-between;
-  -unity-text-align: middle-center;
 }

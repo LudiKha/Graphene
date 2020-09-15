@@ -1,10 +1,8 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
 
-  <ui:Button focusable="true" class="gr-button p-16 bg-orange-dark hover_bg-orange-lighter focus_bg-orange-darker hover_border-red" binding-path="Label">
-
+  <ui:Button focusable="true" class="gr-button p-16" binding-path="Label">
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />
-    <Style src="Button.uss" />
   </ui:Button>
 </ui:UXML>

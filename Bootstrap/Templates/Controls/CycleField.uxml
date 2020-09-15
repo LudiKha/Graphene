@@ -1,5 +1,5 @@
 <ui:UXML xmlns:gr="Graphene" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-  <gr:CycleField class="h1" focusable="true" label="CycleField" binding-path="Value">
+  <gr:CycleField focusable="true" label="CycleField" binding-path="Value">
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />

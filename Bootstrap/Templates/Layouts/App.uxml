@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-  <ui:VisualElement name="App" class="bg-white flex-grow">
+  <ui:VisualElement name="App" class="flex-grow absolute fill">
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />

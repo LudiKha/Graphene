@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-  <ui:Foldout class="h1" focusable="true" label="FoldoutTemplate" binding-path="Value">
+  <ui:Foldout focusable="true" label="FoldoutTemplate" binding-path="Value">
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />

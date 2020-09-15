@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-  <ui:SliderInt class="h1" picking-mode="Ignore" focusable="true" label="SliderIntTemplate" binding-path="Value" value="5" low-value="0" high-value="10">
+  <ui:SliderInt picking-mode="Ignore" focusable="true" label="SliderIntTemplate" binding-path="Value" value="5" low-value="0" high-value="10">
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
     <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />

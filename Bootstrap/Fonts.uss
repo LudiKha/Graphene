@@ -1,154 +1,114 @@
-#Screen {
-    --ink-color: rgba(0, 0, 0, 0.6);
-    --ink-color-red: rgba(130, 10, 10, 0.7);
-    --ink-color-white: rgba(240, 240, 240, 0.7);
-    --font-1: resource('Fonts/Marcellus-Regular');
-    --font-2: resource('Fonts/Mordred');
-    --font-3: resource('Fonts/Goudy Mediaeval Regular');
-    --font-4: resource('Fonts/MyMedieval');
-    --font-logo: resource('Fonts/MiddleAges');
-    --font-logo-deco: resource('Fonts/MiddleAgesDeco');
-    --font-deco-1: resource('Fonts/Illuminated/Camelotcaps-aW2x');
-    --font-deco-2: resource('Fonts/Illuminated/GothicLeaf-VEay');
-    --font-deco-3: resource('Fonts/Illuminated/Medievalalphabet-4EY6');
-    --font-deco-4: resource('Fonts/Illuminated/Royal-7B3K');
-}
-
-.page {
-    --ink-color: rgba(0, 0, 0, 0.6);
-    --ink-color-red: rgba(130, 10, 10, 0.7);
-    --ink-color-white: rgba(240, 240, 240, 0.7);
-    --font-1: resource('Fonts/Marcellus-Regular');
-    --font-2: resource('Fonts/Mordred');
-    --font-3: resource('Fonts/Goudy Mediaeval Regular');
-    --font-4: resource('Fonts/MyMedieval');
-    --font-logo: resource('Fonts/MiddleAges');
-    --font-logo-deco: resource('Fonts/MiddleAgesDeco');
-    --font-deco-1: resource('Fonts/Illuminated/Camelotcaps-aW2x');
-    --font-deco-2: resource('Fonts/Illuminated/GothicLeaf-VEay');
-    --font-deco-3: resource('Fonts/Illuminated/Medievalalphabet-4EY6');
-    --font-deco-4: resource('Fonts/Illuminated/Royal-7B3K');
-}
-
+.unity-ui-document__root,
 :root {
-    --ink-color: rgba(0, 0, 0, 0.6);
-    --ink-color-red: rgba(130, 10, 10, 0.7);
-    --ink-color-white: rgba(240, 240, 240, 0.7);
-    --font-1: resource('Fonts/Marcellus-Regular');
-    --font-2: resource('Fonts/Mordred');
-    --font-3: resource('Fonts/Goudy Mediaeval Regular');
-    --font-4: resource('Fonts/MyMedieval');
-    --font-logo: resource('Fonts/MiddleAges');
-    --font-logo-deco: resource('Fonts/MiddleAgesDeco');
-    --font-deco-1: resource('Fonts/Illuminated/Camelotcaps-aW2x');
-    --font-deco-2: resource('Fonts/Illuminated/GothicLeaf-VEay');
-    --font-deco-3: resource('Fonts/Illuminated/Medievalalphabet-4EY6');
-    --font-deco-4: resource('Fonts/Illuminated/Royal-7B3K');
+  --ink-color: rgba(0, 0, 0, 0.6);
+  --ink-color-red: rgba(130, 10, 10, 0.7);
+  --ink-color-white: rgba(240, 240, 240, 0.7);
+  --font-1: resource('Fonts/Lato-Regular');
 }
 
 .unity-text-element {
-    -unity-font: var(--font-1);
+  -unity-font: var(--font-1);
 }
 
 :root .unity-text-element.font-deco-1 {
-    -unity-font: var(--font-deco-1);
+  -unity-font: var(--font-deco-1);
 }
 
 :root .unity-text-element.font-deco-2 {
-    -unity-font: var(--font-deco-2);
+  -unity-font: var(--font-deco-2);
 }
 
 :root .unity-text-element.font-deco-3 {
-    -unity-font: var(--font-deco-3);
+  -unity-font: var(--font-deco-3);
 }
 
 :root .unity-text-element.font-deco-4 {
-    -unity-font: var(--font-deco-4);
+  -unity-font: var(--font-deco-4);
 }
 
 :root .title {
-    font-size: 36px;
+  font-size: 36px;
 }
 
 :root .subtitle {
-    font-size: 30px;
+  font-size: 30px;
 }
 
 :root .h1 {
-    font-size: 24px;
+  font-size: 24px;
 }
 
 :root .h2 {
-    font-size: 18px;
+  font-size: 18px;
 }
 
 :root .h3 {
-    font-size: 16px;
+  font-size: 16px;
 }
 
 .logo {
-    -unity-font: var(--font-logo);
-    color: rgb(100, 80, 80);
+  -unity-font: var(--font-logo);
+  color: rgb(100, 80, 80);
 }
 
 :root .illuminated {
-    font-size: 48px;
+  font-size: 48px;
 }
 
 :root .illuminated.large {
-    font-size: 72px;
+  font-size: 72px;
 }
 
 :root .illuminated.huge {
-    font-size: 96px;
+  font-size: 96px;
 }
 
 .deco {
-    -unity-font: var(--font-logo-deco);
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 4px;
-    padding-right: 24px;
-    padding-left: 8px;
-    margin-top: 8px;
+  -unity-font: var(--font-logo-deco);
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  padding-right: 24px;
+  padding-left: 8px;
+  margin-top: 8px;
 }
 
 .logo.title .deco {
-    color: rgb(120, 50, 50);
+  color: rgb(120, 50, 50);
 }
 
 .logo.subtitle .deco {
-    color: rgb(120, 50, 50);
+  color: rgb(120, 50, 50);
 }
 
 .highlight:hover {
-    color: rgb(200, 50, 50);
+  color: rgb(200, 50, 50);
 }
 
 .unity-text-element.red {
-    color: rgb(200, 50, 50);
+  color: rgb(200, 50, 50);
 }
 
 .ink {
-    color: var(--ink-color);
-    -unity-background-image-tint-color: var(--ink-color);
+  color: var(--ink-color);
+  -unity-background-image-tint-color: var(--ink-color);
 }
 
 .ink.red {
-    color: var(--ink-color-red);
+  color: var(--ink-color-red);
 }
 
 .ink .red .unity-text-element {
-    color: var(--ink-color-red);
+  color: var(--ink-color-red);
 }
 
 .ink .unity-text-element.red {
-    color: var(--ink-color-red);
+  color: var(--ink-color-red);
 }
 
 .unity-text-element.red.ink {
-    color: var(--ink-color-red);
+  color: var(--ink-color-red);
 }
 
 .ink.white {
-    color: var(--ink-color-white);
+  color: var(--ink-color-white);
 }
