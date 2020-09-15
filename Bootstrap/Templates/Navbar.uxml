@@ -16,9 +16,8 @@
         <ui:Button focusable="true" name="Previous" text="Previous" class="gr-button" />
       </ui:VisualElement>
 
-      <Graphene.View default="true" class="plate__content-container flex-row justify-around" />
-      <ui:VisualElement name="GR__Content" class="plate__content-container flex-row justify-around" />
-      <ui:VisualElement name="GR__Children" class="plate__child-container layout-column justify-center" />
+      <Graphene.View default="true" name="GR__Content" class="plate__content-container flex-row justify-around" />
+      <Graphene.View name="GR__Children" class="plate__child-container layout-column justify-center" />
 
       <ui:VisualElement class="flex-row justify-around">
         <ui:Button focusable="true" name="Next" text="Next" class="gr-button" />
