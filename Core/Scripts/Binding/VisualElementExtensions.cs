@@ -56,5 +56,16 @@ namespace Graphene
         el.styleSheets.Add(styleSheet);
       }
     }
+
+    /// <summary>
+    /// Adds multiple classes to VisualElement. ClassNames separated by space ' '.
+    /// </summary>
+    /// <param name="el"></param>
+    /// <param name="classes"></param>
+    public static void AddMultipleToClassList(this VisualElement el, string classes)
+    {
+      foreach (var className in classes.Split(new string[] { " " }, System.StringSplitOptions.RemoveEmptyEntries))
+        el.AddToClassList(className);
+    }
   }
 }
