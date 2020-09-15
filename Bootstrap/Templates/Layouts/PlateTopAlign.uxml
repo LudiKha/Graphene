@@ -1,13 +1,13 @@
 <ui:UXML xmlns:gr="Graphene" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
   <ui:VisualElement name="Plate" class="plate">
-    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
-    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
-    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />
+    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Tailwind.uss" />
+    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Globals.uss" />
+    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
     <Style src="Layouts.uss" />
 
-    <ui:Foldout>
-      <ui:Label binding-path="Form.Title" />
-    </ui:Foldout>
+    <gr:If binding-path="~Form.Render">
+      <ui:Label text="Rendering" />
+    </gr:If>
     <ui:ScrollView>
       <gr:View id="Content" name="GR__Content" class="plate__content-container layout-column" />
     </ui:ScrollView>

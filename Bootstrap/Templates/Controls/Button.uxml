@@ -1,8 +1,8 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
 
   <ui:Button focusable="true" class="gr-button p-16" binding-path="Label">
-    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
-    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
-    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />
+    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Tailwind.uss" />
+    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Globals.uss" />
+    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
   </ui:Button>
 </ui:UXML>

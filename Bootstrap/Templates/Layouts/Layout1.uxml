@@ -1,8 +1,8 @@
 <ui:UXML xmlns:gr="Graphene" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
   <ui:VisualElement name="Layout" class="layout1">
-    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
-    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
-    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />
+    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Tailwind.uss" />
+    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Globals.uss" />
+    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
     <Style src="Layouts.uss" />
 
     <gr:View id="Top" name="Top" />

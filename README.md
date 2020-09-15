@@ -4,7 +4,7 @@ uid: Graphene
 
 # Graphene
 
-> `com.cup-bearer.graphene-ui": "https://github.com/LudiKha/Graphene.git"`
+> `com.cupbearer.graphene-ui": "https://github.com/LudiKha/Graphene.git"`
 
 &nbsp;
 
