@@ -1,0 +1,4 @@
+.main.background {
+  background-image: resource("Images/main_menu_bg");
+  -unity-background-image-tint-color: rgba(200, 200, 200, 0.5);
+}
