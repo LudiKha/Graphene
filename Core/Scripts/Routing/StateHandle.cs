@@ -2,6 +2,7 @@
 
 namespace Graphene
 {
+  [DisallowMultipleComponent]
   public abstract class StateHandle : MonoBehaviour, IInjectable, IInitializable, ILateInitializable
   {
     public abstract Router Router { get; }

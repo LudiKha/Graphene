@@ -95,9 +95,14 @@ namespace Graphene
 
         BindElementValues(el, ref context, members, panel);
 
-        // Potentially has routing (TODO remove interface check)
-        if (context is IRoute && panel.StateHandle && panel.StateHandle.Router)
-          panel.StateHandle.Router.BindRouteToContext(el, context);
+        // Context potentially has routing binding (TODO remove interface check)
+        if (context is IRoute && panel.Router)
+          panel.Router.BindRouteToContext(el, context);
+      }
+      // Rout el special case
+      else if (element is Route route) 
+      {
+        BindRoute(route, ref context, panel);
       }
 
       //element.BindValues(data);
@@ -124,8 +129,6 @@ namespace Graphene
       // Pass in list of properties for possible custom logic spanning multiple properties
       if (el is Label)
         BindLabel(el as Label, ref context, members, panel);
-      else if (el is Route)
-        BindRoute(el as Route, ref context, members, panel);
       else if (el is Button)
         BindButton(el as Button, ref context, members, panel);
       else if (el is CycleField)
@@ -189,10 +192,14 @@ namespace Graphene
       }
     }
 
-    private static void BindRoute(Route el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
-    {
+    private static void BindRoute(Route el, ref object context, Plate panel)
+    {      
+      // Check if parent is a button -> propagate click
+      if(el.parent is Button button)
+        button.clicked += el.clicked;
+
       // Let the (generic) router handle the way it binds routes
-      panel.StateHandle.Router.BindRoute(el, context);
+      panel.Router.BindRoute(el, context);
     }
 
     private static void BindSlider(Slider el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
@@ -436,8 +443,11 @@ namespace Graphene
       // Get binding members info
       List<ValueWithAttribute<BindAttribute>> members = new List<ValueWithAttribute<BindAttribute>>();
       TypeInfoCache.GetMemberValuesWithAttribute<BindAttribute>(data, members);
+      // Context doesn't have any bindable members
+      if(members.Count == 0)
+        return false;
 
-      var scopes = currentScope.Split('/');
+      var scopes = currentScope.Split(nestedScopeChar);
       // We're at the leaf scope - bind
       if (scopes.Length == 1)
       {

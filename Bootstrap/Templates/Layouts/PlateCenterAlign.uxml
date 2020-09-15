@@ -1,0 +1,16 @@
+<ui:UXML xmlns:gr="Graphene" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+  <ui:VisualElement name="Plate" class="plate">
+    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
+    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
+    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />
+    <Style src="Layouts.uss" />
+
+    <ui:Foldout>
+      <ui:Label binding-path="Form.Title" />
+    </ui:Foldout>
+    <ui:ScrollView>
+      <gr:View id="Content" name="GR__Content" class="plate__content-container layout-column justify-center" />
+    </ui:ScrollView>
+    <gr:View id="Children" default="true" name="GR__Children" class="plate__child-container layout-column justify-center" />
+  </ui:VisualElement>
+</ui:UXML>

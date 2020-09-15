@@ -1,0 +1,68 @@
+/* Background */
+.gr-dialog__background,
+.gr-select-field__list-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--dim-color);
+  padding: 16px;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+}
+
+.gr-dialog {}
+
+.gr-dialog__panel {
+  flex-grow: 1;
+}
+
+/* SelectField */
+.gr-select-field__input {
+  justify-content: center;
+  flex-direction: row;
+}
+
+.gr-select-field__list-view {
+  background-color: white;
+  padding: 16px;
+  min-height: 100px;
+  width: 250px;
+  max-height: 90%;
+  max-width: 500px;
+  height: 300px;
+  border-radius: 2px;
+  flex-grow: 1;
+}
+
+.gr-select-field__list-view .unity-scroll-view {
+  padding: 16px;
+}
+
+.gr-select-field__list-view .unity-listview-item {
+  padding-left: 8px;
+  -unity-text-align: middle-left;
+}
+
+/* Cycle Field */
+.gr-cycle-field__input {
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  -unity-text-align: middle-center;
+}
+
+/* Toggle */
+.unity-toggle {
+  align-content: stretch;
+}
+
+.unity-toggle__input {
+  justify-content: flex-end;
+  align-content: flex-end;
+  align-items: flex-end;
+}

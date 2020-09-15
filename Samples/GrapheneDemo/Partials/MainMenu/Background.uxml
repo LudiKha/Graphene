@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+  <ui:VisualElement name="Background" class="main background flex-grow">
+    <Style src="MainMenu.uss" />
+
+    <ui:VisualElement name="GR__Content" class="plate__content-container layout-column justify-center" />
+    <ui:VisualElement name="GR__Children" class="plate__child-container layout-column justify-center flex-grow" />
+  </ui:VisualElement>
+</ui:UXML>

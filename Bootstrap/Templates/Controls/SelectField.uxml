@@ -1,7 +1,8 @@
 <ui:UXML xmlns:gr="Graphene" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-  <gr:SelectField class="h1" focusable="true" label="SelectField" binding-path="Value" item-height="32">
-    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Tailwind.uss" />
-    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Globals.uss" />
-    <Style src="/Packages/com.twin-pillar.graphene-ui/Bootstrap/Typography.uss" />
+  <gr:SelectField focusable="true" label="SelectField" binding-path="Value" item-height="32">
+    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Tailwind.uss" />
+    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Globals.uss" />
+    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Typography.uss" />
+    <Style src="/Packages/com.cup-bearer.graphene/Bootstrap/Gr_Components.uss" />
   </gr:SelectField>
 </ui:UXML>

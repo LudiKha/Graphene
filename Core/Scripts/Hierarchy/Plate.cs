@@ -7,33 +7,41 @@ using Sirenix.OdinInspector;
 
 namespace Graphene
 {
+  [DisallowMultipleComponent]
   public class Plate : MonoBehaviour, IInitializable, ILateInitializable
   {
-    [AssetList(AssetNamePrefix = "_")] public List<StyleSheet> styleSheets;
+    [AssetList] [SerializeField] Theme theme;
     protected UIDocument doc; public UIDocument Doc => doc;
 
     [SerializeField] protected string[] contentContainerSelector = new string[] { "GR__Content" };
+
+    [SerializeField] bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
+
+    #region Component Reference
+    [SerializeField] Plate parent;
+    [SerializeField] List<Plate> children = new List<Plate>();
+    [SerializeField] ViewHandle customView; public ViewHandle CustomView => customView;
+    [SerializeField] protected Router router; public Router Router => router;
+    #endregion
 
     #region VisualElements Reference
     VisualElement root;
     // Main container for repeat elements
     protected VisualElement contentContainer; public VisualElement ContentContainer => contentContainer;
     protected VisualElement childContainer; public VisualElement ChildContainer => childContainer;
+
+
+    View defaultView;
+    List<View> views = new List<View>();
+
     #endregion
 
-    [SerializeField] ViewHandle customView; public ViewHandle CustomView => customView;
-    [SerializeField] protected StateHandle stateHandle; public StateHandle StateHandle => stateHandle;
 
-    [SerializeField] bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
-
-    [SerializeField] View defaultView;
-    [SerializeField] List<View> views = new List<View>();
-    
-    [SerializeField] Plate parent;
-    [SerializeField] List<Plate> children = new List<Plate>();
 
     #region (Unity) Events
-    public event System.Action onRefresh;
+    public event System.Action onRefreshHierarchy;
+    public event System.Action onRefreshStatic;
+    public event System.Action onRefreshDynamic;
 
     public UnityEvent onShow = new UnityEvent();
     public UnityEvent onHide = new UnityEvent();
@@ -48,13 +56,12 @@ namespace Graphene
       Initialized = true;
 
       GetLocalReferences();
-
-      styleSheets.ForEach(x => doc.rootVisualElement.styleSheets.Add(x));
+      SetupVisualTree();
     }
 
     public virtual void LateInitialize()
     {
-      Refresh();
+      RefreshHierarchy();
     }
 
     protected virtual void GetLocalReferences()
@@ -62,25 +69,31 @@ namespace Graphene
       if (!doc)
         doc = GetComponent<UIDocument>();
 
-      root = doc.rootVisualElement;
-
-      if (!stateHandle)
-        stateHandle = GetComponent<StateHandle>();
+      if (!router)
+        router = GetComponentInParent<Router>();
 
       // Get nearest parent
       if (parent || (parent = transform.parent.GetComponentInParent<Plate>()))
       {
         parent.RegisterChild(this);
-        parent.onRefresh += Refresh;
+        parent.onRefreshHierarchy += RefreshHierarchy;
       }
       if (!customView)
         customView = GetComponent<ViewHandle>();
+
+    }
+
+    protected void SetupVisualTree()
+    {
+      root = doc.rootVisualElement;
 
       contentContainer = GetVisualElement(contentContainerSelector);
 
       // Get views
       views = root.Query<View>().ToList();
       defaultView = views.Find(x => x.isDefault) ?? views.FirstOrDefault();
+      if(theme)
+        theme.ApplyStyles(root);
     }
 
     protected void RegisterChild(Plate child)
@@ -105,24 +118,29 @@ namespace Graphene
     }
 
     [Button]
-    protected virtual void Refresh()
+    protected virtual void RefreshHierarchy()
     {
       Clear();
 
       DetachChildren();
 
       // Bind the static plate to its scope
-      Binder.BindRecursive(doc.rootVisualElement, this, null, this, true);
+      Binder.BindRecursive(root, this, null, this, true);
 
       AttachChildren();
 
-      onRefresh?.Invoke();
+      onRefreshStatic?.Invoke();
+      onRefreshDynamic?.Invoke();
     }
 
-    //private void OnEnable()
-    //{
-    //  Show();
-    //}
+
+    private void OnEnable()
+    {
+      if (!Initialized)
+        return;
+
+      SetupVisualTree();
+    }
 
     //private void OnDisable()
     //{

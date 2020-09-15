@@ -5,8 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
-  [System.Serializable]
-  public class View : BindableElement
+  public class View : VisualElement
   {
     /// <summary>
     /// Instantiates a <see cref="id"/> using the data read from a UXML file.
@@ -67,24 +66,24 @@ namespace Graphene
     /// </remarks>
     public static readonly string ussClassName = "unity-view";
 
-    ///// <summary>
-    ///// Constructs a View.
-    ///// </summary>
-    //public View() : this(null)
-    //{
-    //}
+    /// <summary>
+    /// Constructs a View.
+    /// </summary>
+    public View() : this(null)
+    {
+    }
 
-    ///// <summary>
-    ///// Constructs a View with an Action that is triggered when the button is clicked.
-    ///// </summary>
-    ///// <param name="clickEvent">The action triggered when the button is clicked.</param>
-    ///// <remarks>
-    ///// By default, a single left mouse click triggers the Action. To change the activator, modify <see cref="clickable"/>.
-    ///// </remarks>
-    //public View(string id)
-    //{
-    //  AddToClassList(ussClassName);
-    //  this.id = id;
-    //}
+    /// <summary>
+    /// Constructs a View with an Action that is triggered when the button is clicked.
+    /// </summary>
+    /// <param name="clickEvent">The action triggered when the button is clicked.</param>
+    /// <remarks>
+    /// By default, a single left mouse click triggers the Action. To change the activator, modify <see cref="clickable"/>.
+    /// </remarks>
+    public View(string id) : base ()
+    {
+      AddToClassList(ussClassName);
+      this.id = id;
+    }
   }
 }

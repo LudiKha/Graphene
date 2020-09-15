@@ -1,4 +1,0 @@
-.gr-button,
-.unity-button.gr-button {
-  border-radius: 0;
-}

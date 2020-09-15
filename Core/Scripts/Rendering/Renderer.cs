@@ -19,10 +19,22 @@ namespace Graphene
     public void Initialize()
     {
       if (plate || (plate = GetComponent<Plate>()))
-        plate.onRefresh += Plate_onRefresh;
+      {
+        plate.onRefreshStatic += Plate_onRefreshStatic;
+        plate.onRefreshDynamic += Plate_onRefreshDynamic;
+      }
     }
 
-    private void Plate_onRefresh()
+    private void Plate_onRefreshStatic()
+    {
+      // Bind the static plate
+      Binder.BindRecursive(plate.Doc.rootVisualElement, this, null, plate, true);
+
+      // Bind the static form
+      //Binder.BindRecursive(plate.Doc.rootVisualElement, blueprint, null, plate, true);
+    }
+
+    private void Plate_onRefreshDynamic()
     {
       // Default use the plate's default container
       VisualElement container = plate.ContentContainer;
@@ -35,8 +47,6 @@ namespace Graphene
 
     public void RenderToContainer(VisualElement container)
     {
-      // Bind the static panel
-      //Binder.BindRecursive(doc.rootVisualElement, this, null, this, true);
 
       // Initialize & render the form
       if (!blueprint)
@@ -47,8 +57,6 @@ namespace Graphene
       if (!blueprint.Render)
         return;
 
-      // Bind the static form
-      Binder.BindRecursive(container, blueprint, null, plate, true);
 
       // Render & bind the dynamic items
       RenderUtils.Draw(plate, container, blueprint, templates);

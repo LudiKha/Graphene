@@ -1,9 +1,10 @@
 .layout1 {
-  flex-grow: 1;
+    flex-grow: 1;
 }
 
 .layout1 .inner {
-  max-width: 512px;
+    max-width: 512px;
 }
 
-.layout .content {}
+.layout .content {
+}

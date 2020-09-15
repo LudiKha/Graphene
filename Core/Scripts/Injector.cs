@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace Graphene
 {
+  [DisallowMultipleComponent]
   public class Injector : MonoBehaviour
   {
     [SerializeField] Graphene graphene; 
