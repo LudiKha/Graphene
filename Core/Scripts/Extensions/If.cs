@@ -5,20 +5,24 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
-  public class If : BindableElement
+  public interface IBindableElement<TValue>
+  {
+    void OnModelChange(TValue newValue);
+  }
+
+  public class If : BindableElement, IBindableElement<object>
   {
     /// <summary>
     /// Instantiates a <see cref="id"/> using the data read from a UXML file.
     /// </summary>
-    public new class UxmlFactory : UxmlFactory<View, UxmlTraits> { }
+    public new class UxmlFactory : UxmlFactory<If, UxmlTraits> { }
 
     /// <summary>
     /// Defines <see cref="UxmlTraits"/> for the <see cref="id"/>.
     /// </summary>
     public new class UxmlTraits : BindableElement.UxmlTraits
     {
-      UxmlStringAttributeDescription m_Id = new UxmlStringAttributeDescription { name = "id" };
-      UxmlBoolAttributeDescription m_Value = new UxmlBoolAttributeDescription { name = "default" };
+      UxmlBoolAttributeDescription m_Value = new UxmlBoolAttributeDescription { name = "value" };
 
       /// <summary>
       /// Initialize <see cref="id"/> properties using values from the attribute bag.
@@ -30,30 +34,22 @@ namespace Graphene
       {
         base.Init(ve, bag, cc);
 
-        ((View)ve).id = m_Id.GetValueFromBag(bag, cc);
-        ((View)ve).isDefault = m_Value.GetValueFromBag(bag, cc);
+        ((If)ve).value = m_Value.GetValueFromBag(bag, cc); 
       }
     }
 
     [SerializeField]
-    private string m_Id = String.Empty;
-    public virtual string id
+    private bool m_Value = false;
+    public virtual bool value
     {
-      get { return m_Id; }
+      get { return m_Value; }
       set
       {
-        m_Id = value;
-      }
-    }
-
-    [SerializeField]
-    private bool m_Default = false;
-    public virtual bool isDefault
-    {
-      get { return m_Default; }
-      set
-      {
-        m_Default = value;
+        m_Value = value;
+        if (m_Value)
+          this.Show();
+        else
+          this.Hide();
       }
     }
 
@@ -61,29 +57,27 @@ namespace Graphene
     /// USS class name of elements of this type.
     /// </summary>
     /// <remarks>
-    /// Unity adds this USS class to every instance of the View element. Any styling applied to
+    /// Unity adds this USS class to every instance of the If element. Any styling applied to
     /// this class affects every button located beside, or below the stylesheet in the visual tree.
     /// </remarks>
-    public static readonly string ussClassName = "unity-view";
+    public static readonly string ussClassName = "gr-if";
 
     /// <summary>
-    /// Constructs a View.
+    /// Constructs an If.
     /// </summary>
-    public If() : this(null)
-    {
-    }
-
-    /// <summary>
-    /// Constructs a View with an Action that is triggered when the button is clicked.
-    /// </summary>
-    /// <param name="clickEvent">The action triggered when the button is clicked.</param>
-    /// <remarks>
-    /// By default, a single left mouse click triggers the Action. To change the activator, modify <see cref="clickable"/>.
-    /// </remarks>
-    public If(string id) : base ()
+    public If() 
     {
       AddToClassList(ussClassName);
-      this.id = id;
+    }
+
+    public void OnModelChange(object newValue)
+    {
+      if (newValue is bool b)
+        value = b;
+      else if (newValue is null || newValue.Equals(false))
+        value = false;
+      else
+        value = true;
     }
   }
 }
