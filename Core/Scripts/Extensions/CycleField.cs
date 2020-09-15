@@ -53,7 +53,7 @@ namespace Graphene
     /// <summary>
     /// USS class name of elements of this type.
     /// </summary>
-    public new static readonly string ussClassName = "unity-cycle-field";
+    public new static readonly string ussClassName = "gr-cycle-field";
     /// <summary>
     /// USS class name of labels in elements of this type.
     /// </summary>
@@ -110,6 +110,8 @@ namespace Graphene
       m_Next = new Button();
       m_Previous.text = "<";
       m_Next.text = ">";
+      m_Previous.focusable = true;
+      m_Next.focusable = true;
 
       m_Previous.AddToClassList(previousButtonUssClassName);
       m_Next.AddToClassList(nextButtonUssClassName);

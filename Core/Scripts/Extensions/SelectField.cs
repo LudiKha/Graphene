@@ -11,7 +11,7 @@ namespace Graphene
   public class SelectField : BaseField<int>, IDisposable
   {
     public const string itemsPath = "Items";
-    public const int defaultItemHeight = 24;
+    public int defaultItemHeight = 24;
 
     [SerializeField]
     private List<string> m_Items = new List<string>();
@@ -20,7 +20,6 @@ namespace Graphene
     set
       {
         m_Items = value.ToList();
-        m_ListView.itemsSource = m_Items;
       }
     }
 
@@ -49,10 +48,8 @@ namespace Graphene
         base.Init(ve, bag, cc);
 
         int itemHeight = m_ItemHeight.GetValueFromBag(bag, cc);
-        if (itemHeight <= 0)
-          itemHeight = defaultItemHeight;
-
-        ((SelectField)ve).m_ListView.itemHeight = itemHeight;
+        if (itemHeight > 0)
+          ((SelectField)ve).defaultItemHeight = itemHeight;
 
         ((SelectField)ve).text = m_Text.GetValueFromBag(bag, cc);
         ((SelectField)ve).items = m_Items.GetValueFromBag(bag, cc).Split(';').Where(x => !string.IsNullOrEmpty(x)).ToList();
@@ -62,7 +59,7 @@ namespace Graphene
     /// <summary>
     /// USS class name of elements of this type.
     /// </summary>
-    public new static readonly string ussClassName = "unity-select-field";
+    public new static readonly string ussClassName = "gr-select-field";
     /// <summary>
     /// USS class name of labels in elements of this type.
     /// </summary>
@@ -89,22 +86,19 @@ namespace Graphene
 
     private Label m_Label;
     private VisualElement visualInput;
-    VisualElement m_ListContainer;
     private ListView m_ListView;
+    private Dialog m_Dialog;
 
     Toggle m_Toggle;
     
 
     public SelectField()
         : this(null) {
-
-
     }
 
     public SelectField(string label)
         : base(label, null)
     {
-
       // Hax
       var children = hierarchy.Children().ToList();
       visualInput = hierarchy.Children().ToList().Find(x => x.ClassListContains("unity-base-field__input"));
@@ -116,12 +110,11 @@ namespace Graphene
       labelElement.AddToClassList(labelUssClassName);
 
       // The picking mode needs to be Position in order to have the Pseudostate Hover applied...
-      visualInput.pickingMode = PickingMode.Position;
+      //visualInput.pickingMode = PickingMode.Position;
 
       // Set-up the label and text...
       text = null;
       this.AddManipulator(new Clickable(OnClickEvent));
-
 
       m_Toggle = new Toggle();
       m_Toggle.text = text;
@@ -131,33 +124,16 @@ namespace Graphene
         evt.StopPropagation();
       });
       visualInput.Add(m_Toggle);
+      m_Toggle.Hide();
 
-      m_ListContainer = new VisualElement();
-      m_ListContainer.AddToClassList(listContainerUssClassName);
-      m_ListContainer.AddManipulator(new Clickable(OnClickBackground));
+      // Manual dispose
+      RegisterCallback<DetachFromPanelEvent>((evt) => Dispose());
 
-      hierarchy.Add(m_ListContainer);
+      //m_ListContainer = new VisualElement();
+      //m_ListContainer.AddToClassList(listContainerUssClassName);
+      //m_ListContainer.AddManipulator(new Clickable(OnClickBackground));
 
-      m_ListView = new ListView(items, 24, MakeItem, BindItem);
-      m_ListView.AddToClassList(listViewUssClassName);
-      m_ListView.AddToClassList("h2");
-      m_ListView.bindingPath = "Items";
-      m_ListView.focusable = true;
-
-      m_ListView.onSelectionChange += M_ListView_onSelectionChange;
-      m_ListView.onItemsChosen += M_ListView_onItemsChosen;
-
-      Func<VisualElement> makeItem = () => new Label("ListViewOption");
-      Action<VisualElement, int> bindItem = (e, i) => (e as Label).text = (e as Label).text + " " + i;
-      bindItem = (e, i) => (e as Label).text = items[i];
-
-      m_ListView.makeItem = makeItem;
-      m_ListView.bindItem = bindItem;
-      //m_ListView.reorderable = true;
-
-      m_ListContainer.Add(m_ListView);
-      SetToggleState(false);
-      m_ListView.itemsSource = items;
+      //hierarchy.Add(m_ListContainer);
 
     }
 
@@ -176,8 +152,8 @@ namespace Graphene
       base.SetValueWithoutNotify(newValue);
 
       string newText = "";
-      if (newValue >= 0 && newValue < m_ListView.itemsSource.Count)
-        newText = (string)m_ListView.itemsSource[newValue];
+      if (newValue >= 0 && newValue < m_Items.Count)
+        newText = m_Items[newValue];
 
       text = newText;
       m_Toggle.text = newText;
@@ -216,7 +192,6 @@ namespace Graphene
       }
     }
 
-
     bool ProcessClick(EventBase evt)
     {
       if (evt.eventTypeId == MouseUpEvent.TypeId())
@@ -245,12 +220,30 @@ namespace Graphene
         OnClick();
     }
 
-    void OnClickBackground(EventBase evt)
+    protected override void ExecuteDefaultActionAtTarget(EventBase evt)
     {
-      if (ProcessClick(evt))
+      base.ExecuteDefaultActionAtTarget(evt);
+
+      if (evt == null)
       {
-        m_Toggle.value = false;
-        this.Focus();
+        return;
+      }
+
+      if (IsActivationEvent(evt))
+      {
+        OnClick();
+        evt.StopPropagation();
+      }
+
+      bool IsActivationEvent(EventBase e)
+      {
+        if (e.eventTypeId == KeyDownEvent.TypeId())
+        {
+          var keyDownEvent = (KeyDownEvent)e;
+          return keyDownEvent.keyCode == KeyCode.KeypadEnter ||
+              keyDownEvent.keyCode == KeyCode.Return;
+        }
+        return false;
       }
     }
 
@@ -262,32 +255,25 @@ namespace Graphene
 
     void SetToggleState(bool value)
     {
-      m_ListContainer.SetEnabled(value);
+      //m_ListContainer.SetEnabled(value);
 
       if (value)
       {
-        var root = this.GetRootRecursively();
-        var screen = root.Q(null, "screen");
-
-        if(screen != null)
-          root.Add(m_ListContainer);
-        else
-          root.Add(m_ListContainer);
-
-
-        m_ListView.RemoveFromClassList(hiddenClassName);
-        m_ListContainer.RemoveFromClassList(hiddenClassName);
-        m_ListContainer.Add(m_ListView);
-        m_ListView.Focus();
-        m_ListContainer.BringToFront();
-      }
-      else
-      {
-        m_ListView.AddToClassList(hiddenClassName);
-        m_ListContainer.AddToClassList(hiddenClassName);
-        visualInput.Add(m_ListView);
+        //var root = this.GetRootRecursively();
+        //root.Add(m_ListContainer);
+        m_ListView = CreateListView();
+        m_Dialog = new Dialog(panel, m_ListView);
+        //m_Dialog.WithStyles(this.styleSheets);
+        m_Dialog.onClose += M_Dialog_onClose;
       }
     }
+
+    private void M_Dialog_onClose()
+    {
+      // Focus back on the select field
+      Focus();
+    }
+
     VisualElement MakeItem()
     {
       return new Button();
@@ -299,9 +285,34 @@ namespace Graphene
       Debug.Log($"Created item at element {index}");
     }
 
+    ListView CreateListView()
+    {
+      var listView = new ListView(items, 24, MakeItem, BindItem);
+      listView.itemHeight = defaultItemHeight;
+
+      listView.AddToClassList(listViewUssClassName);
+      listView.AddToClassList("h2");
+      listView.bindingPath = "Items";
+      listView.focusable = true;
+
+      listView.onSelectionChange += M_ListView_onSelectionChange;
+      listView.onItemsChosen += M_ListView_onItemsChosen;
+
+      Func<VisualElement> makeItem = () => new Label("ListViewOption");
+      Action<VisualElement, int> bindItem = (e, i) => (e as Label).text = (e as Label).text + " " + i;
+      bindItem = (e, i) => (e as Label).text = items[i];
+
+      listView.makeItem = makeItem;
+      listView.bindItem = bindItem;
+      //m_ListView.reorderable = true;
+      listView.itemsSource = items;
+      return listView;
+    }
+
     public void Dispose()
     {
-      this.m_ListContainer.parent.Remove(this.m_ListContainer);
+      if (m_Dialog != null)
+        m_Dialog.Dispose();
     }
   }
 }

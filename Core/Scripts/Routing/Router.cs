@@ -8,7 +8,8 @@ using UnityEngine.UIElements;
 namespace Graphene
 {
   using Kinstrife.Core.ReflectionHelpers;
-
+  
+  [DisallowMultipleComponent]
   public abstract class Router : MonoBehaviour, IGrapheneDependent, IInitializable
   {
     public abstract void InjectIntoHierarchy();
@@ -117,9 +118,10 @@ namespace Graphene
       if (el.route is T stateFromEl)
         targetState = stateFromEl;
 
-      // Route is not defined in element -> look in members with Route attributes
+      // Does the element have a route defined
       if (ValidState(targetState))
         Bind(targetState);
+      // Route is not defined in element -> look in members with Route attributes
       else
       {
         // Get members

@@ -38,6 +38,10 @@ namespace Graphene
       var template = templates.TryGetTemplate(member.Value, member.Attribute);
       // Clone & bind the control
       VisualElement clone = Binder.Instantiate(in member.Value, template, panel);
+
+      if (!string.IsNullOrEmpty(template.AddClass))
+        clone.AddToClassList(template.AddClass);
+
       // Add the control to the container
       container.Add(clone);
     }

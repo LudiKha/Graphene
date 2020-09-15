@@ -4,8 +4,10 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - templates: {fileID: 11400000, guid: 577f37ff3c038f0418ead2d83c53c59c, type: 2}
-  - stateHandle: {instanceID: 0}
+  - theme: {fileID: 11400000, guid: aa0bacd2e1794254faff54ffba0ce4ad, type: 2}
+  - parent: {instanceID: 0}
+  - customView: {instanceID: 0}
+  - router: {instanceID: 0}
   executionOrder: 0
   icon: {fileID: 2800000, guid: d5720deaef5568642aae7621cd85c1d4, type: 3}
   userData: 

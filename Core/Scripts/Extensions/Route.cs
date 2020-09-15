@@ -75,13 +75,15 @@ namespace Graphene
       // Add click to itself
       this.AddManipulator(new Clickable(OnClickEvent));
 
-      // Check if parent is a button
-      if(parent is Button button)
-        button.clicked += clicked;
+      clicked += Clicked;
     }
 
-    public event Action clicked;
+    public Action clicked;
 
+    public void Clicked()
+    {
+
+    }
 
     bool ProcessClick(EventBase evt)
     {
