@@ -16,29 +16,33 @@ MonoBehaviour:
   render: 1
   header: AudioMixer
   MasterVolume:
-    value: 0
-    Label: 
+    value: 0.31
+    Label: Master Volume
     minMax: {x: 0, y: 0}
   SFXVolume:
-    value: 0
-    Label: 
+    value: 0.57
+    Label: SFX Volume
     minMax: {x: 0, y: 0}
   MusicVolume:
-    value: 0
-    Label: 
+    value: 0.86
+    Label: Music Volume
     minMax: {x: 0, y: 0}
   info: Other
   infoBindable:
     value: Information
     Label: "Informa\xE7ione"
   Stereo:
-    value: 0
+    value: 0.48
     Label: 
     minMax: {x: 0, y: 0}
   GeneralVolume: 5
   Mode:
-    value: 0
+    value: 1
     Label: 
-    items: []
+    items:
+    - None
+    - Left
+    - Right
+    - Both
   twoWayText: TwoWayText
   toggle: 1

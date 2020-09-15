@@ -11,7 +11,7 @@ namespace Graphene
   [CreateAssetMenu(menuName = "UI/Forms/AudioSettingsForm")]
   public class AudioSettingsForm : Form
   {
-    [Draw(ControlType.Label)]
+    [Draw(ControlType.Label), Bind("Title")]
     public string header = "AudioMixer";
 
     [Draw] 

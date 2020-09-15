@@ -15,7 +15,7 @@ MonoBehaviour:
   title: 
   render: 1
   QualityLevel:
-    value: 3
+    value: 5
     Label: Quality level
     items:
     - Low
