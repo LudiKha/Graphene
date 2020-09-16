@@ -15,8 +15,8 @@ namespace Graphene
 
   public abstract class Form : ScriptableObject
   {
-    [SerializeField] string title; public string Title => title;
-    [SerializeField] bool render = true; public bool Render => render;
+    [SerializeField, Bind("Title")] protected string title; public string Title => title;    
+    [SerializeField, Bind("Render")] protected bool render = true; public bool Render => render;
 
     //public abstract List<object> GetDrawableObjects() { }
 
