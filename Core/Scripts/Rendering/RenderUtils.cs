@@ -24,7 +24,9 @@ namespace Graphene
 
       foreach (var member in drawableMembers)
       {
-        if (member.Value.GetType().IsPrimitive || member.Value is string)
+        if (member.Value is null)
+          continue;
+        else if (member.Value.GetType().IsPrimitive || member.Value is string)
           DrawFromPrimitiveContext(plate, container, in context, templates, member, bindableMembers);
         else if (member.Value is IEnumerable enumerable)
           DrawFromEnumerableContext(plate, container, in enumerable, templates, member);
