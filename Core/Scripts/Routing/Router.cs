@@ -33,6 +33,10 @@ namespace Graphene
     [SerializeField] List<T> activeStates = new List<T>();
     public IReadOnlyList<T> ActiveStates => activeStates;
 
+    /// <summary>
+    /// List of interpreters in the hierarchy that can intercept a state change request
+    /// </summary>
+    [SerializeField] List<StateInterpreter> interpreters = new List<StateInterpreter>();
 
     // Debug
     public List<T> StatesList = new List<T>();
@@ -162,10 +166,28 @@ namespace Graphene
         states.Add(state, parentState);
     }
 
+    public void RegisterInterpreter(StateInterpreter<T> stateInterpreter)
+    {
+      if(!interpreters.Contains(stateInterpreter))
+        interpreters.Add(stateInterpreter);
+    }
+    public void UnregisterInterpreter(StateInterpreter<T> stateInterpreter)
+    {
+      if (interpreters.Contains(stateInterpreter))
+        interpreters.Remove(stateInterpreter);
+    }
+
 
     [Button]
     public virtual bool TryChangeState(T state)
     {
+      // See if the router
+      foreach (var interpreter in interpreters)
+      {
+        if (interpreter.TryCatch(state))
+          return true;
+      }
+
       // Only contained keys allowed
       if (!AddressExists(state))
       {
