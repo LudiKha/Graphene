@@ -178,7 +178,6 @@ namespace Graphene
     }
 
 
-    [Button]
     public virtual bool TryChangeState(T state)
     {
       // See if the router

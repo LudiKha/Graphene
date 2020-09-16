@@ -3,6 +3,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  [RequireComponent(typeof(Plate))]
   public class Renderer : MonoBehaviour, IInitializable
   {
     [SerializeField] Plate plate;

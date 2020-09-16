@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
-
+  [RequireComponent(typeof(Plate))]
   public class NavigationStateHandler : StateInterpreter<string>, IInjectable, IInitializable
   {
     [SerializeField] string backCommand = "back";

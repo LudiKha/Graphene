@@ -14,6 +14,7 @@ namespace Graphene
     Absolute
   }
 
+  [RequireComponent(typeof(UIDocument))]
   [DisallowMultipleComponent]
   public class Plate : MonoBehaviour, IInitializable, ILateInitializable
   {
