@@ -40,8 +40,6 @@ namespace Graphene
       return clone;
     }
 
-
-
     /// <summary>
     /// Binds the tree recursively
     /// </summary>
@@ -169,13 +167,10 @@ namespace Graphene
     {
       foreach (var item in members)
       {
-        if (el.bindingPath.Equals(item.Attribute.Path))
+        if (el.bindingPath.Equals(item.Attribute.Path) || (string.IsNullOrEmpty(item.Attribute.Path) && item.Value is string))
         {
           if (item.Value is string)
             BindText(el, ref context, item.Value as string, in item, panel);
-
-          //if (item.Attribute.Mode != BindingMode.OneTime)
-          //  BindingManager.Create(el, ref context, in item, panel);
         }
       }
     }
@@ -278,17 +273,17 @@ namespace Graphene
       BindBaseField(el, ref context, members, panel);
     }
 
-    private static void BindBaseField<T>(BaseField<T> el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindBaseField<TValueType>(BaseField<TValueType> el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
     {
       bool labelFromAttribute = false;
       foreach (var item in members)
       {
         // Primary (value)
-        if (el.bindingPath.Equals(item.Attribute.Path))
+        if (el.bindingPath.Equals(item.Attribute.Path) || (string.IsNullOrEmpty(item.Attribute.Path) && item.Value is TValueType))
         {
-          if (item.Value is T)
+          if (item.Value is TValueType)
           {
-            el.SetValueWithoutNotify((T)item.Value);
+            el.SetValueWithoutNotify((TValueType)item.Value);
             BindingManager.TryCreate(el, ref context, in item, panel);
           }
 
@@ -304,7 +299,7 @@ namespace Graphene
         }
         // Set register callback event
         else if (item.Attribute is BindValueChangeCallbackAttribute callbackAttribute)
-          el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<T>>);
+          el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<TValueType>>);
         // Set label from field
         else if (!labelFromAttribute && item.Attribute.Path == "Label" && item.Value is string labelText && !string.IsNullOrWhiteSpace(labelText))
           BindText(el.labelElement, ref context, labelText, in item, panel);
