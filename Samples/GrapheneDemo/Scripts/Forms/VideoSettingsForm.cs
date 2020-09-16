@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Graphene
 {
@@ -21,6 +22,11 @@ namespace Graphene
     [Draw(ControlType.SelectField)]
     public BindableNamedInt Resolution = new BindableNamedInt();
 
+    [Draw(ControlType.CycleField)]
+    public BindableNamedInt UIScale = new BindableNamedInt { items = new List<string> { "Tiny", "Small", "Medium", "Large", "Extra Large" } };
+
+    [SerializeField] PanelSettings settingsToScale;
+
     public override void InitModel()
     {
       // Init controller
@@ -34,6 +40,13 @@ namespace Graphene
       FullScreen.OnValueChange += FullScreen_OnValueChange;
       VSync.OnValueChange += VSync_OnValueChange;
       Resolution.OnValueChange += Resolution_OnValueChange;
+      UIScale.OnValueChange += UIScale_OnValueChange;
+    }
+
+    private void UIScale_OnValueChange(object sender, int e)
+    {
+      //float normalized = UIScale.normalizedValue * 2;
+      settingsToScale.scale = 0.25f * (e + 1);
     }
 
     private void Resolution_OnValueChange(object sender, int e)
