@@ -54,7 +54,7 @@ Press play - Graphene will draw templates, and bind them to the model. If a stat
 
 The hierarchy is created and detail fields are rendered dynamically - now all that remains is to switch states.
 
-#### 3: Routing 
+#### 3: Routing
 - Add a [`StringRouter`][1015cb88] to the root GameObject.
 - Add a `StringStateHandle` to each `Plate` GameObject that needs to be activated or deactivated based on states. Children are automatically deactivated with their parents. Give the StateHandle `StateId` unique names (e.g. "start", "load", "exit").
 - For each `Plate` that has one or more children using states, select which child state is enabled by default by ticking `enableWithParent`
@@ -71,7 +71,7 @@ The hierarchy is created and detail fields are rendered dynamically - now all th
 >```
 
 
-Press play - The router constructs its state tree from the Plate hierarchy. When clicking a route element (or child button), the router will attempt to change states and the view will display this accordingly.
+Press play - The router constructs its state tree from the `Plate` hierarchy. When clicking a route element (or child button), the router will attempt to change states and the view will display this state change accordingly.
 
   [0fb2479e]: https://github.com/LudiKha/Graphene#plates "Plates"
   [b39c255d]: https://github.com/LudiKha/Graphene#rendering "Renderer"
@@ -107,14 +107,19 @@ These can be authored in the familiar GameObject hierarchy. Graphene then constr
 ## Binding
 
 ### Binding Modes
-Graphene supports 3 modes of binding a model to the view:
+Graphene supports 3 modes of binding a model to the view. These can be specified in either the BindAttribute on the model, or the Binder API directly.
 - **OneTime**: Instructs the `Binder` to only "print" the model once onto the view. No continuous binding will be attempted. Useful for immutable data, such as titles, labels or button callbacks.
-  - Syntax: `::`
-```html
-<ui:Label binding-path="::Title" />
-```
+>Note: Prefixing the binding-path with the `::` syntax instructs the binder to use a one-time binding.
+>```html
+><ui:Label binding-path="::Title" />
+>```
+
 - **OneWay**: Creates a continuous binding from the model to the view. Updates are polled continuously but only for bindings that are currently visible (based on `Plate` state). Polling rate can be configured in the `Graphene` component.
 - **TwoWay**: Creates a two-directional binding (from model to view, and view to model) for controls that support two-way binding. View to model binding is based on `INotifyPropertyChange` callbacks.
+
+### Scopes
+- Scope drilldown `.` `Renderer.Model.ChildObject.Title`
+- Scope transferral `~` `~Renderer.Model` > `ChildObject.Title`
 
 ### Binding Passes
 1. Static
