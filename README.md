@@ -1,4 +1,4 @@
-![](docs/Images/graphene-logo-full.png)
+![Graphene](docs/images/graphene-logo-full.png)
 
 # Graphene
 

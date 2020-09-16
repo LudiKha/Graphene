@@ -2,7 +2,7 @@ layout: page
 title: "About Graphene"
 permalink: /about/
 
-![](Documentation/Images/graphene-logo-full.png)
+![Graphene](images/graphene-logo-full.png = 500)
 
 # Graphene
 ## UI Framework for unity
