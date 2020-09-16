@@ -33,6 +33,7 @@ It comes with a **component-kit** library, many VisualElement extensions and a s
 # Quickstart
 For a quick start, Graphene comes with a Bootstrapping library and demo scene - it is **highly** recommended to start your new project using the demo scene and resources provided within this project.
 
+#### 1: Constructing the hierarchy
 - Construct the high-level UI hierarchy, where each unique state is represented by a GameObject
 - Add a [`Plate`][0fb2479e] component to each GameObject in the tree, with a `Graphene` component at the root.
 - For each Plate in the tree, assign a static asset to its UIDocument. Root states will typically need a Layout-style [`template`](https://github.com/LudiKha/Graphene#theming) for their children to be fitted in.
@@ -41,6 +42,7 @@ Press play - Graphene will now dynamically construct the VisualTree based on you
 
 Let's draw and bind some data onto our UI.
 
+#### 2: Rendering & binding a model
 - Add a [`Theme`][a617f693] to the root Graphene component.
 - Add one or more [`Renderer`][b39c255d] components to each `Plate` that has dynamic (instantiated) content
 - Assign a [`Model`][19f2ae47] to the Renderer - this is a data container that serves as the model for the data-binding.
@@ -52,6 +54,7 @@ Press play - Graphene will draw templates, and bind them to the model. If a stat
 
 The hierarchy is created and detail fields are rendered dynamically - now all that remains is to switch states.
 
+#### 3: Routing 
 - Add a [`StringRouter`][1015cb88] to the root GameObject.
 - Add a `StringStateHandle` to each `Plate` GameObject that needs to be activated or deactivated based on states. Children are automatically deactivated with their parents. Give the StateHandle `StateId` unique names (e.g. "start", "load", "exit").
 - For each `Plate` that has one or more children using states, select which child state is enabled by default by ticking `enableWithParent`
@@ -60,9 +63,11 @@ The hierarchy is created and detail fields are rendered dynamically - now all th
 
 > Note: It is also possible to encapsulate a button within a Route element.
 > ```html
-><gr:Route route="/settings" binding-path="">
->  <ui:Button text="Click me will change state"/>
+><gr:Route route="/settings">
+>  <ui:Button text="Clicking me will change state"/>
 ></gr:Route>
+>
+><gr:Route binding-path="~Model/ExitState">
 >```
 
 
