@@ -60,9 +60,9 @@ The hierarchy is created and detail fields are rendered dynamically - now all th
 
 > Note: It is also possible to encapsulate a button within a Route element.
 > ```html
-<gr:Route route="/settings" binding-path="">
-  <ui:Button text="Click me will change state"/>
-</gr:Route>
+><gr:Route route="/settings" binding-path="">
+>  <ui:Button text="Click me will change state"/>
+></gr:Route>
 >```
 
 
