@@ -4,8 +4,6 @@
 
 > `com.cupbearer.graphene-ui": "https://github.com/LudiKha/Graphene.git"`
 
-&nbsp;
-
 Graphene is a lightweight and modular framework for building runtime user interfaces with Unity's [UI Toolkit][0f273cb2].
 
   [0f273cb2]: https://docs.unity3d.com/2020.1/Documentation/Manual/UIElements.html "UI Toolkit"
