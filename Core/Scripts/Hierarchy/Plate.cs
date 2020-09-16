@@ -18,7 +18,7 @@ namespace Graphene
   public class Plate : MonoBehaviour, IInitializable, ILateInitializable
   {
     [AssetList] [SerializeField] Theme theme;
-    protected UIDocument doc; public UIDocument Doc => doc;
+    protected UIDocument doc;
 
     [SerializeField] protected string[] contentContainerSelector = new string[] { "GR__Content" };
 
@@ -34,7 +34,7 @@ namespace Graphene
     #endregion
 
     #region VisualElements Reference
-    VisualElement root;
+    protected VisualElement root; public VisualElement Root => root;
     // Main container for repeat elements
     protected VisualElement contentContainer; public VisualElement ContentContainer => contentContainer;
     protected VisualElement childContainer; public VisualElement ChildContainer => childContainer;

@@ -28,7 +28,7 @@ namespace Graphene
     private void Plate_onRefreshStatic()
     {
       // Bind the static plate
-      Binder.BindRecursive(plate.Doc.rootVisualElement, this, null, plate, true);
+      Binder.BindRecursive(plate.Root, this, null, plate, true);
 
       // Bind the static form
       //Binder.BindRecursive(plate.Doc.rootVisualElement, blueprint, null, plate, true);
