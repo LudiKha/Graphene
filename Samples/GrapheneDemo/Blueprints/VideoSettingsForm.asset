@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1208eee4e87d74a47ad26bdfa80e6272, type: 3}
   m_Name: VideoSettingsForm
   m_EditorClassIdentifier: 
-  title: Video
+  title: VIDEO SETTINGS
   render: 1
   FullScreen:
-    value: 1
+    value: 0
     Label: Fullscreen
   AdaptiveResolution:
     value: 1

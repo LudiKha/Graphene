@@ -952,6 +952,7 @@ GameObject:
   - component: {fileID: 1835532427}
   - component: {fileID: 1835532425}
   - component: {fileID: 1835532424}
+  - component: {fileID: 1835532428}
   m_Layer: 0
   m_Name: Navbar
   m_TagString: Untagged
@@ -1044,6 +1045,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: Top
+--- !u!114 &1835532428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1835532422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db9704c18ef205445b684710a72a91dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  backCommand: back
+  previousCommand: previous
+  nextCommand: next
+  router: {fileID: 0}
 --- !u!1 &2096850606
 GameObject:
   m_ObjectHideFlags: 0
