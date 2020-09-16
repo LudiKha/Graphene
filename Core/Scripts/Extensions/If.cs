@@ -7,6 +7,10 @@ namespace Graphene
 {
   public interface IBindableElement<TValue>
   {
+    /// <summary>
+    /// Callback to VisualElement control that model changed, and view needs to be updated
+    /// </summary>
+    /// <param name="newValue"></param>
     void OnModelChange(TValue newValue);
   }
 
@@ -68,6 +72,7 @@ namespace Graphene
     public If() 
     {
       AddToClassList(ussClassName);
+      value = false;
     }
 
     public void OnModelChange(object newValue)
@@ -75,6 +80,8 @@ namespace Graphene
       if (newValue is bool b)
         value = b;
       else if (newValue is null || newValue.Equals(false))
+        value = false;
+      else if (newValue is string s && string.IsNullOrWhiteSpace(s))
         value = false;
       else
         value = true;
