@@ -197,6 +197,12 @@ namespace Graphene
       // Check if parent is a button -> propagate click
       if (el.parent is Button button)
         button.clicked += el.clicked;
+      else
+      {
+        foreach (var item in el.Children())
+          if (item is Button btn)
+            btn.clicked += el.clicked;
+      }
 
       // Let the (generic) router handle the way it binds routes
       panel.Router.BindRoute(el, context);
