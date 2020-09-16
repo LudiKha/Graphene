@@ -34,7 +34,6 @@
   width: 250px;
   max-height: 90%;
   max-width: 500px;
-  height: 300px;
   border-radius: 2px;
   flex-grow: 1;
 }
@@ -65,4 +64,8 @@
   justify-content: flex-end;
   align-content: flex-end;
   align-items: flex-end;
+}
+
+TemplateContainer.unity-ui-document__child {
+  flex-grow: 1;
 }

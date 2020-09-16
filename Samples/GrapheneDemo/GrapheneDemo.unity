@@ -272,6 +272,7 @@ MonoBehaviour:
   contentContainerSelector:
   - GR__Content
   isActive: 1
+  positionMode: 0
   parent: {fileID: 0}
   children: []
   customView: {fileID: 0}
@@ -295,7 +296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: a2848fad145986148b27f5def28a734a, type: 2}
-  m_ParentUI: {fileID: 1283321955}
+  m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: b362ac97981432941b11974e43812b52, type: 3}
 --- !u!114 &905213583
 MonoBehaviour:
@@ -379,6 +380,7 @@ MonoBehaviour:
   contentContainerSelector:
   - GR__Content
   isActive: 1
+  positionMode: 0
   parent: {fileID: 0}
   children: []
   customView: {fileID: 0}
@@ -478,14 +480,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1283321954}
-  - component: {fileID: 1283321955}
   - component: {fileID: 1283321953}
   - component: {fileID: 1283321952}
   - component: {fileID: 1283321951}
   m_Layer: 0
   m_Name: UI (Graphene)
   m_TagString: Untagged
-  m_Icon: {fileID: 2800000, guid: db72b2a2b6f47b544a0458d9aa7b0e69, type: 3}
+  m_Icon: {fileID: 2800000, guid: a7567e94e4334dd4bb5bed2d09495114, type: 3}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -552,21 +553,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1283321955
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1283321950}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f21c074d86024caca2a0034ce4f53f73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_PanelSettings: {fileID: 11400000, guid: a2848fad145986148b27f5def28a734a, type: 2}
-  m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: c1b73d98fcdd4434c83cb117ae287a45, type: 3}
 --- !u!1 &1430442049
 GameObject:
   m_ObjectHideFlags: 0
@@ -649,6 +635,7 @@ MonoBehaviour:
   contentContainerSelector:
   - GR__Content
   isActive: 1
+  positionMode: 0
   parent: {fileID: 0}
   children: []
   customView: {fileID: 0}
@@ -739,6 +726,7 @@ MonoBehaviour:
   contentContainerSelector:
   - GR__Content
   isActive: 1
+  positionMode: 2
   parent: {fileID: 0}
   children: []
   customView: {fileID: 0}
@@ -762,7 +750,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: a2848fad145986148b27f5def28a734a, type: 2}
-  m_ParentUI: {fileID: 1283321955}
+  m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: 02ec70a4f19afe84d98898aec56a2ee2, type: 3}
 --- !u!1 &1806759287
 GameObject:
@@ -775,7 +763,6 @@ GameObject:
   - component: {fileID: 1806759288}
   - component: {fileID: 1806759289}
   - component: {fileID: 1806759291}
-  - component: {fileID: 1806759290}
   - component: {fileID: 1806759292}
   m_Layer: 0
   m_Name: Settings
@@ -815,24 +802,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: a2848fad145986148b27f5def28a734a, type: 2}
-  m_ParentUI: {fileID: 1283321955}
+  m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: b362ac97981432941b11974e43812b52, type: 3}
---- !u!114 &1806759290
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1806759287}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e3452e75856c69d42a3a5f4e1dbea800, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  plate: {fileID: 0}
-  blueprint: {fileID: 0}
-  templates: {fileID: 11400000, guid: 577f37ff3c038f0418ead2d83c53c59c, type: 2}
-  contentSelector: []
 --- !u!114 &1806759291
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -849,6 +820,7 @@ MonoBehaviour:
   contentContainerSelector:
   - GR__Content
   isActive: 1
+  positionMode: 0
   parent: {fileID: 0}
   children: []
   customView: {fileID: 0}
@@ -1033,6 +1005,7 @@ MonoBehaviour:
   contentContainerSelector:
   - GR__Content
   isActive: 1
+  positionMode: 0
   parent: {fileID: 0}
   children: []
   customView: {fileID: 0}
@@ -1153,6 +1126,7 @@ MonoBehaviour:
   contentContainerSelector:
   - GR__Content
   isActive: 1
+  positionMode: 0
   parent: {fileID: 0}
   children: []
   customView: {fileID: 0}

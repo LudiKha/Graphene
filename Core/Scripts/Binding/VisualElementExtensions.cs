@@ -38,7 +38,7 @@ namespace Graphene
     }
     public static VisualElement TopRoot(this IPanel panel)
     {
-      return panel?.visualTree.Q(null, documentRootClassName);
+      return panel?.visualTree.Query(null, documentRootClassName).Last();
     }
 
     public static void AddStyles(this VisualElement el, VisualElementStyleSheetSet styleSheets)

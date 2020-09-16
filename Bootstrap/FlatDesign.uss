@@ -5,8 +5,10 @@
   --focus-color: rgba(0, 0, 0, 0.25);
   --hover-color: rgba(0, 0, 0, 0.5);
   --active-color: rgba(255, 255, 255, 0.1);
+  --white-transparent: rgba(255, 255, 255, 0.8);
   /*rgba(0, 0, 0, 0.75);*/
   --border-width: 3px;
+  --border-radius: 4px;
   --gradient: resource('Gradients/MegaTron');
 }
 
@@ -16,20 +18,19 @@
   background-image: var(--gradient);
 }
 
+.unity-base-field,
 .gr-list-item.unity-button,
 .gr-button,
 .gr-button.unity-button,
 .unity-button {
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.3);
   border-width: 0;
-  border-radius: 0;
+  border-radius: var(--border-radius);
   min-width: 30px;
   color: white;
 }
 
 .unity-button:hover {
-  background-color: rgba(100, 100, 100, 0.9);
-  background-color: white;
   color: var(--primary-color);
 }
 
@@ -40,10 +41,14 @@
   color: white;
 }
 
-.unity-base-field .unity-button {
+.gr-cycle-field .unity-button {
   border-radius: 16px;
   width: 30px;
   height: 30px;
+}
+
+.gr-cycle-field .unity-button:hover {
+  background-color: var(--white-transparent);
 }
 
 .unity-base-field .unity-label {
@@ -62,6 +67,8 @@
   border-bottom-color: transparent;
   background-color: transparent;
   margin-bottom: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .navbar .gr-button:focus,

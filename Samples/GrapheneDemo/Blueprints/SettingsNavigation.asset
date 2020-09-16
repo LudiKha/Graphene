@@ -15,7 +15,7 @@ MonoBehaviour:
   title: 
   render: 1
   model:
-  - Name: Video
+  - Name: VIDEO
     Value: 
     route: settings/video
     Description: 
@@ -23,7 +23,7 @@ MonoBehaviour:
     OnClick:
       m_PersistentCalls:
         m_Calls: []
-  - Name: Graphics
+  - Name: GRAPHICS
     Value: 
     route: /graphics
     Description: 
@@ -31,7 +31,7 @@ MonoBehaviour:
     OnClick:
       m_PersistentCalls:
         m_Calls: []
-  - Name: Audio
+  - Name: AUDIO
     Value: 
     route: /audio
     Description: 
@@ -39,7 +39,7 @@ MonoBehaviour:
     OnClick:
       m_PersistentCalls:
         m_Calls: []
-  - Name: Gameplay
+  - Name: GAMEPLAY
     Value: 
     route: gameplay
     Description: 
@@ -47,7 +47,7 @@ MonoBehaviour:
     OnClick:
       m_PersistentCalls:
         m_Calls: []
-  - Name: Controls
+  - Name: CONTROLS
     Value: 
     route: controls
     Description: 

@@ -14,12 +14,12 @@ Graphene is a lightweight and modular framework for building runtime user interf
 
 ## Intro
 
-Graphene is the **superconductor** between your game and getting its user interface to do what you need it to do. It takes care of the heavy lifting by providing a framework inspired by Web standards, right into Unity.
+Graphene **superconducts** your creativity for efficiently building modern interactive UI for your games. It takes care of the heavy lifting by providing a framework inspired by Web standards, right into Unity.
 
 It's **lightweight** and modular - you get to pick and choose which parts you need for your projects.
 
-- **Dynamic Hierarchy**: Use a familiar GameObjects-based workflow to author the high-level hierarchy. The UI tree is built to reflect the GameObject hierarchy, using `Views` to designate sections of the screen, or component.
-- **Template Composition**: Reuse your static assets by authoring atomic components, and dynamically compose them in runtime.
+- **Dynamic Hierarchy**: Use the familiar GameObjects-based workflow to author the high-level hierarchy. The UI tree is built to reflect the GameObject hierarchy, using `Views` to designate sections of the screen, or components.
+- **Template Composition**: Reuse your static assets by writing atomic components, and dynamically compose them in runtime.
 - **Attribute-Based**: Instruct your UI to both draw _and_ bind templates using any data-container with a `[Bind]` attribute. Primitives, objects, collections, one-way, two-way binding, specific control selection: the parts you'll be most frequently developing with in C# are  exposed via attributes
 - **State-Based Routing**: Use the GameObject hierarchy dynamically construct your router's states. Its functionality mimics url-based addresses: `index/settings/video`.
 

@@ -5,8 +5,8 @@
     <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
     <Style src="Layouts.uss" />
 
-    <gr:If binding-path="~Form.Render">
-      <ui:Label text="Rendering" />
+    <gr:If binding-path="~Form.Title">
+      <ui:Label binding-path="Title" class="h1 white" />
     </gr:If>
     <ui:ScrollView>
       <gr:View id="Content" name="GR__Content" class="plate__content-container layout-column" />

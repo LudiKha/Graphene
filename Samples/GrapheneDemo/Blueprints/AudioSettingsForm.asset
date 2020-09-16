@@ -12,37 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b52464cd961bcd14599086a1f1482526, type: 3}
   m_Name: AudioSettingsForm
   m_EditorClassIdentifier: 
-  title: 
+  title: F in Chat
   render: 1
-  header: AudioMixer
-  MasterVolume:
-    value: 0.31
-    Label: Master Volume
-    minMax: {x: 0, y: 0}
-  SFXVolume:
-    value: 0.57
-    Label: SFX Volume
-    minMax: {x: 0, y: 0}
-  MusicVolume:
-    value: 0.86
-    Label: Music Volume
-    minMax: {x: 0, y: 0}
+  VolumeHeader: Volume
+  MasterVolume: 0.5
+  SFXVolume: 0.28
+  MusicVolume: 0.54
   info: Other
   infoBindable:
     value: Information
     Label: "Informa\xE7ione"
-  Stereo:
-    value: 0.48
-    Label: 
-    minMax: {x: 0, y: 0}
-  GeneralVolume: 5
   Mode:
-    value: 1
+    value: 6
     Label: 
     items:
     - None
     - Left
     - Right
     - Both
-  twoWayText: TwoWayText
-  toggle: 1
+  twoWayText: 

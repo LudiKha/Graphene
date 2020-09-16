@@ -112,3 +112,7 @@
 .ink.white {
   color: var(--ink-color-white);
 }
+
+.white {
+  color: white;
+}

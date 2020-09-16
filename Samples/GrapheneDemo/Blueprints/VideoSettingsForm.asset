@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1208eee4e87d74a47ad26bdfa80e6272, type: 3}
   m_Name: VideoSettingsForm
   m_EditorClassIdentifier: 
-  title: 
+  title: Video
   render: 1
   FullScreen:
-    value: 0
+    value: 1
     Label: Fullscreen
   AdaptiveResolution:
-    value: 0
+    value: 1
     Label: Adaptive Resolution
   VSync:
     value: 1
@@ -26,7 +26,7 @@ MonoBehaviour:
     min: 0
     max: 0
   Resolution:
-    value: 0
+    value: 17
     Label: Resolution
     items:
     - 640x480@60
@@ -47,3 +47,13 @@ MonoBehaviour:
     - 1600x1024@60
     - 1680x1050@60
     - 1920x1080@60
+  UIScale:
+    value: 3
+    Label: UI Scale
+    items:
+    - Tiny
+    - Small
+    - Medium
+    - Large
+    - Extra Large
+  settingsToScale: {fileID: 11400000, guid: a2848fad145986148b27f5def28a734a, type: 2}
