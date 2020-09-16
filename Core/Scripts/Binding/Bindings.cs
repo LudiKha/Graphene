@@ -16,9 +16,9 @@ namespace Graphene
     /// <summary>
     /// Mapping of all current bindings, keyed by panels
     /// </summary>
-    static Dictionary<Plate, List<Binding>> bindings;
+    static Dictionary<Plate, List<Binding>> bindings = new Dictionary<Plate, List<Binding>>();
 
-    static Dictionary<Plate, List<Binding>> disposePostUpdate;
+    static Dictionary<Plate, List<Binding>> disposePostUpdate = new Dictionary<Plate, List<Binding>>();
 
 #if UNITY_EDITOR
     [UnityEditor.InitializeOnEnterPlayMode]
@@ -173,11 +173,13 @@ namespace Graphene
 
     // The target field
     protected MemberInfo memberInfo;
+    protected Type type;
 
     public Binding(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member)
     {
       this.element = el;
       this.context = context;
+      this.type = context.GetType();
 
       this.attribute = member.Attribute;
       this.memberInfo = member.MemberInfo;
@@ -282,7 +284,8 @@ namespace Graphene
 
     protected override void SetValueFromMemberInfo(T value)
     {
-      propertyInfo.SetValue(context, value);
+      ExtendedTypeInfo extendedTypeInfo = TypeInfoCache.GetExtendedTypeInfo(context.GetType());
+      extendedTypeInfo.Accessor[context, memberInfo.Name] = value;
     }
   }
 
@@ -313,7 +316,8 @@ namespace Graphene
     }
     protected override void SetValueFromMemberInfo(T value)
     {
-      fieldInfo.SetValue(context, value);
+      ExtendedTypeInfo extendedTypeInfo = TypeInfoCache.GetExtendedTypeInfo(context.GetType());
+      extendedTypeInfo.Accessor[context, memberInfo.Name] = value;
     }
   }
 }
