@@ -7,6 +7,7 @@
 
     <gr:If binding-path="~Form.Title">
       <ui:Label binding-path="Title" class="h1 white" />
+      <ui:VisualElement class="border" />
     </gr:If>
     <ui:ScrollView>
       <gr:View id="Content" name="GR__Content" class="plate__content-container layout-column" />
