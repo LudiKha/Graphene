@@ -2,7 +2,7 @@
 
 # Graphene
 
-> `com.cupbearer.graphene-ui": "https://github.com/LudiKha/Graphene.git"`
+> `com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git"`
 
 Graphene is a lightweight and modular framework for building runtime user interfaces with Unity's [UI Toolkit][0f273cb2].
 
