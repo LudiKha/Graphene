@@ -1,10 +1,6 @@
 {
-    "name": "Graphene.Runtime",
+    "name": "SerializableDictionary.Editor",
     "references": [
-        "GUID:7104629240eb8a645904aa070efcaeb8",
-        "GUID:8c09aa1e4b73db04094be9d510142dd2",
-        "GUID:0b2cc0b34570a2247ae360ab103f281d",
-        "GUID:776d03a35f1b52c4a9aed9f56d7b4229",
         "GUID:a9d2a6efafebd5e47b01684a70d95cc5"
     ],
     "includePlatforms": [],

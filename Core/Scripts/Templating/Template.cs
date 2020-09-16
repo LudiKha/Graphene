@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Graphene/Template/Template")]
 public class Template : ScriptableObject
 {
-  [SerializeField, Sirenix.OdinInspector.AssetList] UnityEngine.UIElements.VisualTreeAsset _VisualTreeAsset; public UnityEngine.UIElements.VisualTreeAsset VisualTreeAsset => _VisualTreeAsset;
+  [SerializeField] UnityEngine.UIElements.VisualTreeAsset _VisualTreeAsset; public UnityEngine.UIElements.VisualTreeAsset VisualTreeAsset => _VisualTreeAsset;
 
   [SerializeField] string _RootElementName; public string RootElementName => _RootElementName;
 

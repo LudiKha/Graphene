@@ -12,52 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fecf578bfcf34544fb992fb36cc63ce3, type: 3}
   m_Name: Navigation_Controls
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects:
-    - {fileID: 11400000, guid: 68092e8bf653aab4f9dd005b73576d41, type: 2}
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: mapping
-      Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[Graphene.ControlType, TwinPillar.GrapheneUI],[Template,
-        TwinPillar.GrapheneUI]], mscorlib
-    - Name: comparer
-      Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[Graphene.ControlType,
-        TwinPillar.GrapheneUI]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 2
-    - Name: $v
-      Entry: 10
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
   parent: {fileID: 11400000, guid: 577f37ff3c038f0418ead2d83c53c59c, type: 2}
+  mapping:
+    m_keys: 02000000
+    m_values:
+    - {fileID: 11400000, guid: 68092e8bf653aab4f9dd005b73576d41, type: 2}

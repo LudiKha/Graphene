@@ -1,4 +1,4 @@
-﻿using Sirenix.OdinInspector;
+﻿using NaughtyAttributes;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -17,7 +17,7 @@ namespace Graphene
   [DisallowMultipleComponent]
   public class Plate : MonoBehaviour, IInitializable, ILateInitializable
   {
-    [AssetList] [SerializeField] Theme theme;
+    [SerializeField] Theme theme;
     protected UIDocument doc;
 
     [SerializeField] protected string[] contentContainerSelector = new string[] { "GR__Content" };

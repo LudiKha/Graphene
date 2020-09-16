@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Sirenix.OdinInspector;
 
 namespace Graphene
 {
-  [CreateAssetMenu(menuName ="Graphene/Theme/Theme")]
+  [CreateAssetMenu(menuName ="Graphene/Theming/Theme")]
   public class Theme : ScriptableObject
   {
     [SerializeField] Theme parent; public Theme Parent => parent;
 
-    [AssetList] [SerializeField] List<StyleSheet> styleSheets; public IReadOnlyCollection<StyleSheet> StyleSheets => styleSheets;
+    [SerializeField] List<StyleSheet> styleSheets; public IReadOnlyCollection<StyleSheet> StyleSheets => styleSheets;
 
     public void ApplyStyles(VisualElement el)
     {

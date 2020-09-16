@@ -1,0 +1,19 @@
+{
+    "name": "Graphene.Editor",
+    "references": [
+        "GUID:5182bff32a626fa409ad510e8c679a69",
+        "GUID:a9d2a6efafebd5e47b01684a70d95cc5",
+        "GUID:dd4a8158362adf24fa2558eb7adb4b12"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

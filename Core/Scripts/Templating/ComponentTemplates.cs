@@ -1,5 +1,4 @@
 ﻿
-using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +7,7 @@ using UnityEngine.Events;
 using UnityEngine.UIElements;
 
 using Kinstrife.Core.ReflectionHelpers;
+using NaughtyAttributes;
 
 namespace Graphene
 {
@@ -28,13 +28,17 @@ namespace Graphene
   }
 
 
+  [Serializable]
+  public class ControlTemplateMapping : SerializableDictionary<ControlType, Template> { }
+
+
   [CreateAssetMenu(menuName = "Graphene/Template/ComponentTemplates")]
-  public class ComponentTemplates : SerializedScriptableObject
+  public class ComponentTemplates : ScriptableObject
   {
     [SerializeField] ComponentTemplates parent; public ComponentTemplates Parent => parent;
 
-    [SerializeField] Dictionary<ControlType, Template> mapping = new Dictionary<ControlType, Template>();
-    public IReadOnlyDictionary<ControlType, Template> Mapping => mapping;
+    [SerializeField] ControlTemplateMapping mapping = new ControlTemplateMapping();
+
 
     public Template TryGetTemplate(object data, DrawAttribute drawAttribute = null)
     {

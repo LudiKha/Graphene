@@ -1,10 +1,10 @@
-﻿using System.Collections;
+﻿using NaughtyAttributes;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
-using Sirenix.OdinInspector;
 
 
 namespace Graphene
@@ -13,10 +13,10 @@ namespace Graphene
   [System.Serializable, Draw(ControlType.Button)]
   public class BindableObject : IRoute
   {
-    [Bind("Label", BindingMode.OneWay), HorizontalGroup, HideLabel]
+    [Bind("Label", BindingMode.OneWay)]
     public string Name;
 
-    [Bind("Value"), HorizontalGroup, HideLabel]
+    [Bind("Value")]
     public string Value;
 
     [Route]
@@ -25,10 +25,10 @@ namespace Graphene
     [BindTooltip("Tooltip")]
     public string Description;
 
-    [FoldoutGroup("Additionals")]
+    [Foldout("Additionals")]
     public string addClass;
 
-    [Bind("OnClick"), FoldoutGroup("Additionals")]
+    [Bind("OnClick"), Foldout("Additionals")]
     public UnityEvent OnClick;
   }
 

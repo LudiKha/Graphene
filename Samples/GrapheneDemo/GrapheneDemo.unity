@@ -517,6 +517,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startingState: index
   activeStates: []
+  interpreters: []
   StatesList: []
   traversedStates: []
 --- !u!114 &1283321953
@@ -1060,7 +1061,9 @@ MonoBehaviour:
   backCommand: back
   previousCommand: previous
   nextCommand: next
+  exitCommand: exit
   router: {fileID: 0}
+  plate: {fileID: 0}
 --- !u!1 &2096850606
 GameObject:
   m_ObjectHideFlags: 0
