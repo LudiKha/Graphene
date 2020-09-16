@@ -1,12 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using Sirenix.OdinInspector;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
-using Sirenix.OdinInspector;
 
 namespace Graphene
 {
+  public enum PositionMode
+  {
+    None,
+    Relative,
+    Absolute
+  }
+
   [DisallowMultipleComponent]
   public class Plate : MonoBehaviour, IInitializable, ILateInitializable
   {
@@ -16,6 +23,8 @@ namespace Graphene
     [SerializeField] protected string[] contentContainerSelector = new string[] { "GR__Content" };
 
     [SerializeField] bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
+
+    [SerializeField] PositionMode positionMode;
 
     #region Component Reference
     [SerializeField] Plate parent;
@@ -36,8 +45,6 @@ namespace Graphene
 
     #endregion
 
-
-
     #region (Unity) Events
     public event System.Action onRefreshHierarchy;
     public event System.Action onRefreshStatic;
@@ -46,7 +53,6 @@ namespace Graphene
     public UnityEvent onShow = new UnityEvent();
     public UnityEvent onHide = new UnityEvent();
     #endregion
-
 
     public bool Initialized { get; set; }
     public virtual void Initialize()
@@ -92,8 +98,13 @@ namespace Graphene
       // Get views
       views = root.Query<View>().ToList();
       defaultView = views.Find(x => x.isDefault) ?? views.FirstOrDefault();
-      if(theme)
+      if (theme)
         theme.ApplyStyles(root);
+
+      if (positionMode == PositionMode.Relative)
+        root.AddToClassList("flex-grow");
+      else if (positionMode == PositionMode.Absolute)
+        root.AddMultipleToClassList("absolute fill");
     }
 
     protected void RegisterChild(Plate child)
