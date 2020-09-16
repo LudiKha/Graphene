@@ -8,6 +8,7 @@
   --white-transparent: rgba(255, 255, 255, 0.8);
   /*rgba(0, 0, 0, 0.75);*/
   --border-width: 3px;
+  --border-color: white;
   --border-radius: 4px;
   --gradient: resource('Gradients/MegaTron');
 }
@@ -78,6 +79,12 @@
   margin-bottom: 0;
 }
 
+.navbar .active>.gr-button,
+.navbar .gr-button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
 .unity-ui-document__root .gr-button:focus {
   background-color: var(--focus-color);
 }
@@ -105,4 +112,12 @@
 :root .unity-base-field:hover .unity-label,
 :root .unity-base-field:active .unity-label {
   color: var(--primary-color);
+}
+
+.border {
+  border-top-width: var(--border-width);
+  width: 100%;
+  border-color: var(--border-color);
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
