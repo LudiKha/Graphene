@@ -32,15 +32,6 @@ namespace Graphene
     public UnityEvent OnClick;
   }
 
-  [System.Serializable, Draw(ControlType.Slider)]
-  public class BindableFloat : BindableBaseField<float>
-  {
-    [BindFloat("Value", 0.75f, 0, 1, null, true)]
-    public override float Value { get => value; set { this.value = value; } }
-
-    public Vector2 minMax;
-  }
-
   [System.Serializable, Draw(ControlType.Toggle)]
   public class BindableBool : BindableBaseField<bool>
   {
@@ -54,14 +45,22 @@ namespace Graphene
   {
     [BindBaseFieldAttribute("Value")]
     public override TValueType Value { get => value; set { this.value = value; } }
+    public virtual float normalizedValue { get => throw new System.NotImplementedException(); }
 
     public TValueType min;
     public TValueType max;
   }
 
+  [System.Serializable, Draw(ControlType.Slider)]
+  public class BindableFloat : RangeBaseField<float>
+  {
+    public override float normalizedValue => value / (max - min);
+  }
+
   [System.Serializable, Draw(ControlType.SliderInt)]
   public class BindableInt : RangeBaseField<int>
   {
+    public override float normalizedValue => (float)value / ((float)max - (float)min);
   }
 
   [System.Serializable, Draw(ControlType.SelectField)]
@@ -71,6 +70,7 @@ namespace Graphene
     public List<string> items = new List<string>();
     [Bind("Value")]
     public override int Value { get => base.Value; set => base.Value = value; }
+    public float normalizedValue => (float)value / items.Count;
 
     public void InitFromEnum<T>()
     {
