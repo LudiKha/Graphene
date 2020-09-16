@@ -55,9 +55,15 @@ The hierarchy is created and detail fields are rendered dynamically - now all th
 - Add a [`StringRouter`][1015cb88] to the root GameObject.
 - Add a `StringStateHandle` to each `Plate` GameObject that needs to be activated or deactivated based on states. Children are automatically deactivated with their parents. Give the StateHandle `StateId` unique names (e.g. "start", "load", "exit").
 - For each `Plate` that has one or more children using states, select which child state is enabled by default by ticking `enableWithParent`
-- In order to navigate, we can instantiate controls with a `RouteAttribute` or statically type them in UXML using `<gr:Route route="/settings" />`. It is also possible to encapsulate a button with the Route control. Make sure the routes correspond to the available states.
+- In order to navigate, we can instantiate controls with a `RouteAttribute` or statically type them in UXML. Make sure to set the route member to a value that corresponds the available states.
+```html
+<gr:Route route="/settings" />
+```
 
-Press play - When clicking a route element (or child button), the router will attempt to change states and the view will display this accordingly.
+> [!NOTE]
+> It is also possible to encapsulate a button within a Route element. 
+
+Press play - The router constructs its state tree from the Plate hierarchy. When clicking a route element (or child button), the router will attempt to change states and the view will display this accordingly.
 
   [0fb2479e]: https://github.com/LudiKha/Graphene#plates "Plates"
   [b39c255d]: https://github.com/LudiKha/Graphene#rendering "Renderer"
