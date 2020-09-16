@@ -1,6 +1,4 @@
----
-uid: Graphene
----
+![](docs/Images/graphene-logo-full.png)
 
 # Graphene
 
