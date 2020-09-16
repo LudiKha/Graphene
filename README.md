@@ -24,7 +24,7 @@ It's **lightweight** and modular - you get to pick and choose which parts you ne
 It comes with a **component-kit** library, many VisualElement extensions and a sample application to get you started.
 
 ## Demo
-#### [Check out the WebGL demo ][f45eaa31]!
+#### [Check out the WebGL demo ][f45eaa31]
 
   [f45eaa31]: https://ludikha.github.io/Graphene-Demo/ "Graphene WebGL demo"
 
