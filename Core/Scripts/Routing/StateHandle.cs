@@ -2,6 +2,7 @@
 
 namespace Graphene
 {
+  [RequireComponent(typeof(Plate))]
   [DisallowMultipleComponent]
   public abstract class StateHandle : MonoBehaviour, IInjectable, IInitializable, ILateInitializable
   {
