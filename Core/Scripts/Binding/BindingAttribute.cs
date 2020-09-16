@@ -34,6 +34,10 @@ namespace Graphene
     /// </summary>
     public BindingMode? bindingMode = null; // By default don't override binding mode
 
+    public BindAttribute()
+    {
+    }
+
     public BindAttribute(string path)
     {
       this.path = path;
