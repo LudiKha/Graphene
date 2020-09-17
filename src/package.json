@@ -6,8 +6,7 @@
   "unity": "2018.3",
   "dependencies": {
     "com.unity.ui": "1.0.0-preview.8",
-    "com.unity.ui.builder": "1.0.0-preview.6",
-    "com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm"
+    "com.unity.ui.builder": "1.0.0-preview.6"
   },
   "keywords": [],
   "author": {
