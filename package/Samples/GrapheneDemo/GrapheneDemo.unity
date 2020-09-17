@@ -253,7 +253,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   plate: {fileID: 0}
-  blueprint: {fileID: 11400000, guid: d8a6e1ecde997fa42b51295187cdde5e, type: 2}
+  model: {fileID: 11400000, guid: d8a6e1ecde997fa42b51295187cdde5e, type: 2}
   templates: {fileID: 11400000, guid: 577f37ff3c038f0418ead2d83c53c59c, type: 2}
   contentSelector: []
 --- !u!114 &905213581
@@ -361,7 +361,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   plate: {fileID: 0}
-  blueprint: {fileID: 11400000, guid: c5cb3b3dbf4f4ff41be933f214857dfa, type: 2}
+  model: {fileID: 11400000, guid: c5cb3b3dbf4f4ff41be933f214857dfa, type: 2}
   templates: {fileID: 11400000, guid: 577f37ff3c038f0418ead2d83c53c59c, type: 2}
   contentSelector: []
 --- !u!114 &1038876939
@@ -603,7 +603,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   plate: {fileID: 0}
-  blueprint: {fileID: 11400000, guid: e41fae9e961d0904c86d34850e76b6cf, type: 2}
+  model: {fileID: 11400000, guid: e41fae9e961d0904c86d34850e76b6cf, type: 2}
   templates: {fileID: 11400000, guid: 577f37ff3c038f0418ead2d83c53c59c, type: 2}
   contentSelector: []
 --- !u!114 &1430442053
@@ -974,7 +974,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   plate: {fileID: 0}
-  blueprint: {fileID: 11400000, guid: d61d11c27a47a3646b21b0c8a90664ce, type: 2}
+  model: {fileID: 11400000, guid: d61d11c27a47a3646b21b0c8a90664ce, type: 2}
   templates: {fileID: 11400000, guid: 577f37ff3c038f0418ead2d83c53c59c, type: 2}
   contentSelector: []
 --- !u!114 &1835532425
@@ -1113,7 +1113,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   plate: {fileID: 0}
-  blueprint: {fileID: 11400000, guid: 8e0dd7d6af039c548ab3f480db3044f8, type: 2}
+  model: {fileID: 11400000, guid: 8e0dd7d6af039c548ab3f480db3044f8, type: 2}
   templates: {fileID: 11400000, guid: 577f37ff3c038f0418ead2d83c53c59c, type: 2}
   contentSelector: []
 --- !u!114 &2096850610
