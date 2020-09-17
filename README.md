@@ -34,9 +34,10 @@ It comes with a **component-kit** library, several VisualElement extensions and 
 
 ### Installation
 
-You can install the package via UPM by adding the line below to your project's manifest.json.
+You can install the package via UPM by adding the lines below to your project's manifest.json.
 
 > `"com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git?path=/src"`
+> `"com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm"`
 
 &nbsp;
 
