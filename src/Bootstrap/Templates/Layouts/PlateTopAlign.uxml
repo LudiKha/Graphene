@@ -5,7 +5,7 @@
     <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
     <Style src="Layouts.uss" />
 
-    <gr:If binding-path="~Form.Title">
+    <gr:If binding-path="~Model.Title">
       <ui:Label binding-path="Title" class="h1 white" />
       <ui:VisualElement class="border" />
     </gr:If>

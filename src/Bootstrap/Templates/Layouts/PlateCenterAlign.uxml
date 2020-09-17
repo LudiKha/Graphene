@@ -5,9 +5,10 @@
     <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
     <Style src="Layouts.uss" />
 
-    <ui:Foldout>
-      <ui:Label binding-path="Form.Title" />
-    </ui:Foldout>
+    <gr:If binding-path="~Model.Title">
+      <ui:Label binding-path="Title" class="h1 white" />
+      <ui:VisualElement class="border" />
+    </gr:If>
     <ui:ScrollView>
       <gr:View id="Content" name="GR__Content" class="plate__content-container layout-column justify-center" />
     </ui:ScrollView>
