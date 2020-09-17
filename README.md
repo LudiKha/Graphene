@@ -66,7 +66,9 @@ Let's draw and bind some data onto our UI.
 
   [a617f693]: https://github.com/LudiKha/Graphene#theming "Theming"
 
-Press play - Graphene will draw templates, and bind them to the model. If a static asset contained a control with a binding-path (e.g. a label with "Model/Title"), this will be bound to the model too.
+Press play - Graphene will draw templates, and bind them to the model. If a static asset contained a control with a binding-path (e.g. a label with [`Model.Title`][04efb446]), this will be bound to the model too.
+
+  [04efb446]: https://github.com/LudiKha/Graphene#scopes "Scopes"
 
 The hierarchy is created and detail fields are rendered dynamically - now all that remains is to switch states.
 
