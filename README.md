@@ -1,14 +1,14 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![last-commit](https://img.shields.io/github/last-commit/LudiKha/Graphene) ![open-issues](https://img.shields.io/github/issues/LudiKha/Graphene)
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/LudiKha/Graphene/master/docs/images/graphene-logo-full.png" />
 </p>
 
 &nbsp;
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![last-commit](https://img.shields.io/github/last-commit/LudiKha/Graphene) ![open-issues](https://img.shields.io/github/issues/LudiKha/Graphene)
+
 Graphene is a lightweight and modular framework for building runtime user interfaces with Unity's [UI Toolkit][0f273cb2].
 
-  [0f273cb2]: https://docs.unity3d.com/2020.1/Documentation/Manual/UIElements.html "UI Toolkit"
+[0f273cb2]: https://docs.unity3d.com/2020.1/Documentation/Manual/UIElements.html "UI Toolkit"
 
 &nbsp;
 
