@@ -10,16 +10,17 @@ Graphene is a lightweight and modular framework for building runtime user interf
 
 ## Intro
 
-Graphene **superconducts** your creativity for efficiently building modern interactive UI for your games. It takes care of the heavy lifting by providing a framework inspired by Web standards, right into Unity.
+Graphene **superconducts** your creativity for efficiently building modern interactive UI for games. It takes care of the heavy lifting by providing a framework inspired by Web standards, right into Unity.
 
 It's **lightweight** and modular - you get to pick and choose which parts you need for your projects.
 
-- **Dynamic Hierarchy**: Use the familiar GameObjects-based workflow to author the high-level hierarchy. The UI tree is built to reflect the GameObject hierarchy, using `Views` to designate sections of the screen, or components.
-- **Template Composition**: Reuse your static assets by writing atomic components, and dynamically compose them in runtime.
+- **Declarative Hierarchy**: Graphene makes it painless to design interactive UI. Use the familiar GameObjects hierarchy to design simple `Views` as sections of the screen or nested states.
+- **Reduce Boilerplate**: Focus on your custom logic and design of building UI instead of repeating low-level tasks for each unique screen you are building. Graphene comes with a number of `Controls` that greatly enhance the speed of creating interactive UI, whilst reducing the need of custom view controllers in C# by exposing vital functionality in Uxml.
 - **Attribute-Based**: Instruct your UI to both draw _and_ bind templates using any data-container with a `[Bind]` attribute. Primitives, objects, collections, one-way, two-way binding, specific control selection: the parts you'll be most frequently developing with in C# are  exposed via attributes
 - **State-Based Routing**: Use the GameObject hierarchy dynamically construct your router's states. Its functionality mimics url-based addresses: `index/settings/video`.
+- **Template Composition**: Reuse your static assets by writing atomic templates, and dynamically compose them in runtime.
 
-It comes with a **component-kit** library, many VisualElement extensions and a sample application to get you started.
+It comes with a **component-kit** library, several VisualElement extensions and a sample application to get you started.
 
 ---
 
