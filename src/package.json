@@ -1,0 +1,17 @@
+{
+  "name": "com.cupbearer.graphene",
+  "version": "1.0.0",
+  "displayName": "Graphene",
+  "description": "A lightweight & flexible open-source UI framework for Unity's UI Toolkit.",
+  "unity": "2018.3",
+  "dependencies": {
+    "com.unity.ui": "1.0.0-preview.8",
+    "com.unity.ui.builder": "1.0.0-preview.6"
+  },
+  "keywords": [],
+  "author": {
+    "email": "info@kinstrife.com",
+    "name": "CupBearer",
+    "url": "https://www.cup-bearer.com"
+  }
+}
