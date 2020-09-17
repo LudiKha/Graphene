@@ -1,12 +1,16 @@
-![Graphene](docs/images/graphene-logo-full.png)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![last-commit](https://img.shields.io/github/last-commit/LudiKha/Graphene) ![open-issues](https://img.shields.io/github/issues/LudiKha/Graphene)
 
-# Graphene
+<p align="center">
+  <img src="https://raw.githubusercontent.com/LudiKha/Graphene/master/docs/images/graphene-logo-full.png" />
+</p>
 
-> `com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git"`
+&nbsp;
 
 Graphene is a lightweight and modular framework for building runtime user interfaces with Unity's [UI Toolkit][0f273cb2].
 
   [0f273cb2]: https://docs.unity3d.com/2020.1/Documentation/Manual/UIElements.html "UI Toolkit"
+
+&nbsp;
 
 ## Intro
 
@@ -21,16 +25,26 @@ It's **lightweight** and modular - you get to pick and choose which parts you ne
 
 It comes with a **component-kit** library, many VisualElement extensions and a sample application to get you started.
 
----
 
-## Demo
+### Demo
 #### [Check out the WebGL demo ][f45eaa31]
 
   [f45eaa31]: https://ludikha.github.io/Graphene-Demo/ "Graphene WebGL demo"
 
+### Installation
+
+You can install the package via UPM by adding the line below to your project's manifest.json.
+
+> `com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git"`
+
+&nbsp;
+
 ---
 
+&nbsp;
+
 # Quickstart
+
 For a quick start, Graphene comes with a Bootstrapping library and demo scene - it is **highly** recommended to start your new project using the demo scene and resources provided within this project.
 
 #### 1: Constructing the hierarchy
@@ -82,7 +96,11 @@ Press play - The router constructs its state tree from the `Plate` hierarchy. Wh
 
 Congrats! You're now done with the Quickstart and ready to tackle your first project using Graphene.
 
+&nbsp;
+
 ---
+
+&nbsp;
 
 # Core Concepts
 
