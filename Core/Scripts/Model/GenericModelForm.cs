@@ -13,7 +13,7 @@ namespace Graphene
   [CreateAssetMenu(menuName = "UI/Forms/GenericModelForm")]
   public class GenericModelForm : GenericModelForm<BindableObject>
   {
-    public override void InitModel()
+    public override void Initialize(VisualElement container, Plate plate)
     {
     }
 

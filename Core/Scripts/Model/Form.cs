@@ -2,6 +2,7 @@
 using NaughtyAttributes;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Graphene
 {
@@ -13,14 +14,14 @@ namespace Graphene
     void OnCancel();
   }
 
-  public abstract class Form : ScriptableObject
+  public abstract class Form : ScriptableObject, IModel
   {
     [SerializeField, Bind("Title")] protected string title; public string Title => title;    
     [SerializeField, Bind("Render")] protected bool render = true; public bool Render => render;
 
     //public abstract List<object> GetDrawableObjects() { }
 
-    public abstract void InitModel();
+    public abstract void Initialize(VisualElement container, Plate plate);
 
     public event System.Action Redraw;
 

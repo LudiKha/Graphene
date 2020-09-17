@@ -1,5 +1,4 @@
-﻿using Kinstrife.Core.ReflectionHelpers;
-using System.Collections;
+﻿
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -27,7 +26,7 @@ namespace Graphene
 
     [SerializeField] PanelSettings settingsToScale;
 
-    public override void InitModel()
+    public override void Initialize(VisualElement container, Plate plate)
     {
       // Init controller
       VSync.Value = QualitySettings.vSyncCount;

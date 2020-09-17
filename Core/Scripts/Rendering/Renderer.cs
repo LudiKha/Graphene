@@ -1,19 +1,24 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  public interface IModel
+  {
+    void Initialize(VisualElement container, Plate plate);
+    bool Render { get; }
+  }
+
   [RequireComponent(typeof(Plate))]
   public class Renderer : MonoBehaviour, IInitializable
   {
     [SerializeField] Plate plate;
-
-    [SerializeField] Form blueprint;
-    [Bind("Form")] public Form Blueprint => blueprint;
+    [SerializeField, Bind("Model")] protected Object model; public Object Model => model;    
     [SerializeField] protected ComponentTemplates templates; public ComponentTemplates Templates => templates;
 
     /// <summary>
-    /// Overriding this will
+    /// Overriding this will target a non-default content container (as defined in Plate)
     /// </summary>
     [SerializeField] protected string[] contentSelector = new string[] {  };
 
@@ -28,14 +33,50 @@ namespace Graphene
 
     private void Plate_onRefreshStatic()
     {
-      // Bind the static plate
+      // Bind the static template to the renderer
       Binder.BindRecursive(plate.Root, this, null, plate, true);
-
-      // Bind the static form
-      //Binder.BindRecursive(plate.Doc.rootVisualElement, blueprint, null, plate, true);
     }
 
     private void Plate_onRefreshDynamic()
+    {
+
+      RenderToContainer(GetDrawContainer());
+    }
+
+    internal void RenderToContainer(VisualElement container)
+    {
+      // Initialize & render the form
+      if (!model)
+        return;
+
+      if (model is IModel iModel)
+      {
+        if (!iModel.Render)
+          return;
+
+        iModel.Initialize(container, plate);
+      }
+
+
+      // Render & bind the dynamic items
+      RenderUtils.DrawDataContainer(plate, container, model, templates);
+    }
+
+    #region Public API
+    public void Draw()
+    {
+      // Render & bind the dynamic items
+      RenderUtils.DrawDataContainer(plate, GetDrawContainer(), model, templates);
+    }
+
+    public void Draw(object model)
+    {
+      RenderUtils.DrawDataContainer(plate, GetDrawContainer(), in model, templates);
+    }
+    #endregion
+
+    #region Helper Methods
+    internal VisualElement GetDrawContainer()
     {
       // Default use the plate's default container
       VisualElement container = plate.ContentContainer;
@@ -43,24 +84,8 @@ namespace Graphene
       if (contentSelector.Length > 0)
         container = plate.GetVisualElement(contentSelector);
 
-      RenderToContainer(container);
+      return container;
     }
-
-    public void RenderToContainer(VisualElement container)
-    {
-
-      // Initialize & render the form
-      if (!blueprint)
-        return;
-
-      blueprint.InitModel();
-
-      if (!blueprint.Render)
-        return;
-
-
-      // Render & bind the dynamic items
-      RenderUtils.Draw(plate, container, blueprint, templates);
-    }
+    #endregion
   }
 }

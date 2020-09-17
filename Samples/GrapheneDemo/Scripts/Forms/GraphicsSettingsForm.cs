@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using UnityEngine.UIElements;
 
 namespace Graphene
 {
@@ -14,7 +14,7 @@ namespace Graphene
     public BindableInt AntiAliasing;
 
 
-    public override void InitModel()
+    public override void Initialize(VisualElement container, Plate plate)
     {
       QualityLevel.Value = QualitySettings.GetQualityLevel();
       AntiAliasing.Value = QualitySettings.antiAliasing;

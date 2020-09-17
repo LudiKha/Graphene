@@ -1,13 +1,9 @@
-﻿using Kinstrife.Core.ReflectionHelpers;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Graphene
 {
-
-  [System.Serializable]
   [CreateAssetMenu(menuName = "UI/Forms/AudioSettingsForm")]
   public class AudioSettingsForm : Form
   {
@@ -35,7 +31,7 @@ namespace Graphene
     public string twoWayText = "TwoWayText";
 
 
-    public override void InitModel()
+    public override void Initialize(VisualElement container, Plate plate)
     {
       Mode.InitFromEnum<StereoTargetEyeMask>();
     }
