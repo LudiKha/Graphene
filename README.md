@@ -36,7 +36,7 @@ It comes with a **component-kit** library, several VisualElement extensions and 
 
 You can install the package via UPM by adding the line below to your project's manifest.json.
 
-> `com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git"`
+> `"com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git?path=/src"`
 
 &nbsp;
 
