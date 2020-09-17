@@ -8,6 +8,13 @@
     "com.unity.ui": "1.0.0-preview.8",
     "com.unity.ui.builder": "1.0.0-preview.6"
   },
+  "samples": [
+    {
+      "displayName": "Graphene Demo",
+      "description": "Main menu demo featuring a settings screen",
+      "path": "Samples~/GrapheneDemo"
+    }
+  ],
   "keywords": [],
   "author": {
     "email": "info@kinstrife.com",
