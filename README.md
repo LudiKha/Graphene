@@ -26,11 +26,23 @@ It's **lightweight** and modular - you get to pick and choose which parts you ne
 
 It comes with a **component-kit** library, several VisualElement extensions and a sample application to get you started.
 
+&nbsp;
+
+---
+
+&nbsp;
 
 ### Demo
 #### [Check out the WebGL demo ][f45eaa31]
 
   [f45eaa31]: https://ludikha.github.io/Graphene-Demo/ "Graphene WebGL demo"
+
+&nbsp;
+
+---
+
+&nbsp;
+
 
 ### Installation
 
@@ -49,6 +61,7 @@ The best way to install Graphene and stay up to date with the latest versions, i
 <details>
   <summary>You can install the package via UPM by adding the line below to your project's `Packages/manifest.json` file.</summary>
 
+&nbsp;
 
   >You can find this file by opening your project's *Packages* folder in a file browser, it is not displayed in the editor.
 
