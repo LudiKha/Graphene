@@ -28,21 +28,12 @@ It comes with a **component-kit** library, several VisualElement extensions and 
 
 &nbsp;
 
----
-
-&nbsp;
-
 ### Demo
 #### [Check out the WebGL demo ][f45eaa31]
 
   [f45eaa31]: https://ludikha.github.io/Graphene-Demo/ "Graphene WebGL demo"
 
 &nbsp;
-
----
-
-&nbsp;
-
 
 ### Installation
 
