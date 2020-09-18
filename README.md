@@ -66,7 +66,7 @@ The best way to install Graphene and stay up to date with the latest versions, i
 ```
 
 #### Staying updated
-Updating the package can be done via `Window/Graphene/Update to latest version`. Unity currently does not support updating Git packages via the Package Manager automatically.
+Updating the package can be done via `Window/Graphene/Check for updates`. Unity currently does not support updating Git packages via the Package Manager automatically.
 
 &nbsp;
 

@@ -6,7 +6,8 @@
   "unity": "2018.3",
   "dependencies": {
     "com.unity.ui": "1.0.0-preview.8",
-    "com.unity.ui.builder": "1.0.0-preview.6"
+    "com.unity.ui.builder": "1.0.0-preview.6",
+    "com.unity.editorcoroutines": "1.0.0"
   },
   "samples": [
     {
