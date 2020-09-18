@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Graphene
+namespace Graphene.Demo
 {
   public abstract class GenericModelForm<T> : Form
   {
@@ -16,22 +16,5 @@ namespace Graphene
     public override void Initialize(VisualElement container, Plate plate)
     {
     }
-
-    //public override void Render(VisualElement container, UIControlsTemplates templates)
-    //{
-    //  // Presuming these are controls
-    //  //foreach (var item in model)
-    //  //{
-    //  //  var template = templates.TryGetTemplate(item, ControlType.Button);
-    //  //  var inst = UI.BindingExtensions.Instantiate(item, template);
-
-    //  //  content.Add(inst);
-
-    //  //  if (item is BindableObject bindable)
-    //  //  {
-    //  //    inst.AddToClassList(bindable.addClass);
-    //  //  }
-    //  //}
-    //}
   }
 }

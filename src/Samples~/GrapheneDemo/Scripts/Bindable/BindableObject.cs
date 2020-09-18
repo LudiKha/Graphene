@@ -1,4 +1,3 @@
-﻿using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,10 +5,9 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
 
-
-namespace Graphene
+namespace Graphene.Demo
 {
-  // Atomic object for the view
+  // Atomic "Über" object for the view
   [System.Serializable, Draw(ControlType.Button)]
   public class BindableObject : IRoute
   {
@@ -25,19 +23,55 @@ namespace Graphene
     [BindTooltip("Tooltip")]
     public string Description;
 
-    [Foldout("Additionals")]
+    #region FoldoutAttribute
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.FoldoutGroup("Additionals")]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Foldout("Additionals")]
+#endif
+    #endregion
     public string addClass;
 
-    [Bind("OnClick"), Foldout("Additionals")]
+    #region FoldoutAttribute
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.FoldoutGroup("Additionals")]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Foldout("Additionals")]
+#endif
+    #endregion
+    [Bind("OnClick")]
     public UnityEvent OnClick;
   }
 
-  [System.Serializable, Draw(ControlType.Toggle)]
-  public class BindableBool : BindableBaseField<bool>
+
+  [System.Serializable]
+  public class BindableBaseField<T>
   {
-    [BindBaseFieldAttribute("Value", null, true)]
-    public override bool Value { get => value; set { this.value = value; } }
+    [SerializeField] protected T value;
+    public virtual T Value { get => value; set { this.value = value; } }
+
+    [Bind("Label", BindingMode.OneWay)]
+    public string Label;
+
+    [BindValueChangeCallback("ValueChange")]
+    public EventCallback<ChangeEvent<T>> ValueChange => (changeEvent) => { ValueChangeCallback(changeEvent.newValue); };
+
+    public event System.EventHandler<T> OnValueChange;
+
+    protected virtual void ValueChangeCallback(T value)
+    {
+      OnValueChange?.Invoke(this, value);
+    }
   }
+
+
+    [System.Serializable, Draw(ControlType.Toggle)]
+    public class BindableBool : BindableBaseField<bool>
+    {
+      [BindBaseFieldAttribute("Value", null, true)]
+      public override bool Value { get => value; set { this.value = value; } }
+    }
+
 
 
   [System.Serializable, Draw(ControlType.Slider)]
@@ -84,28 +118,6 @@ namespace Graphene
       this.items.Clear();
       this.items = list.ToList();
     }
-  }
-
-  [System.Serializable]
-  public class BindableBaseField<T>
-  {
-    [SerializeField] protected T value;
-    public virtual T Value { get => value; set { this.value = value; } }
-
-    [Bind("Label", BindingMode.OneWay)]
-    public string Label;
-
-    [BindValueChangeCallback("ValueChange")]
-    public EventCallback<ChangeEvent<T>> ValueChange => (changeEvent) => { ValueChangeCallback(changeEvent.newValue); };
-
-    public event System.EventHandler<T> OnValueChange;
-
-    protected virtual void ValueChangeCallback(T value)
-    {
-      OnValueChange?.Invoke(this, value);
-      UnityEngine.Debug.Log($"{this.GetType().Name}'s value changing to {value}");
-    }
-
   }
 
 }
