@@ -37,7 +37,6 @@ It comes with a **component-kit** library, several VisualElement extensions and 
 You can install the package via UPM by adding the lines below to your project's manifest.json.
 
 > `"com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git?path=/src"`
-> `"com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm"`
 
 &nbsp;
 
@@ -162,3 +161,29 @@ Graphene supports 3 modes of binding a model to the view. These can be specified
 3. Render templates from dynamic model
 4. Dynamic binding pass
 5. Runtime one-way/two-way binding
+
+
+&nbsp;
+
+---
+
+&nbsp;
+
+# Inspector Extensions
+Graphene supports two third party inspector extensions out of the box: [Sirenix Odin Inspector][5855fee6] (paid) and [NaughtyAttributes][06602d8c] (free). Graphene relies on these to expose optional enhanced functionality to the inspector windows.
+
+[5855fee6]: https://odininspector.com/ "Sirenix Odin Inspector"
+[06602d8c]: https://github.com/dbrizov/NaughtyAttributes "Naughty Attributes"
+
+## Installation
+### Odin Inspector
+This asset is automatically setup when it is included in the project.
+ > Define symbol: `ODIN_INSPECTOR`
+
+### Naughty Attributes
+This package requires you to follow the following steps:
+1. Add the package to the project `Packages/manifest.json` file:
+   `"com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm"`
+2. In Project Settings/Player/Scripting define symbols, add the following entry: `NAUGHTY_ATTRIBUTES;`
+
+After recompilation, your project will now have enhanced inspector functionality for Graphene components.
