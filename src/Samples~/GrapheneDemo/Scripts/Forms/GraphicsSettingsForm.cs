@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.UIElements;
 
-namespace Graphene
+namespace Graphene.Demo
 {
   [CreateAssetMenu(menuName = "UI/Forms/GraphicsSettingsForm")]
   public class GraphicsSettingsForm : Form

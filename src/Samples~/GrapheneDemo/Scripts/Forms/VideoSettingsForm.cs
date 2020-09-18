@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Graphene
+namespace Graphene.Demo
 {
   [CreateAssetMenu(menuName = "UI/Forms/VideoSettingsForm")]
   public class VideoSettingsForm : Form
