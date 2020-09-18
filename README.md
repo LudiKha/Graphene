@@ -34,15 +34,37 @@ It comes with a **component-kit** library, several VisualElement extensions and 
 
 ### Installation
 
+#### Using UPM Git Extension (Recommended)
+The best way to install Graphene and stay up to date with the latest versions, is to use [UPM Git Extension][49fed258].
+   1. Follow the [installation instructions][2ddc031d]
+   2. In the Package Manager, click the ![Git button](docs/images/installation/git.png) button, and add `https://github.com/LudiKha/Graphene.git` under subdirectory `src`, with the latest version.
+   3. Voilá! As an added bonus you are now able to update the package via the package manager.
+
+  [49fed258]: https://github.com/mob-sakai/UpmGitExtension "Upm Git Extension"
+  [2ddc031d]: https://github.com/mob-sakai/UpmGitExtension#installation "UP Git Extension Installation Instructions"
+
+
+#### Using Unity Package Manager (For Unity 2018.3 or later)
+
 <details>
-  <summary>You can install the package via UPM by adding the line below to your project's manifest.json file.</summary>
+  <summary>You can install the package via UPM by adding the line below to your project's `Packages/manifest.json` file.</summary>
+
 
   >You can find this file by opening your project's *Packages* folder in a file browser, it is not displayed in the editor.
 
 </details>
 
+```
+{
+  "dependencies": {
+    "com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git?path=/src",
+    ...
+  },
+}
+```
 
-> `"com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git?path=/src"`
+##### Staying updated
+Updating the package can be done via `Window/Graphene/Update to latest version`. Unity currently does not support updating Git packages via the Package Manager automatically.
 
 &nbsp;
 
