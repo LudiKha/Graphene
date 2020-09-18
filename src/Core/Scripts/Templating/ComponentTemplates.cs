@@ -7,7 +7,6 @@ using UnityEngine.Events;
 using UnityEngine.UIElements;
 
 using Kinstrife.Core.ReflectionHelpers;
-using NaughtyAttributes;
 
 namespace Graphene
 {

@@ -1,11 +1,17 @@
 ﻿
-using NaughtyAttributes;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Graphene
 {
+
+  public interface IModel
+  {
+    void Initialize(VisualElement container, Plate plate);
+    bool Render { get; }
+  }
+
   public interface IForm
   {
     [Bind("Title")]
@@ -25,7 +31,13 @@ namespace Graphene
 
     public event System.Action Redraw;
 
-    [Button]
+    #region ButtonAttribute
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.Button]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Button]
+#endif
+    #endregion
     internal void ForceRedraw()
     {
       Redraw?.Invoke();

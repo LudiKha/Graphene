@@ -1,5 +1,4 @@
-﻿using NaughtyAttributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -114,7 +113,13 @@ namespace Graphene
         children.Add(child);
     }
 
-    [Button]
+    #region ButtonAttribute
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.Button]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Button]
+#endif
+    #endregion
     protected virtual void Clear()
     {
       // Clear the dynamic content
@@ -129,7 +134,13 @@ namespace Graphene
       }
     }
 
-    [Button]
+    #region ButtonAttribute
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.Button]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Button]
+#endif
+    #endregion
     protected virtual void RefreshHierarchy()
     {
       Clear();
@@ -158,7 +169,13 @@ namespace Graphene
     //{
     //  Hide();
     //}
-
+    #region ButtonAttribute
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.Button, HorizontalGroup("ShowHide")]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Button]
+#endif
+    #endregion
     public void Show()
     {
       if (!Initialized)
@@ -170,6 +187,14 @@ namespace Graphene
 
       SetActive(true);
     }
+
+    #region ButtonAttribute
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.Button, HorizontalGroup("ShowHide")]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Button]
+#endif
+    #endregion
     public void Hide()
     {
       if (!Initialized)
@@ -222,7 +247,7 @@ namespace Graphene
       }
     }
 
-    #region Helper  Methods
+#region Helper  Methods
     /// <summary>
     /// Gets a visual element for a collection of selectors by name
     /// </summary>
@@ -257,6 +282,6 @@ namespace Graphene
         view = views.Find(x => x.isDefault);
       return view;
     }
-    #endregion
+#endregion
   }
 }

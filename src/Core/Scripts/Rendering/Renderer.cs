@@ -4,12 +4,6 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
-  public interface IModel
-  {
-    void Initialize(VisualElement container, Plate plate);
-    bool Render { get; }
-  }
-
   [RequireComponent(typeof(Plate))]
   public class Renderer : MonoBehaviour, IInitializable
   {
