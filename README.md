@@ -189,7 +189,8 @@ This asset is automatically setup when it is included in the project.
 ### Naughty Attributes
 This package requires you to follow the following steps:
 1. Add the package to the project `Packages/manifest.json` file:
-   `"com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm"`
+
+   >`"com.dbrizov.naughtyattributes": "https://github.com/dbrizov/NaughtyAttributes.git#upm"`
 2. In Project Settings/Player/Scripting define symbols, add the following entry: `NAUGHTY_ATTRIBUTES;`
 
 After recompilation, your project will now have enhanced inspector functionality for Graphene components.
