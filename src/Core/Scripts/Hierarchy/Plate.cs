@@ -13,10 +13,17 @@ namespace Graphene
     Absolute
   }
 
+  ///<summary>
+  /// <para>A `Plate` represents a view controller in the VisualTree, and is used when by Graphene to the hierarchy, its states and views.</para> 
+  /// <para><see href="https://github.com/LudiKha/Graphene#plates">Read more in the online documentation</see></para>
+  ///</summary>
   [RequireComponent(typeof(UIDocument))]
   [DisallowMultipleComponent]
   public class Plate : MonoBehaviour, IInitializable, ILateInitializable
   {
+    /// <summary>
+    /// The theme that will be applied to the root element of this plate
+    /// </summary>
     [SerializeField] Theme theme;
     protected UIDocument doc;
 
@@ -169,6 +176,7 @@ namespace Graphene
     //{
     //  Hide();
     //}
+
     #region ButtonAttribute
 #if ODIN_INSPECTOR
     [Sirenix.OdinInspector.Button, Sirenix.OdinInspector.HorizontalGroup("ShowHide")]
@@ -223,7 +231,6 @@ namespace Graphene
     {
       VisualElement temp = new VisualElement();
       temp.Add(root);
-      //root = doc.visualTreeAsset.CloneTree();
     }
 
 

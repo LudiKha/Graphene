@@ -12,7 +12,7 @@ Graphene is a lightweight and modular framework for building runtime user interf
 
 &nbsp;
 
-## Intro
+# Intro
 
 Graphene **superconducts** your creativity for efficiently building modern interactive UI for games. It takes care of the heavy lifting by providing a framework inspired by Web standards, right into Unity.
 
@@ -26,18 +26,16 @@ It's **lightweight** and modular - you get to pick and choose which parts you ne
 
 It comes with a **component-kit** library, several VisualElement extensions and a sample application to get you started.
 
-&nbsp;
 
-### Demo
-#### [Check out the WebGL demo ][f45eaa31]
+## Demo
+### [Check out the WebGL demo ][f45eaa31]
 
   [f45eaa31]: https://ludikha.github.io/Graphene-Demo/ "Graphene WebGL demo"
 
-&nbsp;
 
-### Installation
+## Installation
 
-#### Using UPM Git Extension (Recommended)
+### Using UPM Git Extension (Recommended)
 The best way to install Graphene and stay up to date with the latest versions, is to use [UPM Git Extension][49fed258].
    1. Follow the [installation instructions][2ddc031d]
    2. In the Package Manager, click the ![Git button](docs/images/installation/git.png) button, and add `https://github.com/LudiKha/Graphene.git` under subdirectory `src`, with the latest version.
@@ -47,7 +45,7 @@ The best way to install Graphene and stay up to date with the latest versions, i
   [2ddc031d]: https://github.com/mob-sakai/UpmGitExtension#installation "UP Git Extension Installation Instructions"
 
 
-#### Using Unity Package Manager (For Unity 2018.3 or later)
+### Using Unity Package Manager (For Unity 2018.3 or later)
 
 <details>
   <summary>You can install the package via UPM by adding the line below to your project's `Packages/manifest.json` file.</summary>
@@ -67,7 +65,7 @@ The best way to install Graphene and stay up to date with the latest versions, i
 }
 ```
 
-##### Staying updated
+#### Staying updated
 Updating the package can be done via `Window/Graphene/Update to latest version`. Unity currently does not support updating Git packages via the Package Manager automatically.
 
 &nbsp;
@@ -142,6 +140,8 @@ Congrats! You're now done with the Quickstart and ready to tackle your first pro
 Graphene decouples fine-grained authoring from high-level logic, and in doing so aims to leverage UI Toolkit's innovations to the fullest.
 
 ## Plates
+A `Plate` represents a view controller in the VisualTree, and is used when by Graphene to the hierarchy, its states and views.
+
 A Graphene hierarchy consists of nested components called `Plates`, with a `Graphene` component at the root. `Plate`s are the core of Graphene, are analogous for a general-purpose UI controller that can be switched on or off. Other, optional MonoBehaviour components may hook into a plate, and have their functionality based on whether a plate is active or not.
 
 The following components and logic depends on plates:
@@ -184,6 +184,24 @@ Graphene supports 3 modes of binding a model to the view. These can be specified
 ## Routing
 
 ## Theming
+### Theme
+A `Theme` is a data asset that can be used to author high-level styling configurations for (parts of) the VisualTree. It consists of a collection of [StyleSheets][3ca719d7], and can be nested to create reusable styling configurations using overrides.
+
+  [3ca719d7]: https://docs.unity3d.com/Manual/UIE-USS.html "Unity USS Stylesheet"
+
+#### Using themes
+
+Create a theme via the following menu command:
+>  `Assets/Create/Graphene/Theming/Theme`
+
+Themes are assigned to the VisualTree when assigned to the `Graphene` component, or a sub-section when assigned to a `Plate`.
+
+To manually apply a theme to a VisualElement, the following method is available.
+
+```csharp
+myTheme.ApplyStyles(el);
+
+```
 
 ## Localization
 
