@@ -171,7 +171,7 @@ namespace Graphene
     //}
     #region ButtonAttribute
 #if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.Button, HorizontalGroup("ShowHide")]
+    [Sirenix.OdinInspector.Button, Sirenix.OdinInspector.HorizontalGroup("ShowHide")]
 #elif NAUGHTY_ATTRIBUTES
     [NaughtyAttributes.Button]
 #endif
@@ -190,7 +190,7 @@ namespace Graphene
 
     #region ButtonAttribute
 #if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.Button, HorizontalGroup("ShowHide")]
+    [Sirenix.OdinInspector.Button, Sirenix.OdinInspector.HorizontalGroup("ShowHide")]
 #elif NAUGHTY_ATTRIBUTES
     [NaughtyAttributes.Button]
 #endif
