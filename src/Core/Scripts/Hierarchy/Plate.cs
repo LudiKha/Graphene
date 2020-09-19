@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 namespace Graphene
 {
   using Elements;
+  using System;
 
   public enum PositionMode
   {
@@ -21,7 +22,7 @@ namespace Graphene
   ///</summary>
   [RequireComponent(typeof(UIDocument))]
   [DisallowMultipleComponent]
-  public class Plate : MonoBehaviour, IInitializable, ILateInitializable
+  public class Plate : MonoBehaviour, IInitializable, ILateInitializable, IDisposable
   {
     /// <summary>
     /// The theme that will be applied to the root element of this plate
@@ -291,6 +292,16 @@ namespace Graphene
         view = views.Find(x => x.isDefault);
       return view;
     }
-#endregion
+
+
+    private void OnDestroy()
+    {
+      Dispose();
+    }
+    public void Dispose()
+    {
+      BindingManager.DisposePlate(this);
+    }
+    #endregion
   }
 }

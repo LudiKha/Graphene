@@ -1,6 +1,6 @@
 {
   "name": "com.cupbearer.graphene",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "displayName": "Graphene",
   "description": "A lightweight & flexible open-source UI framework for Unity's UI Toolkit.",
   "unity": "2018.3",

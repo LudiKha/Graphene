@@ -36,6 +36,10 @@ namespace Graphene
       // Update the bindings for active/visible panels
       foreach (var kvp in bindings)
       {
+        // Was disposed
+        if (!kvp.Key)
+          continue;
+
         // The panel is invisible, or inactive
         if (!kvp.Key.IsActive)
           continue;
@@ -143,6 +147,14 @@ namespace Graphene
       GetList(panel, bindings).Remove(binding);
       binding.Dispose();
       binding = null;
+    }
+
+    public static void DisposePlate(Plate plate)
+    {
+      if (bindings.ContainsKey(plate))
+        bindings.Remove(plate);
+      if (disposePostUpdate.ContainsKey(plate))
+        bindings.Remove(plate);
     }
   }
 
