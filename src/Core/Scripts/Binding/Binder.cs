@@ -6,6 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  using Elements;
   using Kinstrife.Core.ReflectionHelpers;
 
   public interface IRoute
@@ -22,7 +23,7 @@ namespace Graphene
     /// <typeparam name="T"></typeparam>
     /// <param name="element"></param>
     /// <param name="context"></param>
-    public static VisualElement Instantiate(in object context, Template template, Plate panel)
+    public static VisualElement Instantiate(in object context, TemplateAsset template, Plate panel)
     {
       var clone = template.VisualTreeAsset.CloneTree();
 
@@ -46,7 +47,7 @@ namespace Graphene
     /// <typeparam name="T"></typeparam>
     /// <param name="element"></param>
     /// <param name="fieldValue"></param>
-    public static VisualElement InstantiatePrimitive(in object context, ref ValueWithAttribute<BindAttribute> bindableMember, Template template, Plate panel)
+    public static VisualElement InstantiatePrimitive(in object context, ref ValueWithAttribute<BindAttribute> bindableMember, TemplateAsset template, Plate panel)
     {
       var clone = template.VisualTreeAsset.CloneTree();
 

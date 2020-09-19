@@ -64,7 +64,12 @@ namespace Graphene
     /// <param name="classes"></param>
     public static void AddMultipleToClassList(this VisualElement el, string classes)
     {
-      foreach (var className in classes.Split(new string[] { " " }, System.StringSplitOptions.RemoveEmptyEntries))
+      AddMultipleToClassList(el, classes.Split(new string[] { " " }, System.StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    public static void AddMultipleToClassList(this VisualElement el, IEnumerable<string> classes)
+    {
+      foreach (var className in classes)
         el.AddToClassList(className);
     }
   }

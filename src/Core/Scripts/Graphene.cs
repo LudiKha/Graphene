@@ -8,11 +8,15 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  using Elements;
+
+  [RequireComponent(typeof(UIDocument))]
   [DisallowMultipleComponent]
   public class Graphene : MonoBehaviour
   {
     [SerializeField] Theme globalTheme;
-    [SerializeField] float interval = 0.02f;
+
+    [SerializeField] float bindingRefreshRate = 0.02f;
     [SerializeField] float lastUpdateTime;
 
     [SerializeField] List<Plate> plates = new List<Plate>();
@@ -21,9 +25,35 @@ namespace Graphene
     public event System.Action<ICollection<IGrapheneDependent>> onPreInitialize;
     public event System.Action<ICollection<IGrapheneDependent>> onPostInitialize;
 
+    /// <summary>
+    /// Root Graphene element controller
+    /// </summary>
+    GrapheneRoot grapheneRoot;
+
+    /// <summary>
+    /// The UI Document
+    /// </summary>
+    UIDocument doc;
+    /// <summary>
+    /// The router
+    /// </summary>
+    [SerializeField] Router router;
+
     protected void Awake()
     {
+      GetLocalReferences();
       RunInstallation();
+    }
+
+    protected void GetLocalReferences()
+    {
+      if (!doc)
+        doc = GetComponent<UIDocument>();
+
+      if (!router)
+        router = GetComponent<Router>();
+
+      grapheneRoot = new GrapheneRoot(router);
     }
     
     protected void RunInstallation()
@@ -48,30 +78,29 @@ namespace Graphene
       onPostInitialize?.Invoke(dependents);
 
       sw.Stop();
-      UnityEngine.Debug.Log($"Time: {sw.ElapsedMilliseconds}ms");
+      UnityEngine.Debug.Log($"Graphene initialization time: {sw.ElapsedMilliseconds}ms");
     }
 
     private void Start()
     {
-      UIDocument doc;
-      if (globalTheme && (doc = GetComponent<UIDocument>()))
+      /// Needs to go here because UIDocuments may initialize late
+      if (globalTheme)
         globalTheme.ApplyStyles(doc.rootVisualElement);
+
+      doc.rootVisualElement.Add(grapheneRoot);
+      grapheneRoot.SendToBack();
     }
 
     void ConstructHierarchy(List<Plate> plates)
     {
-      //foreach (var plate in plates)
-      //{
-      //  plate.onShow.AddListener(OnShow_Plate)
-      //} 
     }
 
     void Update()
     {
-      if (Time.time - lastUpdateTime < interval)
+      if (Time.time - lastUpdateTime < bindingRefreshRate)
         return;
 
-      Profiler.BeginSample("Update Bindings", this);
+      Profiler.BeginSample("Update Graphene bindings", this);
       BindingManager.OnUpdate();
       lastUpdateTime = Time.time;
       Profiler.EndSample();

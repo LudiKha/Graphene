@@ -9,6 +9,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  using Elements;
   using Kinstrife.Core.ReflectionHelpers;
 
   public static class BindingManager
