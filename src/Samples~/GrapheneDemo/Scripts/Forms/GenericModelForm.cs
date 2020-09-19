@@ -6,7 +6,7 @@ namespace Graphene.Demo
 {
   public abstract class GenericModelForm<T> : Form
   {
-    [Draw(ControlType.Button)]
+    [Draw(ControlType.ListItem)]
     public List<T> model = new List<T>();
   }
 

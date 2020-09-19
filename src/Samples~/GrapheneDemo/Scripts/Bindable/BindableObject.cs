@@ -8,9 +8,10 @@ using UnityEngine.UIElements;
 namespace Graphene.Demo
 {
   // Atomic "Über" object for the view
-  [System.Serializable, Draw(ControlType.Button)]
-  public class BindableObject : IRoute
+  [System.Serializable, Draw(ControlType.ListItem)]
+  public class BindableObject : IRoute, ICustomControlType
   {
+    [SerializeField] ControlType controlType; public ControlType ControlType => controlType;
     [Bind("Label", BindingMode.OneWay)]
     public string Name;
 
