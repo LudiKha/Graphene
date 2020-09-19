@@ -296,7 +296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: a2848fad145986148b27f5def28a734a, type: 2}
-  m_ParentUI: {fileID: 0}
+  m_ParentUI: {fileID: 1283321951}
   sourceAsset: {fileID: 9197481963319205126, guid: b362ac97981432941b11974e43812b52, type: 3}
 --- !u!114 &905213583
 MonoBehaviour:
@@ -480,6 +480,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1283321954}
+  - component: {fileID: 1283321951}
   - component: {fileID: 1283321953}
   - component: {fileID: 1283321952}
   m_Layer: 0
@@ -489,6 +490,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1283321951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1283321950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f21c074d86024caca2a0034ce4f53f73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PanelSettings: {fileID: 11400000, guid: a2848fad145986148b27f5def28a734a, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: c1b73d98fcdd4434c83cb117ae287a45, type: 3}
 --- !u!114 &1283321952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -519,9 +535,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   globalTheme: {fileID: 11400000, guid: a954134273c5df946b7a32c96e4f7178, type: 2}
-  interval: 0.02
+  bindingRefreshRate: 0.02
   lastUpdateTime: 0
   plates: []
+  router: {fileID: 0}
 --- !u!4 &1283321954
 Transform:
   m_ObjectHideFlags: 0
@@ -737,7 +754,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: a2848fad145986148b27f5def28a734a, type: 2}
-  m_ParentUI: {fileID: 0}
+  m_ParentUI: {fileID: 1283321951}
   sourceAsset: {fileID: 9197481963319205126, guid: 02ec70a4f19afe84d98898aec56a2ee2, type: 3}
 --- !u!1 &1806759287
 GameObject:
@@ -789,7 +806,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: a2848fad145986148b27f5def28a734a, type: 2}
-  m_ParentUI: {fileID: 0}
+  m_ParentUI: {fileID: 1283321951}
   sourceAsset: {fileID: 9197481963319205126, guid: b362ac97981432941b11974e43812b52, type: 3}
 --- !u!114 &1806759291
 MonoBehaviour:
