@@ -6,6 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  using Elements;
   using Kinstrife.Core.ReflectionHelpers;
 
   [DisallowMultipleComponent]

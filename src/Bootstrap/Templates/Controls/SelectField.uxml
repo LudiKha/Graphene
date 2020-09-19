@@ -1,4 +1,4 @@
-<ui:UXML xmlns:gr="Graphene" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+<ui:UXML xmlns:gr="Graphene.Elements" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
   <gr:SelectField focusable="true" label="SelectField" binding-path="Value" item-height="32">
     <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Tailwind.uss" />
     <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Globals.uss" />

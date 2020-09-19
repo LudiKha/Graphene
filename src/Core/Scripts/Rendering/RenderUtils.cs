@@ -21,7 +21,7 @@ namespace Graphene
     /// <param name="container"></param>
     /// <param name="context"></param>
     /// <param name="templates"></param>
-    internal static void DrawDataContainer(Plate plate, VisualElement container, in object context, ComponentTemplates templates)
+    internal static void DrawDataContainer(Plate plate, VisualElement container, in object context, TemplatePreset templates)
     {
       if (!templates)
       {
@@ -50,9 +50,11 @@ namespace Graphene
       }
     }
 
-    internal static void DrawFromObjectContext(Plate panel, VisualElement container, in object context, ComponentTemplates templates, ValueWithAttribute<DrawAttribute> drawMember)
+    internal static void DrawFromObjectContext(Plate panel, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember)
     {
-      var template = templates.TryGetTemplate(drawMember.Value, drawMember.Attribute);
+
+
+      var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute);
       // Clone & bind the control
       VisualElement clone = Binder.Instantiate(in drawMember.Value, template, panel);
 
@@ -63,11 +65,11 @@ namespace Graphene
       container.Add(clone);
     }
 
-    internal static void DrawFromPrimitiveContext(Plate panel, VisualElement container, in object context, ComponentTemplates templates, ValueWithAttribute<DrawAttribute> drawMember, List<ValueWithAttribute<BindAttribute>> bindableMembers)
+    internal static void DrawFromPrimitiveContext(Plate panel, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember, List<ValueWithAttribute<BindAttribute>> bindableMembers)
     {
       var bind = bindableMembers.Find(x => x.MemberInfo.Equals(drawMember.MemberInfo));
 
-      var template = templates.TryGetTemplate(drawMember.Value, drawMember.Attribute);
+      var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute);
       // Clone & bind the control
       VisualElement clone = Binder.InstantiatePrimitive(in context, ref bind, template, panel);
 
@@ -75,7 +77,7 @@ namespace Graphene
       container.Add(clone);
     }
 
-    internal static void DrawFromEnumerableContext(Plate panel, VisualElement container, in IEnumerable context, ComponentTemplates templates, ValueWithAttribute<DrawAttribute> drawMember)
+    internal static void DrawFromEnumerableContext(Plate panel, VisualElement container, in IEnumerable context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember)
     {
       // Don't support primitives or string
       //if (typeof(T).IsPrimitive)
@@ -91,7 +93,7 @@ namespace Graphene
         }
         else
         {
-          var template = templates.TryGetTemplate(item, drawMember.Attribute);
+          var template = templates.TryGetTemplateAsset(item, drawMember.Attribute);
           // Clone & bind the control
           VisualElement clone = Binder.Instantiate(in item, template, panel);
           // Add the control to the container

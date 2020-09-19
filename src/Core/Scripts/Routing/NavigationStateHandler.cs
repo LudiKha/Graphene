@@ -6,6 +6,8 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  using Elements;
+
   [RequireComponent(typeof(Plate))]
   public class NavigationStateHandler : StateInterpreter<string>, IInjectable, IInitializable
   {

@@ -3,17 +3,8 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Graphene
+namespace Graphene.Elements
 {
-  public interface IBindableElement<TValue>
-  {
-    /// <summary>
-    /// Callback to VisualElement control that model changed, and view needs to be updated
-    /// </summary>
-    /// <param name="newValue"></param>
-    void OnModelChange(TValue newValue);
-  }
-
   public class If : BindableElement, IBindableElement<object>
   {
     /// <summary>

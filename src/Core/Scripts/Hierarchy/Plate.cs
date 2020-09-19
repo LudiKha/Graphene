@@ -6,6 +6,8 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  using Elements;
+
   public enum PositionMode
   {
     None,

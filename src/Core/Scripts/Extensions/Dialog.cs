@@ -6,7 +6,7 @@ using UnityEngine;
 
 using UnityEngine.UIElements;
 
-namespace Graphene
+namespace Graphene.Elements
 {
   public class Dialog : VisualElement, IDisposable
   {
