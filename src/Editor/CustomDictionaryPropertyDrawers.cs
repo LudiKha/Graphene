@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Graphene.Editor
 {
-  [CustomPropertyDrawer(typeof(SerializableDictionary<ControlType, Template>))]
+  [CustomPropertyDrawer(typeof(SerializableDictionary<ControlType, TemplateAsset>))]
   [CustomPropertyDrawer(typeof(ControlTemplateMapping))]
   public class AnySerializableDictionaryStoragePropertyDrawer : SerializableDictionaryPropertyDrawer { }
 }

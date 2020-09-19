@@ -26,20 +26,24 @@ namespace Graphene
     TextField  
   }
 
+  public interface ICustomControlType
+  {
+    ControlType ControlType { get; }
+  }
 
   [Serializable]
-  public class ControlTemplateMapping : SerializableDictionary<ControlType, Template> { }
+  public class ControlTemplateMapping : SerializableDictionary<ControlType, TemplateAsset> { }
 
 
-  [CreateAssetMenu(menuName = "Graphene/Template/ComponentTemplates")]
-  public class ComponentTemplates : ScriptableObject
+  [CreateAssetMenu(menuName = "Graphene/Templating/ComponentTemplates")]
+  public class TemplatePreset : ScriptableObject
   {
-    [SerializeField] ComponentTemplates parent; public ComponentTemplates Parent => parent;
+    [SerializeField] TemplatePreset parent; public TemplatePreset Parent => parent;
 
     [SerializeField] ControlTemplateMapping mapping = new ControlTemplateMapping();
 
 
-    public Template TryGetTemplate(object data, DrawAttribute drawAttribute = null)
+    public TemplateAsset TryGetTemplateAsset(object data, DrawAttribute drawAttribute = null, ControlType? overrideControlType = null)
     {
       ControlType controlType = ControlType.None;
 
@@ -58,7 +62,7 @@ namespace Graphene
       if (controlType == ControlType.None)
         controlType = GetControlTypeFromData(data);
 
-      return GetTemplateRecursive(controlType);
+      return TryGetTemplateAsset(controlType);
     }
 
     public static ControlType GetControlTypeFromData(object data)
@@ -78,12 +82,12 @@ namespace Graphene
       return ControlType.None;
     }
 
-    internal Template GetTemplateRecursive(ControlType controlType)
+    public TemplateAsset TryGetTemplateAsset(ControlType controlType)
     {
       if (mapping.TryGetValue(controlType, out var result))
         return result;
       else if (parent)
-        return parent.GetTemplateRecursive(controlType);
+        return parent.TryGetTemplateAsset(controlType);
       else
         Debug.LogError($"Didn't find template for control {controlType}", this);
 
