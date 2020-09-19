@@ -166,13 +166,16 @@ namespace Graphene
       onRefreshDynamic?.Invoke();
     }
 
-
+    // UIDocument removes the root OnDisable, so we only need OnEnable
     private void OnEnable()
     {
       if (!Initialized)
         return;
 
       SetupVisualTree();
+
+      if (!parent)
+        RefreshHierarchy();
     }
 
     //private void OnDisable()
