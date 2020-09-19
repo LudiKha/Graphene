@@ -6,7 +6,7 @@
     <Style src="Layouts.uss" />
 
     <gr:If binding-path="~Model.Title">
-      <ui:Label binding-path="Title" class="h1 white" />
+      <gr:TemplateRef binding-path="Title" type="Label" class="h1 white" />
       <ui:VisualElement class="border" />
     </gr:If>
     <ui:ScrollView>

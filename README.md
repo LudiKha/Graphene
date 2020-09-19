@@ -34,17 +34,6 @@ It comes with a **component-kit** library, several VisualElement extensions and 
 
 
 ## Installation
-
-### Using UPM Git Extension (Recommended)
-The best way to install Graphene and stay up to date with the latest versions, is to use [UPM Git Extension][49fed258].
-   1. Follow the [installation instructions][2ddc031d]
-   2. In the Package Manager, click the ![Git button](docs/images/installation/git.png) button, and add `https://github.com/LudiKha/Graphene.git` under subdirectory `src`, with the latest version.
-   3. Voilá! As an added bonus you are now able to update the package via the package manager.
-
-  [49fed258]: https://github.com/mob-sakai/UpmGitExtension "Upm Git Extension"
-  [2ddc031d]: https://github.com/mob-sakai/UpmGitExtension#installation "UP Git Extension Installation Instructions"
-
-
 ### Using Unity Package Manager (For Unity 2018.3 or later)
 
 <details>
@@ -68,6 +57,17 @@ The best way to install Graphene and stay up to date with the latest versions, i
 #### Staying updated
 Updating the package can be done via `Window/Graphene/Check for updates`. Unity currently does not support updating Git packages via the Package Manager automatically.
 
+
+### Using UPM Git Extension
+The best way to install Graphene and stay up to date with the latest versions, is to use [UPM Git Extension][49fed258].
+   1. Follow the [installation instructions][2ddc031d]
+   2. In the Package Manager, click the ![Git button](docs/images/installation/git.png) button, and add `https://github.com/LudiKha/Graphene.git` under subdirectory `src`, with the latest version.
+   3. Voilá! As an added bonus you are now able to update the package via the package manager.
+
+  [49fed258]: https://github.com/mob-sakai/UpmGitExtension "Upm Git Extension"
+  [2ddc031d]: https://github.com/mob-sakai/UpmGitExtension#installation "UP Git Extension Installation Instructions"
+
+
 &nbsp;
 
 ---
@@ -81,7 +81,7 @@ For a quick start, Graphene comes with a Bootstrapping library and demo scene - 
 #### 1: Constructing the hierarchy
 - Construct the high-level UI hierarchy, where each unique state is represented by a GameObject
 - Add a [`Plate`][0fb2479e] component to each GameObject in the tree, with a `Graphene` component at the root.
-- For each Plate in the tree, assign a static asset to its UIDocument. Root states will typically need a Layout-style [`template`](https://github.com/LudiKha/Graphene#theming) for their children to be fitted in.
+- For each Plate in the tree, assign a static asset to its UIDocument. Root states will typically need a Layout-style [`template`](https://github.com/LudiKha/Graphene#template) for their children to be fitted in.
 
 Press play - Graphene will now dynamically construct the VisualTree based on your GameObject hierarchy. You've completed the required part of Graphene - however, we are still getting started.
 
@@ -156,6 +156,48 @@ These can be authored in the familiar GameObject hierarchy. Graphene then constr
 ## Model
 
 ## Templating
+### Template
+A `Template` is a semantic name for static asset that represents a chunk of UXML of varying granularity and complexity, which are used as building blocks to build and render the application. Moreover, templates can be declared directly in UXML based, and will be rendered in runtime based on the `Renderer` template configuration. Templates are wrapped in a `TemplateAsset` ScriptableObject, where additional variants can be created without needing to create and maintain copies of the base template.
+
+#### Why use templates
+
+When creating a simple element, such as a button, it may quickly end up consisting of several carefully configured elements and bindings:
+
+```html
+<ui:Button text="Button" name="ButtonFramed" focusable="true" tooltip="This is a button" binding-path="Value" class="button button-framed light">
+  <ui:Style src="ButtonFramed.uss" />
+  <gr:Route binding-path="Route" class="button__route" />
+  <gr:Tooltip binding-path="Description" class="button__tooltip" />
+  <ui:VisualElement class="button__background" />
+  <ui:Label text="Label" binding-path="Label" />
+  <ui:VisualElement class="button__hover" />
+  <ui:VisualElement class="button__frame" />
+</ui:Button>
+```
+
+Maintaining multiple versions and instances of the same chunk of UXML throughout multiple files can be both error prone and time intensive. Graphene allows you to reuse the same template, and instantiate them in runtime when required.
+
+#### Creating a template
+
+Create a `TemplateAsset` via the following menu command:
+>  `Assets/Create/Graphene/Templating/TemplateAsset`
+
+Assign a static UXML template, and give it an appropriate name.
+
+#### Instantiating a template via CSharp
+Templates can be instantiated directly in C# via a reference of the `TemplateAsset`.
+```csharp
+var clone = myTemplateAsset.Instantiate();
+...
+
+```
+#### Instantiating a template via UXML
+ Graphene allows you to statically type control types using the following syntax:
+
+```html
+<gr:Button text="Button" name="ButtonFramed" focusable="true" tooltip="This is a button" binding-path="Value" class="button button-framed light" />
+```
+In runtime, the button will be rendered to the full syntax of the first snippet, using the `Template` configuration of the `Renderer` component that initiates the binding.
 
 ## Binding
 
