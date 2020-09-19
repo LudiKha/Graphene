@@ -4,12 +4,14 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  using Elements;
+
   [RequireComponent(typeof(Plate))]
   public class Renderer : MonoBehaviour, IInitializable
   {
     [SerializeField] Plate plate;
     [SerializeField, Bind("Model")] protected Object model; public Object Model => model;    
-    [SerializeField] protected ComponentTemplates templates; public ComponentTemplates Templates => templates;
+    [SerializeField] protected TemplatePreset templates; public TemplatePreset Templates => templates;
 
     /// <summary>
     /// Overriding this will target a non-default content container (as defined in Plate)
@@ -27,13 +29,19 @@ namespace Graphene
 
     private void Plate_onRefreshStatic()
     {
+      // Render the templates
+      plate.Root.Query<TemplateRef>().ForEach(t => {
+        t.Inject(null, plate, this);
+        t.Render();
+      }
+      );
+
       // Bind the static template to the renderer
       Binder.BindRecursive(plate.Root, this, null, plate, true);
     }
 
     private void Plate_onRefreshDynamic()
     {
-
       RenderToContainer(GetDrawContainer());
     }
 
@@ -50,7 +58,6 @@ namespace Graphene
 
         iModel.Initialize(container, plate);
       }
-
 
       // Render & bind the dynamic items
       RenderUtils.DrawDataContainer(plate, container, model, templates);
