@@ -1,4 +1,4 @@
-<ui:UXML xmlns:gr="Graphene" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+<ui:UXML xmlns:gr="Graphene.Elements" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
   <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Globals.uss" />
   <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
   <Style src="Navbar.uss" />
@@ -8,21 +8,21 @@
     <ui:VisualElement name="Navbar" class="navbar p-16 graphene-navbar__content flex-row justify-between flex-grow">
 
       <ui:VisualElement class="flex-row justify-around">
-        <Graphene.Route route="index" class="flex-row justify-around">
+        <gr:Route route="index" class="flex-row justify-around">
           <ui:Button focusable="true" name="Back" text="Back" class="gr-button">
           </ui:Button>
-        </Graphene.Route>
-        <Graphene.Route route="previous" class="flex-row justify-around">
+        </gr:Route>
+        <gr:Route route="previous" class="flex-row justify-around">
           <ui:Button focusable="true" name="Previous" text="Previous" class="gr-button" />
-        </Graphene.Route>
+        </gr:Route>
       </ui:VisualElement>
 
-      <Graphene.ButtonGroup default="true" name="GR__Content" class="plate__content-container flex-row justify-around" />
+      <gr:ButtonGroup default="true" name="GR__Content" class="plate__content-container flex-row justify-around" />
 
       <ui:VisualElement class="flex-row justify-around">
-        <Graphene.Route route="next" class="flex-row justify-around">
+        <gr:Route route="next" class="flex-row justify-around">
           <ui:Button focusable="true" name="Next" text="Next" class="gr-button" />
-        </Graphene.Route>
+        </gr:Route>
 
       </ui:VisualElement>
     </ui:VisualElement>
