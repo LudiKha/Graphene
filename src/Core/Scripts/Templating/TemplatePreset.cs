@@ -47,17 +47,24 @@ namespace Graphene
     {
       ControlType controlType = ControlType.None;
 
-      // No member draw attribute -> try get ControlType from class attribute
-      if ((drawAttribute == null || drawAttribute.controlType == ControlType.None) && !data.GetType().IsPrimitive && !(data is string))
-      {
-        var info = TypeInfoCache.GetExtendedTypeInfo(data.GetType());
-        info.HasTypeAttribute<DrawAttribute>();
-        drawAttribute = info.GetTypeAttribute<DrawAttribute>();
-      }
-      // Set ControlType from attribute (if present)
-      if (drawAttribute != null)
-        controlType = drawAttribute.controlType;
+      // Try get control type from method param
+      if (overrideControlType.HasValue && overrideControlType != ControlType.None)
+        controlType = overrideControlType.Value;
 
+      // Try get from attributes
+      else
+      {
+        // No member draw attribute -> try get ControlType from class attribute
+        if ((drawAttribute == null || drawAttribute.controlType == ControlType.None) && !data.GetType().IsPrimitive && !(data is string))
+        {
+          var info = TypeInfoCache.GetExtendedTypeInfo(data.GetType());
+          info.HasTypeAttribute<DrawAttribute>();
+          drawAttribute = info.GetTypeAttribute<DrawAttribute>();
+        }
+        // Set ControlType from attribute (if present)
+        if (drawAttribute != null)
+          controlType = drawAttribute.controlType;
+      }
       // Didn't find in attribute
       if (controlType == ControlType.None)
         controlType = GetControlTypeFromData(data);
