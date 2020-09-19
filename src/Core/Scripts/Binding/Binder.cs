@@ -25,7 +25,7 @@ namespace Graphene
     /// <param name="context"></param>
     public static VisualElement Instantiate(in object context, TemplateAsset template, Plate panel)
     {
-      var clone = template.VisualTreeAsset.CloneTree();
+      var clone = template.Instantiate();
 
       if (context.GetType().IsPrimitive)
       {
@@ -49,7 +49,7 @@ namespace Graphene
     /// <param name="fieldValue"></param>
     public static VisualElement InstantiatePrimitive(in object context, ref ValueWithAttribute<BindAttribute> bindableMember, TemplateAsset template, Plate panel)
     {
-      var clone = template.VisualTreeAsset.CloneTree();
+      var clone = template.Instantiate();
 
       if (bindableMember.Attribute == null)
       {

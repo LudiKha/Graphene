@@ -52,14 +52,13 @@ namespace Graphene
 
     internal static void DrawFromObjectContext(Plate panel, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember)
     {
+      ControlType? controlType = null;
+      if (drawMember.Value is ICustomControlType customControl)
+        controlType = customControl.ControlType;
 
-
-      var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute);
+      var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute, controlType);
       // Clone & bind the control
       VisualElement clone = Binder.Instantiate(in drawMember.Value, template, panel);
-
-      if (!string.IsNullOrEmpty(template.AddClass))
-        clone.AddToClassList(template.AddClass);
 
       // Add the control to the container
       container.Add(clone);
@@ -93,13 +92,15 @@ namespace Graphene
         }
         else
         {
-          var template = templates.TryGetTemplateAsset(item, drawMember.Attribute);
-          // Clone & bind the control
-          VisualElement clone = Binder.Instantiate(in item, template, panel);
-          // Add the control to the container
-          container.Add(clone);
+          var draw = new ValueWithAttribute<DrawAttribute>(item, drawMember.Attribute, drawMember.MemberInfo);
+          DrawFromObjectContext(panel, container, in item, templates, draw);
+
+          //var template = templates.TryGetTemplateAsset(item, drawMember.Attribute);
+          //// Clone & bind the control
+          //VisualElement clone = Binder.Instantiate(in item, template, panel);
+          //// Add the control to the container
+          //container.Add(clone);
         }
-        //DrawFromObjectContext(panel, container, in item, templates, member);
       }
     }
   }
