@@ -2,17 +2,25 @@
 
 namespace Graphene
 {
+  public enum ChildActivationMode
+  {
+    None,
+    ShowWithParent,
+    DefaultState
+  }
+
   [RequireComponent(typeof(Plate))]
   [DisallowMultipleComponent]
-  public abstract class StateHandle : MonoBehaviour, IInjectable, IInitializable, ILateInitializable
+  public abstract class StateHandle : MonoBehaviour, IInjectable, IInitializable
   {
     public abstract Router Router { get; }
 
     [SerializeField] protected Plate plate;
+
     /// <summary>
-    /// This will enable the plate when the parent is activated.
+    /// This will Show the plate when the parent is activated.
     /// </summary>
-    [SerializeField] protected bool enableWithParent;
+    [SerializeField] protected ChildActivationMode activationMode = ChildActivationMode.None;
 
     public bool Initialized { get; private set; }
     public virtual void Initialize()
@@ -21,17 +29,14 @@ namespace Graphene
         return;
       Initialized = true;
 
-      if (!plate)
-        plate = GetComponent<Plate>();
+      if (plate || (plate = GetComponent<Plate>()))
+      {
+        plate.stateHandle = this;
+        plate.onEvaluateState += Plate_onEvaluateState;
+      }
     }
 
-    public bool LateInitialized { get; private set; }
-    public void LateInitialize()
-    {
-      if (LateInitialized)
-        return;
-      LateInitialized = true;
-    }
+    protected abstract void Plate_onEvaluateState();
   }
 
   public class StateHandle<T> : StateHandle
@@ -71,13 +76,26 @@ namespace Graphene
       if (!router.ValidState(stateID))
         return;
 
+      bool parentWasTarget = router.StateIsActive(parentStateID) && router.LeafStateFromAddress(address).Equals(parentStateID);
+
+      // Try Change state to this
+      if (activationMode == ChildActivationMode.DefaultState && parentWasTarget) {
+        if(router.TryChangeState(stateID))
+          return;
+      }
+
       // Check if our state is active
-      if (router.StateIsActive(stateID))
+        if (router.StateIsActive(stateID))
         plate.Show();
-      else if(enableWithParent && router.StateIsActive(parentStateID) && router.LeafStateFromAddress(address).Equals(parentStateID))
+      else if(activationMode == ChildActivationMode.ShowWithParent && parentWasTarget)
         plate.Show();
       else
         plate.Hide();
+    }
+
+    protected override void Plate_onEvaluateState()
+    {
+      Router_onStateChange(router.CurrentState);
     }
   }
 }

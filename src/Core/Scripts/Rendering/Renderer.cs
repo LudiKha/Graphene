@@ -22,12 +22,13 @@ namespace Graphene
     {
       if (plate || (plate = GetComponent<Plate>()))
       {
+        plate.renderer = this;
         plate.onRefreshStatic += Plate_onRefreshStatic;
         plate.onRefreshDynamic += Plate_onRefreshDynamic;
       }
     }
 
-    private void Plate_onRefreshStatic()
+    internal void Plate_onRefreshStatic()
     {
       // Render the templates
       plate.Root.Query<TemplateRef>().ForEach(t => {

@@ -20,15 +20,17 @@ namespace Graphene
   /// <para>A `Plate` represents a view controller in the VisualTree, and is used when by Graphene to the hierarchy, its states and views.</para> 
   /// <para><see href="https://github.com/LudiKha/Graphene#plates">Read more in the online documentation</see></para>
   ///</summary>
-  [RequireComponent(typeof(UIDocument))]
+  //[RequireComponent(typeof(UIDocument))]
   [DisallowMultipleComponent]
-  public class Plate : MonoBehaviour, IInitializable, ILateInitializable, IDisposable
+  public class Plate : MonoBehaviour, IInitializable, IDisposable
   {
+    [SerializeField] VisualTreeAsset visualAsset;
+
     /// <summary>
     /// The theme that will be applied to the root element of this plate
     /// </summary>
     [SerializeField] Theme theme;
-    protected UIDocument doc;
+    //protected UIDocument doc;
 
     [SerializeField] protected string[] contentContainerSelector = new string[] { "GR__Content" };
 
@@ -36,11 +38,15 @@ namespace Graphene
 
     [SerializeField] PositionMode positionMode;
 
+    public bool IsRootPlate => !parent;
+
     #region Component Reference
     [SerializeField] Plate parent;
     [SerializeField] List<Plate> children = new List<Plate>();
     [SerializeField] ViewHandle customView; public ViewHandle CustomView => customView;
     [SerializeField] protected Router router; public Router Router => router;
+    [SerializeField] public StateHandle stateHandle { get; internal set; }
+    [SerializeField] new public Renderer renderer { get; internal set; }
     #endregion
 
     #region VisualElements Reference
@@ -56,9 +62,10 @@ namespace Graphene
     #endregion
 
     #region (Unity) Events
-    public event System.Action onRefreshHierarchy;
+    public event System.Action onEvaluateState;
     public event System.Action onRefreshStatic;
     public event System.Action onRefreshDynamic;
+    public event System.Action onRefreshVisualTree;
 
     public UnityEvent onShow = new UnityEvent();
     public UnityEvent onHide = new UnityEvent();
@@ -69,39 +76,30 @@ namespace Graphene
     {
       if (Initialized)
         return;
-      Initialized = true;
-
       GetLocalReferences();
-      SetupVisualTree();
-    }
-
-    public virtual void LateInitialize()
-    {
-      RefreshHierarchy();
+      //SetupVisualTree();
     }
 
     protected virtual void GetLocalReferences()
     {
-      if (!doc)
-        doc = GetComponent<UIDocument>();
+      //if (!doc)
+      //  doc = GetComponent<UIDocument>();
 
       if (!router)
         router = GetComponentInParent<Router>();
 
       // Get nearest parent
       if (parent || (parent = transform.parent.GetComponentInParent<Plate>()))
-      {
         parent.RegisterChild(this);
-        parent.onRefreshHierarchy += RefreshHierarchy;
-      }
+
       if (!customView)
         customView = GetComponent<ViewHandle>();
-
     }
 
-    protected void SetupVisualTree()
+    internal void ConstructVisualTree()
     {
-      root = doc.rootVisualElement;
+      root = visualAsset.CloneTree();
+      //root = doc.rootVisualElement;
 
       contentContainer = GetVisualElement(contentContainerSelector);
 
@@ -115,6 +113,9 @@ namespace Graphene
         root.AddToClassList("flex-grow");
       else if (positionMode == PositionMode.Absolute)
         root.AddMultipleToClassList("absolute fill");
+
+      Initialized = true;
+      onRefreshVisualTree?.Invoke();
     }
 
     protected void RegisterChild(Plate child)
@@ -151,16 +152,25 @@ namespace Graphene
     [NaughtyAttributes.Button]
 #endif
     #endregion
-    protected virtual void RefreshHierarchy()
+    internal virtual void RenderAndComposeChildren()
     {
       Clear();
 
       // Detach the children so they don't get bound to the scope
       DetachChildPlates();
 
+      //if (renderer)
+      //{
+      //  renderer.Plate_onRefreshStatic();
+      //  Binder.BindRecursive(Root, renderer, null, this, true);
+      //  //Binder.BindRecursive(Root, renderer, null, this, true);
+      //}
       onRefreshStatic?.Invoke();
 
-      // (Re)attach
+      // Bind the static template to the renderer
+      //Binder.BindRecursive(Root, this, null, this, true);
+
+      // (Re)attach & compose the tree
       AttachChildPlates();
 
       onRefreshDynamic?.Invoke();
@@ -172,22 +182,15 @@ namespace Graphene
       if (!Initialized)
         return;
 
-      // Initialize the visual tree again as it was deleted by UIDocument
-      SetupVisualTree();
-
-      // Refresh plate hierarchy
-      RefreshHierarchy();
-
-      if (isActive)
-        Show();
-      else
-        Hide();
+      ReevaluateState();
     }
 
-    //private void OnDisable()
-    //{
-    //  Hide();
-    //}
+    private void OnDisable()
+    {
+      if (!Initialized)
+        return;
+      Hide();
+    }
 
     #region ButtonAttribute
 #if ODIN_INSPECTOR
@@ -202,7 +205,7 @@ namespace Graphene
         return;
 
       // Enable
-      root.style.display = DisplayStyle.Flex;
+      root.Show();
       contentContainer.Focus();
 
       SetActive(true);
@@ -220,7 +223,7 @@ namespace Graphene
       if (!Initialized)
         return;
 
-      root.style.display = DisplayStyle.None;
+      root.Hide();
 
       SetActive(false);
     }
@@ -237,6 +240,17 @@ namespace Graphene
         onShow.Invoke();
       else
         onHide.Invoke();
+    }
+
+    internal void ReevaluateState()
+    {
+      if (!Initialized)
+        return;
+
+      if (!stateHandle)
+        Show();
+
+      onEvaluateState?.Invoke();
     }
 
     void Detach()
@@ -268,7 +282,7 @@ namespace Graphene
       }
     }
 
-#region Helper  Methods
+    #region Helper  Methods
     /// <summary>
     /// Gets a visual element for a collection of selectors by name
     /// </summary>
@@ -276,7 +290,6 @@ namespace Graphene
     /// <returns></returns>
     public VisualElement GetVisualElement(ICollection<string> names)
     {
-      var root = doc.rootVisualElement;
       VisualElement target = root;
 
       foreach (var name in names)

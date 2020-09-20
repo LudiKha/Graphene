@@ -28,7 +28,7 @@ namespace Graphene
 
     [SerializeField] protected T startingState; public T StartingState => startingState;
 
-    public T CurrentState => activeStates.Last();
+    public T CurrentState => activeStates.LastOrDefault();
 
     [SerializeField] List<T> activeStates = new List<T>();
     public IReadOnlyList<T> ActiveStates => activeStates;
@@ -144,7 +144,15 @@ namespace Graphene
 
       void Bind(T target)
       {
-        el.clicked += delegate { TryChangeState(target); };
+        if (target is string str)
+          el.route = str;
+        else
+        {
+          el.clicked += delegate
+          {
+            TryChangeState(target);
+          };
+        }
       }
     }
     #endregion
@@ -225,6 +233,7 @@ namespace Graphene
     public abstract bool ValidState(T state);
 
     public abstract bool AddressExists(T address);
+    public abstract T[] GetStatesFromAddress(T address);
 
     public abstract T LeafStateFromAddress(T address);
 
@@ -242,6 +251,7 @@ namespace Graphene
       else
         traversedStates.Add(newState);
     }
+
     #endregion
   }
 }

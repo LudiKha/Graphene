@@ -5,15 +5,21 @@ namespace Graphene
 {
   public static class VisualElementExtensions
   {
-    public const string documentRootClassName = "unity-ui-document__root";
+    internal const string documentRootUssClassName = "unity-ui-document__root";
+    internal const string documentChildUssClassName = "unity-ui-document__child";
+    internal const string hiddenUssClassName = "hidden";
 
     public static void Show(this VisualElement el)
     {
-      el.style.display = DisplayStyle.Flex;
+      el.RemoveFromClassList(hiddenUssClassName);
+
+      //el.style.display = DisplayStyle.Flex;
     }
     public static void Hide(this VisualElement el)
     {
-      el.style.display = DisplayStyle.None;
+      el.AddToClassList(hiddenUssClassName);
+
+      //el.style.display = DisplayStyle.None;
     }
     public static VisualElement GetRootRecursively(this VisualElement el)
     {
@@ -22,7 +28,7 @@ namespace Graphene
         return el;
         foreach (var child in el.Children())
         {
-          if (child.style.display != DisplayStyle.None && child.ClassListContains(documentRootClassName))
+          if (child.style.display != DisplayStyle.None && child.ClassListContains(documentRootUssClassName))
             return child;
         }
         return null;// el.Q(null, "unity-ui-document__root");
@@ -34,11 +40,11 @@ namespace Graphene
 
     public static VisualElement TopRoot(this VisualElement el)
     {
-      return el.panel?.visualTree.Q(null, documentRootClassName);
+      return el.panel?.visualTree.Q(null, documentRootUssClassName);
     }
     public static VisualElement TopRoot(this IPanel panel)
     {
-      return panel?.visualTree.Query(null, documentRootClassName).Last();
+      return panel?.visualTree.Query(null, documentRootUssClassName).Last();
     }
 
     public static void AddStyles(this VisualElement el, VisualElementStyleSheetSet styleSheets)

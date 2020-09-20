@@ -53,6 +53,7 @@ namespace Graphene
         Initialize();
     }
 
+    public bool Initialized { get; private set; }
     public void Initialize()
     {
       GetLocalReferences();
@@ -61,14 +62,10 @@ namespace Graphene
 
       doc.enabled = false;
       doc.enabled = true;
-      /// Needs to go here because UIDocuments may initialize late
-      if (globalTheme)
-        globalTheme.ApplyStyles(doc.rootVisualElement);
+      Initialized = true;
 
-      doc.rootVisualElement.Add(grapheneRoot);
-      grapheneRoot.SendToBack();
-
-      lastRefreshTime = Time.time;
+      if (grapheneRoot == null)
+        ConstructVisualTree(plates);
     }
 
     protected void GetLocalReferences()
@@ -78,14 +75,13 @@ namespace Graphene
 
       if (!router)
         router = GetComponent<Router>();
-
-      grapheneRoot = new GrapheneRoot(router);
     }
     
     protected void RunInstallation()
     {
       var sw = new Stopwatch();
       sw.Start();
+
       dependents = GetComponentsInChildren<IGrapheneDependent>().ToList();
       plates = dependents.Where(x => x is Plate).Select(x => x as Plate).ToList();
 
@@ -94,8 +90,8 @@ namespace Graphene
       foreach (var item in dependents.Where(x => x is IInitializable).Select(x => x as IInitializable))
         item.Initialize();
 
-      // Construct the hierarchy 
-      ConstructHierarchy(plates);
+      // Construct the visual tree hierarchy 
+      //ConstructVisualTree(plates);
 
       // Second initialize
       foreach (var item in dependents.Where(x => x is ILateInitializable).Select(x => x as ILateInitializable))
@@ -108,8 +104,37 @@ namespace Graphene
     }
 
 
-    void ConstructHierarchy(List<Plate> plates)
+    void ConstructVisualTree(List<Plate> plates)
     {
+      // Create the root controller
+      grapheneRoot = new GrapheneRoot(router);
+      doc.rootVisualElement.Add(grapheneRoot);
+
+      // Clone the visual tree for each plate
+      foreach (Plate plate in plates)
+        plate.ConstructVisualTree();
+
+      // Refresh hierarchy -> render & compose children
+      foreach (Plate plate in plates)
+      {
+        if (plate.IsRootPlate)
+        {
+          grapheneRoot.Add(plate.Root);
+          plate.Root.AddToClassList("unity-ui-document__child");
+        }
+
+        plate.Root.name = $"{plate.gameObject.name}-container";
+        plate.RenderAndComposeChildren();
+
+        plate.ReevaluateState();
+      }
+
+      /// Needs to go here because UIDocuments may initialize late
+      if (globalTheme)
+        globalTheme.ApplyStyles(doc.rootVisualElement);
+
+      grapheneRoot.BringToFront();
+      lastRefreshTime = Time.time;
     }
 
     void Update()
@@ -123,5 +148,24 @@ namespace Graphene
       Profiler.EndSample();
     }
 
+    public void RebuildBranch (Plate plate)
+    {
+
+    }
+
+    // Needs to be in because UIDocument destroys the root
+    private void OnEnable()
+    {
+      if (!Initialized)
+        return;
+      wasDisabled = false;
+      ConstructVisualTree(plates);
+    }
+
+    private bool wasDisabled;
+    private void OnDisable()
+    {
+      wasDisabled = true;
+    }
   }
 }

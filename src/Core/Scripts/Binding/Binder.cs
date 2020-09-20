@@ -205,6 +205,8 @@ namespace Graphene
             btn.clicked += el.clicked;
       }
 
+      el.router = panel.Router as Router<string>;
+
       // Let the (generic) router handle the way it binds routes
       panel.Router.BindRoute(el, context);
     }

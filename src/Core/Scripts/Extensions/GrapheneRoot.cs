@@ -48,6 +48,7 @@ namespace Graphene.Elements
     public GrapheneRoot(Router router)
     {
       AddToClassList(ussClassName);
+      this.AddMultipleToClassList($"absolute fill {VisualElementExtensions.documentChildUssClassName}");
       this.router = router;
     }
   }

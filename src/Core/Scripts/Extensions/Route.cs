@@ -31,8 +31,10 @@ namespace Graphene.Elements
 
         ((Route)ve).route = m_Route.GetValueFromBag(bag, cc);
       }
-    } 
+    }
 
+
+    public Router<string> router;
     [SerializeField]
     private string m_Route = String.Empty;
     public virtual string route
@@ -82,7 +84,7 @@ namespace Graphene.Elements
 
     public void Clicked()
     {
-
+      router.TryChangeState(route);
     }
 
     bool ProcessClick(EventBase evt)

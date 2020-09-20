@@ -14,7 +14,7 @@ namespace Graphene
       startingState = "app";
     }
 
-    protected string[] GetStatesFromAddress(string address)
+    public override string[] GetStatesFromAddress(string address)
     {
       var states = address.Split(separatorArray, System.StringSplitOptions.RemoveEmptyEntries);
       return states;
