@@ -14,10 +14,18 @@ namespace Graphene
   [DisallowMultipleComponent]
   public class Graphene : MonoBehaviour
   {
+    [SerializeField, Tooltip("Disable this if you want to manually initialize Graphene")] bool initializeOnAwake = true;
     [SerializeField] Theme globalTheme;
 
     [SerializeField] float bindingRefreshRate = 0.02f;
-    [SerializeField] float lastUpdateTime;
+    #region ReadOnlyAttribute
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ReadOnly]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.ReadOnly]
+#endif
+    #endregion
+    [SerializeField] float lastRefreshTime;
 
     [SerializeField] List<Plate> plates = new List<Plate>();
 
@@ -41,8 +49,26 @@ namespace Graphene
 
     protected void Awake()
     {
+      if (initializeOnAwake)
+        Initialize();
+    }
+
+    public void Initialize()
+    {
       GetLocalReferences();
+
       RunInstallation();
+
+      doc.enabled = false;
+      doc.enabled = true;
+      /// Needs to go here because UIDocuments may initialize late
+      if (globalTheme)
+        globalTheme.ApplyStyles(doc.rootVisualElement);
+
+      doc.rootVisualElement.Add(grapheneRoot);
+      grapheneRoot.SendToBack();
+
+      lastRefreshTime = Time.time;
     }
 
     protected void GetLocalReferences()
@@ -81,15 +107,6 @@ namespace Graphene
       UnityEngine.Debug.Log($"Graphene initialization time: {sw.ElapsedMilliseconds}ms");
     }
 
-    private void Start()
-    {
-      /// Needs to go here because UIDocuments may initialize late
-      if (globalTheme)
-        globalTheme.ApplyStyles(doc.rootVisualElement);
-
-      doc.rootVisualElement.Add(grapheneRoot);
-      grapheneRoot.SendToBack();
-    }
 
     void ConstructHierarchy(List<Plate> plates)
     {
@@ -97,13 +114,14 @@ namespace Graphene
 
     void Update()
     {
-      if (Time.time - lastUpdateTime < bindingRefreshRate)
+      if (Time.time - lastRefreshTime < bindingRefreshRate)
         return;
 
       Profiler.BeginSample("Update Graphene bindings", this);
       BindingManager.OnUpdate();
-      lastUpdateTime = Time.time;
+      lastRefreshTime = Time.time;
       Profiler.EndSample();
     }
+
   }
 }
