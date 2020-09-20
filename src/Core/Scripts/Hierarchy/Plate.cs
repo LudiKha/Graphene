@@ -177,6 +177,11 @@ namespace Graphene
 
       // Refresh plate hierarchy
       RefreshHierarchy();
+
+      if (isActive)
+        Show();
+      else
+        Hide();
     }
 
     //private void OnDisable()
