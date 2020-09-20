@@ -1,7 +1,3 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-  <ui:VisualElement name="App" class="flex-grow absolute fill">
-    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Tailwind.uss" />
-    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Globals.uss" />
-    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
-  </ui:VisualElement>
+<ui:UXML xmlns:gr="Graphene.Elements" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+
 </ui:UXML>
