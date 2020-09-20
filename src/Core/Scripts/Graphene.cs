@@ -64,8 +64,7 @@ namespace Graphene
       doc.enabled = true;
       Initialized = true;
 
-      if (grapheneRoot == null)
-        ConstructVisualTree(plates);
+      CloneOrReattach();
     }
 
     protected void GetLocalReferences()
@@ -132,6 +131,13 @@ namespace Graphene
         plate.ReevaluateState();
       }
 
+      FinalizeInitialzation();
+      sw.Stop();
+      UnityEngine.Debug.Log($"Graphene ConstructVisualTree: {sw.ElapsedMilliseconds}ms");
+    }
+
+    void FinalizeInitialzation()
+    {
       /// Needs to go here because UIDocuments may initialize late
       if (globalTheme)
         globalTheme.ApplyStyles(doc.rootVisualElement);
@@ -139,9 +145,6 @@ namespace Graphene
       grapheneRoot.BringToFront();
       lastRefreshTime = Time.time;
 
-
-      sw.Stop();
-      UnityEngine.Debug.Log($"Graphene ConstructVisualTree: {sw.ElapsedMilliseconds}ms");
     }
 
     void Update()
@@ -166,8 +169,18 @@ namespace Graphene
       if (!Initialized)
         return;
       wasDisabled = false;
+      CloneOrReattach();
+    }
 
-      if(grapheneRoot == null)
+
+    private void CloneOrReattach()
+    {
+      if (grapheneRoot != null)
+      {
+        doc.rootVisualElement.Add(grapheneRoot);
+        FinalizeInitialzation();
+      }
+      else
         ConstructVisualTree(plates);
     }
 
