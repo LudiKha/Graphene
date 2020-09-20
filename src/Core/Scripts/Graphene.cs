@@ -106,6 +106,9 @@ namespace Graphene
 
     void ConstructVisualTree(List<Plate> plates)
     {
+      var sw = new Stopwatch();
+      sw.Start();
+
       // Create the root controller
       grapheneRoot = new GrapheneRoot(router);
       doc.rootVisualElement.Add(grapheneRoot);
@@ -135,6 +138,10 @@ namespace Graphene
 
       grapheneRoot.BringToFront();
       lastRefreshTime = Time.time;
+
+
+      sw.Stop();
+      UnityEngine.Debug.Log($"Graphene ConstructVisualTree: {sw.ElapsedMilliseconds}ms");
     }
 
     void Update()
@@ -159,7 +166,9 @@ namespace Graphene
       if (!Initialized)
         return;
       wasDisabled = false;
-      ConstructVisualTree(plates);
+
+      if(grapheneRoot == null)
+        ConstructVisualTree(plates);
     }
 
     private bool wasDisabled;
