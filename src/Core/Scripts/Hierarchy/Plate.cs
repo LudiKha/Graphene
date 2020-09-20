@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,7 +8,6 @@ using UnityEngine.UIElements;
 namespace Graphene
 {
   using Elements;
-  using System;
 
   public enum PositionMode
   {
@@ -136,7 +136,7 @@ namespace Graphene
       contentContainer.Clear();
     }
 
-    protected virtual void DetachChildren()
+    protected virtual void DetachChildPlates()
     {
       foreach (var child in children)
       {
@@ -155,14 +155,14 @@ namespace Graphene
     {
       Clear();
 
-      DetachChildren();
-
-      // Bind the static plate to its scope
-      Binder.BindRecursive(root, this, null, this, true);
-
-      AttachChildren();
+      // Detach the children so they don't get bound to the scope
+      DetachChildPlates();
 
       onRefreshStatic?.Invoke();
+
+      // (Re)attach
+      AttachChildPlates();
+
       onRefreshDynamic?.Invoke();
     }
 
@@ -172,10 +172,11 @@ namespace Graphene
       if (!Initialized)
         return;
 
+      // Initialize the visual tree again as it was deleted by UIDocument
       SetupVisualTree();
 
-      if (!parent)
-        RefreshHierarchy();
+      // Refresh plate hierarchy
+      RefreshHierarchy();
     }
 
     //private void OnDisable()
@@ -239,12 +240,14 @@ namespace Graphene
       temp.Add(root);
     }
 
-
-    void AttachChildren()
+    /// <summary>
+    /// Attaches child plates into designated view(s)
+    /// </summary>
+    void AttachChildPlates()
     {
       foreach (var child in children)
       {
-        // Child can have optional override
+        // Child can have optional view override
         if (child.CustomView)
         {
           var layoutContainer = GetViewById(child.customView.Id);
