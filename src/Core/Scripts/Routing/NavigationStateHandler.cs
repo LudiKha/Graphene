@@ -21,6 +21,8 @@ namespace Graphene
 
     ButtonGroup navigationButtonGroup;
 
+    [SerializeField] List<string> states = new List<string>();
+
     public void Inject(Router<string> router)
     {
       this.router = router;      
@@ -35,6 +37,7 @@ namespace Graphene
       if (!router)
         router = GetComponentInParent<Router<string>>();
       router.RegisterInterpreter(this);
+      router.onStateChange += Router_onStateChange;
 
       if (!plate)
       {
@@ -43,7 +46,33 @@ namespace Graphene
         plate.onHide.AddListener(Plate_OnHide);
       }
 
+      plate.onRefreshVisualTree += Plate_onRefreshHierarchy;
+    }
+
+    private void Plate_onRefreshHierarchy()
+    {
       navigationButtonGroup = plate.Root.Q<ButtonGroup>();
+      navigationButtonGroup.onChangeIndex += NavigationButtonGroup_onChangeIndex;
+    }
+
+    private void Router_onStateChange(string newState)
+    {
+      int i = 0;
+      
+      foreach (var state in states)
+      {
+        if(router.StateIsActive(state))
+        {
+          navigationButtonGroup.SetValueWithoutNotify(i);
+          return;
+        }
+        i++;
+      }
+    }
+
+    private void NavigationButtonGroup_onChangeIndex(int index)
+    {
+      router.TryChangeState(states[index]);
     }
 
     public override bool TryCatch(object state)
@@ -59,9 +88,9 @@ namespace Graphene
       if (state == backCommand)
         router.TryGoToPreviousState();
       else if (state == previousCommand)
-        navigationButtonGroup.activeIndex -= 1;
+        navigationButtonGroup.value -= 1;
       else if (state == nextCommand)
-        navigationButtonGroup.activeIndex += 1;
+        navigationButtonGroup.value += 1;
       else if (state == exitCommand)
       {
 #if UNITY_EDITOR

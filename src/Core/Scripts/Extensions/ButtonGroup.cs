@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene.Elements
 {
-  public class ButtonGroup : BindableElement, IBindableElement<int>
+  public class ButtonGroup : BindableElement, IBindableElement<int>, INotifyValueChanged<int>
   {
     /// <summary>
     /// Instantiates a <see cref="id"/> using the data read from a UXML file.
@@ -29,20 +29,28 @@ namespace Graphene.Elements
       {
         base.Init(ve, bag, cc);
 
-        ((ButtonGroup)ve).activeIndex = m_ActiveIndex.GetValueFromBag(bag, cc);
+        ((ButtonGroup)ve).value = m_ActiveIndex.GetValueFromBag(bag, cc);
       }
     }
 
     [SerializeField]
     private int m_ActiveIndex = 0;
-    public virtual int activeIndex
+    public virtual int value
     {
       get { return m_ActiveIndex; }
       set
       {
-        m_ActiveIndex = Mathf.Clamp(value, 0, childCount);
-        SetButtonActive();
+        SetValueWithoutNotify(value);
+        onChangeIndex?.Invoke(m_ActiveIndex);
       }
+    }
+
+    public event System.Action<int> onChangeIndex;
+
+    public void SetValueWithoutNotify(int value)
+    {
+      m_ActiveIndex = Mathf.Clamp(value, 0, childCount);
+      SetButtonActive();
     }
 
     /// <summary>
@@ -77,7 +85,7 @@ namespace Graphene.Elements
       int i = 0;
       foreach (var child in Children())
       {
-        if (i == activeIndex)
+        if (i == value)
         {
           child.AddToClassList(ussActiveClassName);
         }
