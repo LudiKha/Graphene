@@ -167,8 +167,7 @@ namespace Graphene
       {
         if (el.bindingPath.Equals(item.Attribute.Path))
         {
-          if (item.Value is string)
-            BindText(el, ref context, item.Value as string, in item, panel);
+          BindText(el, ref context, in item.Value, in item, panel);
         }
       }
     }
@@ -178,8 +177,7 @@ namespace Graphene
       {
         if (el.bindingPath.Equals(item.Attribute.Path) || (string.IsNullOrEmpty(item.Attribute.Path) && item.Value is string))
         {
-          if (item.Value is string)
-            BindText(el, ref context, item.Value as string, in item, panel);
+            BindText(el, ref context, in item.Value, in item, panel);
         }
       }
     }
@@ -191,12 +189,12 @@ namespace Graphene
       {
         if (el.bindingPath.Equals(item.Attribute.Path))
         {
-          if (item.Value is string)
-            BindText(el, ref context, item.Value as string, in item, panel);
-          else if (item.Value is System.Action)
+          if (item.Value is System.Action)
             BindClick(el, (System.Action)item.Value);
           else if (item.Value is UnityEngine.Events.UnityEvent)
             BindClick(el, (UnityEngine.Events.UnityEvent)item.Value);
+          else 
+            BindText(el, ref context, in item.Value, in item, panel);
         }
       }
     }
@@ -399,10 +397,13 @@ namespace Graphene
       }
     }
 
-    private static void BindText(TextElement el, ref object context, string text, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    private static void BindText(TextElement el, ref object context, in object obj, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       // Add translation here
-      el.text = text;
+      if (obj is string str)
+        el.text = str;
+      else
+        el.text = obj.ToString();
 
       BindingManager.TryCreate(el, ref context, in member, panel);
     }
