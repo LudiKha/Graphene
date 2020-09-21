@@ -17,6 +17,14 @@ namespace Graphene
   {
     public static event System.Action<BindableElement> OnBindElement;
 
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnEnterPlayMode]
+    static void InitializeOnEnterPlayMode()
+    {
+      OnBindElement = null;
+    }
+#endif
+
     /// <summary>
     /// Binds the tree recursively
     /// </summary>
