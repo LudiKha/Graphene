@@ -19,7 +19,7 @@
   background-image: var(--gradient);
 }
 
-.unity-base-field,
+.gr-template>.unity-base-field,
 .gr-list-item.unity-button,
 .gr-button,
 .gr-button.unity-button,
