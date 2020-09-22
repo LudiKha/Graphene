@@ -152,7 +152,7 @@ namespace Graphene
       if (Time.time - lastRefreshTime < bindingRefreshRate)
         return;
 
-      Profiler.BeginSample("Update Graphene bindings", this);
+      Profiler.BeginSample($"Update Graphene bindings ({BindingManager.bindingsCount} bindings)", this);
       BindingManager.OnUpdate();
       lastRefreshTime = Time.time;
       Profiler.EndSample();

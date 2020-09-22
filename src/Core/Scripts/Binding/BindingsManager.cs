@@ -21,18 +21,21 @@ namespace Graphene
 
     static Dictionary<Plate, List<Binding>> disposePostUpdate = new Dictionary<Plate, List<Binding>>();
 
+    internal static uint bindingsCount;
+
 #if UNITY_EDITOR
     [UnityEditor.InitializeOnEnterPlayMode]
     public static void InitializeOnEnterPlayMode()
     {
       bindings = new Dictionary<Plate, List<Binding>>();
       disposePostUpdate = new Dictionary<Plate, List<Binding>>();
+      bindingsCount = 0;
     }
 #endif
 
-
     public static void OnUpdate()
     {
+      bindingsCount = 0;
       // Update the bindings for active/visible panels
       foreach (var kvp in bindings)
       {
@@ -54,7 +57,10 @@ namespace Graphene
           }
           // Update the binding
           else
+          {
             binding.Update();
+            bindingsCount++;
+          }
         }
       }
 
