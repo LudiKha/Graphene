@@ -18,7 +18,10 @@ namespace Graphene.Elements
     public List<string> items { get => m_Items;
     set
       {
-        m_Items = value.ToList();
+        if (value != null)
+          m_Items = value;
+        else
+          m_Items = new List<string>();
       }
     }
 

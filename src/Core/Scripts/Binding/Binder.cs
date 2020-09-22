@@ -165,7 +165,7 @@ namespace Graphene
     {
       foreach (var item in members)
       {
-        if (el.bindingPath.Equals(item.Attribute.Path))
+        if (BindingPathOrTypeMatch<string>(el, in item))
         {
           BindText(el, ref context, in item.Value, in item, panel);
         }
@@ -175,7 +175,7 @@ namespace Graphene
     {
       foreach (var item in members)
       {
-        if (el.bindingPath.Equals(item.Attribute.Path) || (string.IsNullOrEmpty(item.Attribute.Path) && item.Value is string))
+        if (BindingPathOrTypeMatch<string>(el, in item))
         {
             BindText(el, ref context, in item.Value, in item, panel);
         }
@@ -223,7 +223,7 @@ namespace Graphene
       foreach (var item in members)
       {
         // Primary
-        if (el.bindingPath.Equals(item.Attribute.Path))
+        if (BindingPathOrTypeMatch<float>(el, in item))
         {
           if (item.Attribute is BindFloatAttribute floatAttribute)
           {
@@ -246,7 +246,7 @@ namespace Graphene
       foreach (var item in members)
       {
         // Primary
-        if (el.bindingPath.Equals(item.Attribute.Path))
+        if (BindingPathOrTypeMatch<int>(el, item))
         {
           if (item.Attribute is BindIntAttribute att)
           {
@@ -269,7 +269,7 @@ namespace Graphene
       foreach (var item in members)
       {
         // Primary
-        if (el.bindingPath.Equals(item.Attribute.Path))
+        if (BindingPathOrTypeMatch<string>(el, in item))
         {
           if (item.Attribute is BindStringAttribute stringAttribute)
           {
@@ -294,7 +294,7 @@ namespace Graphene
       foreach (var item in members)
       {
         // Primary (value)
-        if (el.bindingPath.Equals(item.Attribute.Path) || (string.IsNullOrEmpty(item.Attribute.Path) && item.Value is TValueType))
+        if (BindingPathOrTypeMatch<TValueType>(el, in item))
         {
           if (item.Value is TValueType)
           {
@@ -329,25 +329,10 @@ namespace Graphene
       foreach (var item in members)
       {
         // Model items
-        if (item.Attribute.Path.Equals(SelectField.itemsPath))
+        if (BindingPathMatch(item.Attribute.Path, SelectField.itemsPath))
         {
           el.items = item.Value as List<string>;
-        }
-      }
-
-      // First bind base field (int)
-      BindBaseField(el, ref context, members, panel);
-    }
-
-    private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
-    {
-      // Then bind the items
-      foreach (var item in members)
-      {
-        // Model items
-        if (item.Attribute.Path.Equals(CycleField.itemsPath))
-        {
-          el.items = item.Value as List<string>;
+          break;
         }
       }
 
@@ -360,7 +345,7 @@ namespace Graphene
       foreach (var item in members)
       {
         // Primary
-        if (el.bindingPath.Equals(item.Attribute.Path))
+        if (BindingPathMatch(item.Attribute.Path, SelectField.itemsPath))
         {
           Func<VisualElement> makeItem = () => new Label("ListViewItem");
           Action<VisualElement, int> bindItem = (e, i) => (e as Label).text = (e as Label).text + " " + i;
@@ -378,8 +363,28 @@ namespace Graphene
 
           // Scale in accordance with number of items
           el.style.height = el.itemHeight * el.itemsSource.Count;
+          break;
         }
       }
+    }
+
+
+
+    private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    {
+      // Then bind the items
+      foreach (var item in members)
+      {
+        // Model items
+        if (BindingPathMatch(item.Attribute.Path, CycleField.itemsPath))
+        {
+          el.items = item.Value as List<string>;
+          break;
+        }
+      }
+
+      // First bind base field (int)
+      BindBaseField(el, ref context, members, panel);
     }
 
     private static void BindIf(If el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
@@ -388,7 +393,7 @@ namespace Graphene
       foreach (var item in members)
       {
         // Model items
-        if (el.bindingPath.Equals(item.Attribute.Path))
+        if (BindingPathMatch(el, in item))
         {
           el.OnModelChange(item.Value);
           BindingManager.TryCreate<object>(el, ref context, in item, panel);
@@ -501,5 +506,21 @@ namespace Graphene
       }
       return startedBranch;
     }
+
+    #region Internals
+    internal static bool BindingPathMatch(in string a, in string b)
+    {
+      return a.Equals(b);
+      return string.CompareOrdinal(a, b) == 0;
+    }
+    internal static bool BindingPathMatch(BindableElement el, in ValueWithAttribute<BindAttribute> member)
+    {
+      return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0;
+    }
+    internal static bool BindingPathOrTypeMatch<T>(BindableElement el, in ValueWithAttribute<BindAttribute> member)
+    {
+      return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Value.GetType().IsAssignableFrom(typeof(T)));
+    }
+    #endregion
   }
 }

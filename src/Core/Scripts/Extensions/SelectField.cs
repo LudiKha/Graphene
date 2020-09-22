@@ -19,7 +19,10 @@ namespace Graphene.Elements
     public List<string> items { get => m_Items;
     set
       {
-        m_Items = value.ToList();
+        if (value != null)
+          m_Items = value;
+        else
+          m_Items = new List<string>();
       }
     }
 
@@ -313,6 +316,26 @@ namespace Graphene.Elements
     {
       if (m_Dialog != null)
         m_Dialog.Dispose();
+    }
+
+    void SetListViewItems()
+    {
+      Func<VisualElement> makeItem = () => new Label("ListViewItem");
+      Action<VisualElement, int> bindItem = (e, i) => (e as Label).text = (e as Label).text + " " + i;
+
+      var options = item.Value as List<string>;
+      bindItem = (e, i) => (e as Label).text = options[i];
+      el.itemsSource = options;
+      //if (item.Value is T)
+      //  el.SetValueWithoutNotify((T)item.Value);
+      //else if (item.Attribute is BindValueChangeCallbackAttribute callbackAttribute)
+      //  el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<T>>);
+
+      el.makeItem = makeItem;
+      el.bindItem = bindItem;
+
+      // Scale in accordance with number of items
+      el.style.height = el.itemHeight * el.itemsSource.Count;
     }
   }
 }
