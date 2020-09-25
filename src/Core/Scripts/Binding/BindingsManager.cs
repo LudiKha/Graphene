@@ -252,7 +252,7 @@ namespace Graphene
       newValue = GetValueFromMemberInfo();
 
       // Model changed -> Update view
-      if (!this.lastValue.Equals(newValue))
+      if (this.lastValue != null && !this.lastValue.Equals(newValue))
       {
         if (newValue is T && element is BaseField<T> baseField)
           baseField.SetValueWithoutNotify(newValue);
