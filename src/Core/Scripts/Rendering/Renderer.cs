@@ -10,13 +10,18 @@ namespace Graphene
   public class Renderer : MonoBehaviour, IInitializable
   {
     [SerializeField] Plate plate;
-    [SerializeField, Bind("Model")] protected Object model; public Object Model => model;    
+    [field: SerializeField][Bind("Model")] public Object Model { get; set; }
     [SerializeField] protected TemplatePreset templates; public TemplatePreset Templates => templates;
 
     /// <summary>
     /// Overriding this will target a non-default content container (as defined in Plate)
     /// </summary>
-    [SerializeField] protected string[] contentSelector = new string[] {  };
+    [SerializeField] protected string[] contentSelector = new string[] { };
+
+    /// <summary>
+    /// The ViewModel attached to this Renderer
+    /// </summary>
+    IModel viewModel;
 
     public void Initialize()
     {
@@ -25,12 +30,18 @@ namespace Graphene
         plate.renderer = this;
         plate.onRefreshStatic += Plate_onRefreshStatic;
         plate.onRefreshDynamic += Plate_onRefreshDynamic;
+
+        if (Model is IModel iModel)
+        {
+          viewModel = iModel;
+          viewModel.onModelChange += Model_onModelChange;
+        }
       }
     }
 
     internal void Plate_onRefreshStatic()
     {
-      // Render the templates
+      // Render the template components
       plate.Root.Query<TemplateRef>().ForEach(t => {
         t.Inject(null, plate, this);
         t.Render();
@@ -41,39 +52,63 @@ namespace Graphene
       Binder.BindRecursive(plate.Root, this, null, plate, true);
     }
 
-    private void Plate_onRefreshDynamic()
+    internal void Plate_onRefreshDynamic()
     {
-      RenderToContainer(GetDrawContainer());
+      HardRefresh();
     }
+
+    internal void Model_onModelChange()
+    {
+      plate.wasChangedThisFrame = true;
+    }
+
 
     internal void RenderToContainer(VisualElement container)
     {
       // Initialize & render the form
-      if (!model)
+      if (!Model)
         return;
 
-      if (model is IModel iModel)
+      if (viewModel != null)
       {
-        if (!iModel.Render)
+        if (!viewModel.Render)
           return;
 
-        iModel.Initialize(container, plate);
+        viewModel.Initialize(container, plate);
       }
 
+      // Remove existing elements
+      container.Clear();
+
       // Render & bind the dynamic items
-      RenderUtils.DrawDataContainer(plate, container, model, templates);
+      RenderUtils.DrawDataContainer(plate, container, Model, templates);
+
+      if (viewModel != null)
+        viewModel.onModelChange?.Invoke();
     }
 
     #region Public API
     public void Draw()
     {
       // Render & bind the dynamic items
-      RenderUtils.DrawDataContainer(plate, GetDrawContainer(), model, templates);
+      RenderUtils.DrawDataContainer(plate, GetDrawContainer(), Model, templates);
+
+      if (viewModel != null)
+        viewModel.onModelChange?.Invoke();
     }
 
     public void Draw(object model)
     {
       RenderUtils.DrawDataContainer(plate, GetDrawContainer(), in model, templates);
+
+      if (model is IModel iModel)
+        iModel.onModelChange?.Invoke();
+    }
+
+    [Sirenix.OdinInspector.Button]
+    public void HardRefresh()
+    {
+      RenderToContainer(GetDrawContainer());
     }
     #endregion
 
