@@ -77,9 +77,6 @@ namespace Graphene
         viewModel.Initialize(container, plate);
       }
 
-      // Remove existing elements
-      container.Clear();
-
       // Render & bind the dynamic items
       RenderUtils.DrawDataContainer(plate, container, Model, templates);
 
