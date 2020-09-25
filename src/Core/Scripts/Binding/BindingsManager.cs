@@ -47,6 +47,10 @@ namespace Graphene
         if (!kvp.Key.IsActive)
           continue;
 
+        if (kvp.Key.bindingRefreshMode == BindingRefreshMode.None || (kvp.Key.bindingRefreshMode == BindingRefreshMode.ModelChange && !kvp.Key.wasChangedThisFrame))
+          continue;
+        kvp.Key.wasChangedThisFrame = false;
+
         foreach (var binding in kvp.Value)
         {
           // Needs to be disposed
@@ -65,7 +69,7 @@ namespace Graphene
       }
 
       foreach (var kvp in disposePostUpdate)
-        foreach (var binding in kvp.Value) 
+        foreach (var binding in kvp.Value)
           Destroy(kvp.Key, binding);
 
       disposePostUpdate.Clear();
@@ -94,7 +98,7 @@ namespace Graphene
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value == BindingMode.OneTime)
         return;
 
-        CreateBinding<string>(el, ref context, in member, panel);
+      CreateBinding<string>(el, ref context, in member, panel);
     }
 
     /// <summary>
@@ -136,7 +140,7 @@ namespace Graphene
       Binding binding = null;
       if (member.MemberInfo is FieldInfo)
         binding = new FieldBinding<TValueType>(el, ref context, in member);
-      else if(member.MemberInfo is PropertyInfo)
+      else if (member.MemberInfo is PropertyInfo)
         binding = new PropertyBinding<TValueType>(el, ref context, in member);
 
       if (binding != null)
@@ -183,25 +187,26 @@ namespace Graphene
   }
 
   public abstract class Binding<T> : Binding
-  {    
+  {
     protected object context;
     [SerializeField] protected T lastValue;
+    [SerializeField] protected T newValue;
 
     protected BindableElement element;
     [SerializeField] BindAttribute attribute;
 
     // The target field
-    protected MemberInfo memberInfo;
-    protected Type type;
+    protected string memberName;
+    protected ExtendedTypeInfo extendedTypeInfo;
 
     public Binding(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member)
     {
       this.element = el;
       this.context = context;
-      this.type = context.GetType();
+      this.extendedTypeInfo = TypeInfoCache.GetExtendedTypeInfo(context.GetType());
 
       this.attribute = member.Attribute;
-      this.memberInfo = member.MemberInfo;
+      this.memberName = member.MemberInfo.Name;
 
       DetermineBindingMode();
     }
@@ -244,7 +249,7 @@ namespace Graphene
         return;
       }
 
-      var newValue = GetValueFromMemberInfo();
+      newValue = GetValueFromMemberInfo();
 
       // Model changed -> Update view
       if (!this.lastValue.Equals(newValue))
@@ -262,10 +267,10 @@ namespace Graphene
 
     void RegisterTwoWayValueChangeCallback()
     {
-      if(element is INotifyValueChanged<T> notifyChangeEl)
+      if (element is INotifyValueChanged<T> notifyChangeEl)
       {
-        notifyChangeEl.RegisterValueChangedCallback((evt) => { 
-          SetValueFromMemberInfo(evt.newValue); 
+        notifyChangeEl.RegisterValueChangedCallback((evt) => {
+          SetValueFromMemberInfo(evt.newValue);
         });
       }
     }
@@ -288,6 +293,7 @@ namespace Graphene
         scheduleDispose = true;
         return;
       }
+
       lastValue = GetValueFromMemberInfo();
     }
 
@@ -298,13 +304,12 @@ namespace Graphene
 
     protected override T GetValueFromMemberInfo()
     {
-      return (T)propertyInfo.GetValue(context);
+      return (T)extendedTypeInfo.Accessor[context, memberName];
     }
 
     protected override void SetValueFromMemberInfo(T value)
     {
-      ExtendedTypeInfo extendedTypeInfo = TypeInfoCache.GetExtendedTypeInfo(context.GetType());
-      extendedTypeInfo.Accessor[context, memberInfo.Name] = value;
+      extendedTypeInfo.Accessor[context, memberName] = value;
     }
   }
 
@@ -327,16 +332,15 @@ namespace Graphene
 
     protected override bool IsValidBinding()
     {
-      return memberInfo != null;
+      return memberName != null;
     }
     protected override T GetValueFromMemberInfo()
     {
-      return (T)fieldInfo.GetValue(context);
+      return (T)extendedTypeInfo.Accessor[context, memberName];
     }
     protected override void SetValueFromMemberInfo(T value)
     {
-      ExtendedTypeInfo extendedTypeInfo = TypeInfoCache.GetExtendedTypeInfo(context.GetType());
-      extendedTypeInfo.Accessor[context, memberInfo.Name] = value;
+      extendedTypeInfo.Accessor[context, memberName] = value;
     }
   }
 }

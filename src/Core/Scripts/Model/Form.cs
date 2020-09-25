@@ -1,35 +1,39 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Graphene
 {
-
   public interface IModel
   {
     void Initialize(VisualElement container, Plate plate);
     bool Render { get; }
+
+    System.Action onModelChange { get; set; }
   }
 
   public interface IForm
   {
     [Bind("Title")]
-    string Title { get; }
+    string Title { get; set; }
     void OnSubmit();
     void OnCancel();
   }
 
   public abstract class Form : ScriptableObject, IModel
   {
-    [SerializeField, Bind("Title")] protected string title; public string Title => title;    
-    [SerializeField, Bind("Render")] protected bool render = true; public bool Render => render;
+    [field: SerializeField][Bind("Title")] public string Title { get; set; } = "Title";
+    [field: SerializeField][Bind("Render")] public bool Render { get; set; } = true;
+    public Action onModelChange { get; set; }
+
+    public event System.Action Redraw;
 
     //public abstract List<object> GetDrawableObjects() { }
 
     public abstract void Initialize(VisualElement container, Plate plate);
 
-    public event System.Action Redraw;
 
     #region ButtonAttribute
 #if ODIN_INSPECTOR

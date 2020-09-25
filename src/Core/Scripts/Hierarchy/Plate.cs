@@ -16,6 +16,13 @@ namespace Graphene
     Absolute
   }
 
+  public enum BindingRefreshMode
+  {
+    None,
+    Continuous,
+    ModelChange
+  }
+
   ///<summary>
   /// <para>A `Plate` represents a view controller in the VisualTree, and is used when by Graphene to the hierarchy, its states and views.</para> 
   /// <para><see href="https://github.com/LudiKha/Graphene#plates">Read more in the online documentation</see></para>
@@ -37,6 +44,8 @@ namespace Graphene
     [SerializeField] bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
 
     [SerializeField] PositionMode positionMode;
+    [SerializeField] public BindingRefreshMode bindingRefreshMode = BindingRefreshMode.ModelChange;
+    internal bool wasChangedThisFrame;
 
     public bool IsRootPlate => !parent;
 
@@ -116,6 +125,21 @@ namespace Graphene
 
       Initialized = true;
       onRefreshVisualTree?.Invoke();
+
+      root.RegisterCallback<PointerMoveEvent>((evt) => ChangeEvent());
+      root.RegisterCallback<PointerDownEvent>((evt) => ChangeEvent());
+      root.RegisterCallback<PointerUpEvent>((evt) => ChangeEvent());
+
+
+      root.RegisterCallback<PointerMoveEvent>((evt) =>
+      {
+        wasChangedThisFrame = true;
+      });
+    }
+
+    void ChangeEvent()
+    {
+
     }
 
     protected void RegisterChild(Plate child)
