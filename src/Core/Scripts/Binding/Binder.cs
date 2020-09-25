@@ -177,7 +177,7 @@ namespace Graphene
       {
         if (BindingPathOrTypeMatch<string>(el, in item))
         {
-            BindText(el, ref context, in item.Value, in item, panel);
+          BindText(el, ref context, in item.Value, in item, panel);
         }
       }
     }
@@ -193,7 +193,7 @@ namespace Graphene
             BindClick(el, (System.Action)item.Value);
           else if (item.Value is UnityEngine.Events.UnityEvent)
             BindClick(el, (UnityEngine.Events.UnityEvent)item.Value);
-          else 
+          else
             BindText(el, ref context, in item.Value, in item, panel);
         }
       }
@@ -407,7 +407,7 @@ namespace Graphene
       // Add translation here
       if (obj is string str)
         el.text = str;
-      else
+      else if (obj != null)
         el.text = obj.ToString();
 
       BindingManager.TryCreate(el, ref context, in member, panel);
@@ -425,7 +425,7 @@ namespace Graphene
       OnBindElement?.Invoke(el);
     }
 
-    public static string[] stringSplitOptions = new string[]{ ".", "~", "::"};
+    public static string[] stringSplitOptions = new string[] { ".", "~", "::" };
 
     public const char nestedScopeChar = '.';
     public const char relativeScopeChar = '~';
@@ -510,7 +510,6 @@ namespace Graphene
     #region Internals
     internal static bool BindingPathMatch(in string a, in string b)
     {
-      return a.Equals(b);
       return string.CompareOrdinal(a, b) == 0;
     }
     internal static bool BindingPathMatch(BindableElement el, in ValueWithAttribute<BindAttribute> member)
