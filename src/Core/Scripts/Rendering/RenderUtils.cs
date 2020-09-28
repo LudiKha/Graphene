@@ -1,7 +1,8 @@
-﻿using Kinstrife.Core.ReflectionHelpers;
+﻿using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
+using Kinstrife.Core.ReflectionHelpers;
 
 namespace Graphene
 {
@@ -32,6 +33,9 @@ namespace Graphene
       // Get members
       List<ValueWithAttribute<DrawAttribute>> drawableMembers = new List<ValueWithAttribute<DrawAttribute>>();
       TypeInfoCache.GetMemberValuesWithAttribute(context, drawableMembers);
+
+      // Sort draw order
+      drawableMembers = drawableMembers.OrderBy(x => x.Attribute.order).ToList();// as List<ValueWithAttribute<DrawAttribute>>;
 
       List<ValueWithAttribute<BindAttribute>> bindableMembers = new List<ValueWithAttribute<BindAttribute>>();
       TypeInfoCache.GetMemberValuesWithAttribute(context, bindableMembers);

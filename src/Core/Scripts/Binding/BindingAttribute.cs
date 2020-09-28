@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Graphene
@@ -169,23 +170,23 @@ namespace Graphene
   public class DrawAttribute : System.Attribute
   {
     public ControlType controlType = ControlType.None;
-    /// <summary>
-    /// Custom binding path for overriding 
-    /// </summary>
-    public string customPath;
-    public DrawAttribute()
+
+    public int order;
+
+    //public DrawAttribute(ControlType controlType)
+    //{
+    //  this.controlType = controlType;
+    //}
+
+    public DrawAttribute([CallerLineNumber]int order = 0)
     {
+      this.order = order;
     }
 
-    public DrawAttribute(ControlType controlType)
+    public DrawAttribute(ControlType controlType, [CallerLineNumber] int order = 0)
     {
       this.controlType = controlType;
-    }
-
-    public DrawAttribute(ControlType controlType, string customPath)
-    {
-      this.controlType = controlType;
-      this.customPath = customPath;
+      this.order = order;
     }
   }
 
