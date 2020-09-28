@@ -12,16 +12,15 @@ namespace Graphene
   [CreateAssetMenu(menuName = "Graphene/Templating/TemplateAsset")]
   public class TemplateAsset : ScriptableObject
   {
-    [SerializeField] VisualTreeAsset _VisualTreeAsset; public VisualTreeAsset VisualTreeAsset => _VisualTreeAsset;
-
     internal const string templateAddClassName = "gr-template";
+    [SerializeField] VisualTreeAsset _VisualTreeAsset; public VisualTreeAsset VisualTreeAsset => _VisualTreeAsset;
 
     [SerializeField] string _RootElementName; public string RootElementName => _RootElementName;
 
     [SerializeField] string _AddClass; public string AddClass => _AddClass;
     [SerializeField] string _AddClassToChildren; public string AddClassToChildren => _AddClassToChildren;
 
-    public TemplateContainer Instantiate()
+    public virtual VisualElement Instantiate()
     {
       TemplateContainer clone = VisualTreeAsset.CloneTree();
 

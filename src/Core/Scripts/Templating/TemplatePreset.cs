@@ -26,7 +26,8 @@ namespace Graphene
     TextField,
     Title,
     SubTitle,
-    Body
+    Body,
+    Border
   }
 
   public interface ICustomControlType
