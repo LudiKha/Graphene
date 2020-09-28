@@ -1,9 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Graphene {
+namespace Graphene
+{
 
 
   ///<summary>
@@ -27,7 +26,8 @@ namespace Graphene {
       TemplateContainer clone = VisualTreeAsset.CloneTree();
 
       clone.AddMultipleToClassList(templateAddClassName);
-      clone.AddMultipleToClassList(AddClass);
+      if (AddClass != null)
+        clone.AddMultipleToClassList(AddClass);
 
       return clone;
     }

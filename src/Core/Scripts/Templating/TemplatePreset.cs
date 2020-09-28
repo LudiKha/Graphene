@@ -23,7 +23,10 @@ namespace Graphene
     ListItem,
     SelectField,
     CycleField,
-    TextField  
+    TextField,
+    Title,
+    SubTitle,
+    Body
   }
 
   public interface ICustomControlType

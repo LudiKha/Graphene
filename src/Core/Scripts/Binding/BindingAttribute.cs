@@ -42,7 +42,10 @@ namespace Graphene
     {
       this.path = path;
     }
-
+    public BindAttribute(BindingMode bindingMode)
+    {
+      this.bindingMode = bindingMode;
+    }
     public BindAttribute(string path, BindingMode bindingMode)
     {
       this.path = path;

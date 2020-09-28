@@ -1,9 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-
-  <ui:Button name="ListItem" class="gr-list-item p-16">
-    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Tailwind.uss" />
-    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Globals.uss" />
-    <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
-    <Style src="ListItem.uss" />
-  </ui:Button>
-</ui:UXML>

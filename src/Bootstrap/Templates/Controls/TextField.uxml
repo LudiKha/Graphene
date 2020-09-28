@@ -1,6 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-  <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Tailwind.uss" />
-  <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Globals.uss" />
-  <Style src="/Packages/com.cupbearer.graphene/Bootstrap/Typography.uss" />
-  <ui:TextField picking-mode="Ignore" binding-path="Value" label="Text Field" value="filler text" text="filler text" />
-</ui:UXML>
