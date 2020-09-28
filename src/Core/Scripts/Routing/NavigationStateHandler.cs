@@ -72,6 +72,8 @@ namespace Graphene
 
     private void NavigationButtonGroup_onChangeIndex(int index)
     {
+      index = Mathf.Clamp(index, 0, states.Count - 1);
+
       router.TryChangeState(states[index]);
     }
 
