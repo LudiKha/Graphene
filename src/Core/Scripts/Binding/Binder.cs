@@ -234,6 +234,10 @@ namespace Graphene
             break;
           }
         }
+        else if (BindingPathAndTypeMatch<float>("Min", item))
+          el.lowValue = (float)item.Value;
+        else if (BindingPathAndTypeMatch<float>("Max", item))
+          el.highValue = (float)item.Value;
       }
 
       // Bind base field value & callback
@@ -257,6 +261,10 @@ namespace Graphene
             break;
           }
         }
+        else if (BindingPathAndTypeMatch<int>("Min", item))
+          el.lowValue = (int)item.Value;
+        else if (BindingPathAndTypeMatch<int>("Max", item))
+          el.highValue = (int)item.Value;
       }
 
       // Bind base field value & callback
@@ -367,8 +375,6 @@ namespace Graphene
         }
       }
     }
-
-
 
     private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
     {
@@ -519,6 +525,11 @@ namespace Graphene
     internal static bool BindingPathOrTypeMatch<T>(BindableElement el, in ValueWithAttribute<BindAttribute> member)
     {
       return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Value.GetType().IsAssignableFrom(typeof(T)));
+    }
+
+    internal static bool BindingPathAndTypeMatch<T>(in string a, in ValueWithAttribute<BindAttribute> member)
+    {
+      return string.CompareOrdinal(a, member.Attribute.Path) == 0 && member.Value.GetType().IsAssignableFrom(typeof(T));
     }
     #endregion
   }
