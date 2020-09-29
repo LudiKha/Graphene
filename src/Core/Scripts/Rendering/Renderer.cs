@@ -31,7 +31,7 @@ namespace Graphene
         plate.onRefreshStatic += Plate_onRefreshStatic;
         plate.onRefreshDynamic += Plate_onRefreshDynamic;
 
-        if (Model is IModel iModel)
+        if ((Model || (Model = GetComponent<IModel>() as Object)) && Model is IModel iModel)
         {
           viewModel = iModel;
           viewModel.onModelChange += Model_onModelChange;
