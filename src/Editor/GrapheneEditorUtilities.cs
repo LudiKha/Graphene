@@ -8,23 +8,39 @@ namespace Graphene
 {
   internal static class GrapheneEditorUtilities
   {
-    public const string uuid = "com.cupbearer.graphene";
-    public const string gitUrl = "https://github.com/LudiKha/Graphene.git?path=/src";
+    public const string uuid = "com.graphene.core";
+    public const string gitUrlCore = "https://github.com/LudiKha/Graphene.git?path=/src";
+    public const string gitUrlComponents = "https://github.com/LudiKha/Graphene-Components.git?path=/src";
+    public const string gitUrlDemo = "https://github.com/LudiKha/Graphene-Demo.git?path=/src";
 
     public class PackageRequest
     {
     }
 
-    [MenuItem("Window/Graphene/Check for updates")]
+    [MenuItem("Window/Graphene/Check for updates/Graphene Core")]
     static void CheckForUpdates()
     {
-      Debug.Log($"Checking for updates");
       var owner = new PackageRequest();
-      EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner), owner);
+      EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner, gitUrlComponents, "Graphene Core"), owner);
+    }
+    [MenuItem("Window/Graphene/Check for updates/Graphene Components")]
+    static void CheckForUpdatesComponents()
+    {
+      var owner = new PackageRequest();
+      EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner, gitUrlCore, "Graphene Components"), owner);
+    }
+    [MenuItem("Window/Graphene/Check for updates/Graphene Demo")]
+    static void CheckForUpdatesDemo()
+    {
+      var owner = new PackageRequest();
+      EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner, gitUrlDemo, "Graphene Demo"), owner);
     }
 
-    static IEnumerator MonitorPackageUpdate(PackageRequest owner)
+
+    static IEnumerator MonitorPackageUpdate(PackageRequest owner, string gitUrl, string packageName)
     {
+      Debug.Log($"Checking for updates for {packageName}...");
+
       var request = UnityEditor.PackageManager.Client.Add(gitUrl);
 
       while (!request.IsCompleted)
