@@ -47,16 +47,30 @@ namespace Graphene
       }
 
       plate.onRefreshVisualTree += Plate_onRefreshHierarchy;
+      Plate_onRefreshHierarchy();
     }
 
     private void Plate_onRefreshHierarchy()
     {
       navigationButtonGroup = plate.Root.Q<ButtonGroup>();
-      navigationButtonGroup.onChangeIndex += NavigationButtonGroup_onChangeIndex;
+
+      if (navigationButtonGroup == null)
+      {
+        Debug.LogError($"{GetType().Name} requires a ButtonGroup VisualElement in its static template", this);
+        return;
+      }
+      else
+        navigationButtonGroup.onChangeIndex += NavigationButtonGroup_onChangeIndex;
     }
 
     private void Router_onStateChange(string newState)
     {
+      if(navigationButtonGroup == null)
+      {
+        Debug.LogError($"{GetType().Name} requires a ButtonGroup VisualElement in its static template", this);
+        return;
+      }
+
       int i = 0;
       
       foreach (var state in states)
