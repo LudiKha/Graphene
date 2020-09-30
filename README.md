@@ -48,7 +48,7 @@ It comes with a **component-kit** library, several VisualElement extensions and 
 ```
 {
   "dependencies": {
-    "com.cupbearer.graphene": "https://github.com/LudiKha/Graphene.git?path=/src",
+    "com.graphene.core": "https://github.com/LudiKha/Graphene.git?path=/src",
     ...
   },
 }
