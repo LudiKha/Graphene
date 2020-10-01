@@ -47,7 +47,6 @@ namespace Graphene
       }
 
       plate.onRefreshVisualTree += Plate_onRefreshHierarchy;
-      Plate_onRefreshHierarchy();
     }
 
     private void Plate_onRefreshHierarchy()
