@@ -1,6 +1,7 @@
 ﻿
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -98,7 +99,7 @@ namespace Graphene
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value == BindingMode.OneTime)
         return;
 
-      CreateBinding<string>(el, ref context, in member, panel);
+      CreateBinding<string>(el, in context, in member, panel);
     }
 
     /// <summary>
@@ -109,13 +110,13 @@ namespace Graphene
     /// <param name="context"></param>
     /// <param name="member"></param>
     /// <param name="panel"></param>
-    public static void TryCreate<TValueType>(BaseField<TValueType> el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    public static void TryCreate<TValueType>(BaseField<TValueType> el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       // Specifically set to one-time
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value != BindingMode.OneTime)
         return;
 
-      CreateBinding<TValueType>(el, ref context, in member, panel);
+      CreateBinding<TValueType>(el, in context, in member, panel);
     }
 
 
@@ -126,22 +127,22 @@ namespace Graphene
     /// <param name="context"></param>
     /// <param name="bindingPath"></param>
     /// <param name="panel"></param>
-    public static void TryCreate<TValueType>(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    public static void TryCreate<TValueType>(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       // Specifically set to one-time -> cancel binding
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value == BindingMode.OneTime)
         return;
 
-      CreateBinding<TValueType>(el, ref context, in member, panel);
+      CreateBinding<TValueType>(el, in context, in member, panel);
     }
 
-    internal static void CreateBinding<TValueType>(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    internal static void CreateBinding<TValueType>(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       Binding binding = null;
       if (member.MemberInfo is FieldInfo)
-        binding = new FieldBinding<TValueType>(el, ref context, in member);
+        binding = new FieldBinding<TValueType>(el, in context, in member);
       else if (member.MemberInfo is PropertyInfo)
-        binding = new PropertyBinding<TValueType>(el, ref context, in member);
+        binding = new PropertyBinding<TValueType>(el, in context, in member);
 
       if (binding != null)
         GetList(panel, bindings).Add(binding);
@@ -199,7 +200,7 @@ namespace Graphene
     protected string memberName;
     protected ExtendedTypeInfo extendedTypeInfo;
 
-    public Binding(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member)
+    public Binding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member)
     {
       this.element = el;
       this.context = context;
@@ -260,6 +261,8 @@ namespace Graphene
           textEl.text = text;
         else if (element is IBindableElement<object> bindableEl)
           bindableEl.OnModelChange(newValue);
+        else if (element is ListView listView && newValue is IList iList)
+          listView.itemsSource = iList;
       }
 
       lastValue = newValue;
@@ -284,7 +287,7 @@ namespace Graphene
   {
     protected PropertyInfo propertyInfo;
 
-    public PropertyBinding(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member) : base(el, ref context, in member)
+    public PropertyBinding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member) : base(el, in context, in member)
     {
       if (member.MemberInfo is PropertyInfo propInfo)
         this.propertyInfo = propInfo;
@@ -317,7 +320,7 @@ namespace Graphene
   {
     protected FieldInfo fieldInfo;
 
-    public FieldBinding(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member) : base(el, ref context, in member)
+    public FieldBinding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member) : base(el, in context, in member)
     {
       if (member.MemberInfo is FieldInfo fieldInfo)
         this.fieldInfo = fieldInfo;
