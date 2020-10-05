@@ -190,8 +190,7 @@ namespace Graphene
   {
     public bool scheduleDispose;
     public void Dispose()
-    {
-      throw new NotImplementedException();
+    {      
     }
 
     public abstract void PreUpdate();
@@ -315,15 +314,6 @@ namespace Graphene
   {
     public MemberBinding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member) : base(el, in context, in member)
     {
-      if (member.MemberInfo is PropertyInfo propInfo)
-      {
-      }
-      else
-      {
-        scheduleDispose = true;
-        return;
-      }
-
       lastValue = GetValueFromMemberInfo();
     }
 
