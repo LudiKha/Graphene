@@ -1,6 +1,6 @@
 {
   "name": "com.graphene.core",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "displayName": "Graphene",
   "description": "A lightweight & flexible open-source UI framework for Unity's UI Toolkit.",
   "unity": "2018.3",
