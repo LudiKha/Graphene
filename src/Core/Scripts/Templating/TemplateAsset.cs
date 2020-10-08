@@ -20,6 +20,8 @@ namespace Graphene
     [SerializeField] string _AddClass; public string AddClass => _AddClass;
     [SerializeField] string _AddClassToChildren; public string AddClassToChildren => _AddClassToChildren;
 
+    [SerializeField] float _forceHeight = -1; public float ForceHeight => _forceHeight;
+
     public virtual VisualElement Instantiate()
     {
       TemplateContainer clone = VisualTreeAsset.CloneTree();

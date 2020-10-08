@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
@@ -48,7 +49,7 @@ namespace Graphene
         else if (IsPrimitiveContext(member.Value))
           DrawFromPrimitiveContext(plate, container, in context, templates, member, bindableMembers);
         else if (member.Value is IEnumerable enumerable)
-          DrawFromEnumerableContext(plate, container, in enumerable, templates, member);
+          DrawFromEnumerableContext(plate, container, in context, templates, member, bindableMembers);
         else
           DrawFromObjectContext(plate, container, in context, templates, member);
       }
@@ -80,24 +81,32 @@ namespace Graphene
       container.Add(clone);
     }
 
-    internal static void DrawFromEnumerableContext(Plate panel, VisualElement container, in IEnumerable context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember)
+    internal static void DrawFromEnumerableContext(Plate plate, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember, List<ValueWithAttribute<BindAttribute>> bindableMembers)
     {
       // Don't support primitives or string
       //if (typeof(T).IsPrimitive)
       //  return;
 
-      foreach (var item in context)
+      // If element is listview -> use native functionality
+      if(container is ListView listView && drawMember.Value is IList listContext)
+      {
+        var bind = bindableMembers.Find(x => x.MemberInfo.Equals(drawMember.MemberInfo));
+        DrawListView(plate, listView, listContext, templates, in drawMember, bind);
+        return;
+      }
+
+      foreach (var item in drawMember.Value as IEnumerable)
       {
         if (IsPrimitiveContext(in item))
         {
           // Fugly, but works (for now)
           var bind = new ValueWithAttribute<BindAttribute>(item, new BindAttribute("Label", BindingMode.OneTime), drawMember.MemberInfo);
-          DrawFromPrimitiveContext(panel, container, in item, templates, new ValueWithAttribute<DrawAttribute>(item, drawMember.Attribute, drawMember.MemberInfo), new List<ValueWithAttribute<BindAttribute>> { bind });
+          DrawFromPrimitiveContext(plate, container, in item, templates, new ValueWithAttribute<DrawAttribute>(item, drawMember.Attribute, drawMember.MemberInfo), new List<ValueWithAttribute<BindAttribute>> { bind });
         }
         else
         {
           var draw = new ValueWithAttribute<DrawAttribute>(item, drawMember.Attribute, drawMember.MemberInfo);
-          DrawFromObjectContext(panel, container, in item, templates, draw);
+          DrawFromObjectContext(plate, container, in item, templates, draw);
 
           //var template = templates.TryGetTemplateAsset(item, drawMember.Attribute);
           //// Clone & bind the control
@@ -106,6 +115,13 @@ namespace Graphene
           //container.Add(clone);
         }
       }
+    }
+
+    internal static void DrawListView(Plate plate, ListView listView, in object context, TemplatePreset templates, in ValueWithAttribute<DrawAttribute> drawMember, in ValueWithAttribute<BindAttribute> bindMember)
+    {
+      var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute);
+
+      Binder.BindListView(listView, in context, plate, template, in bindMember);
     }
   }
 }

@@ -1,8 +1,8 @@
 ﻿
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,6 +11,7 @@ namespace Graphene
 {
   using Elements;
   using Kinstrife.Core.ReflectionHelpers;
+  using System.ComponentModel;
 
   public static class BindingManager
   {
@@ -20,6 +21,7 @@ namespace Graphene
     static Dictionary<Plate, List<Binding>> bindings = new Dictionary<Plate, List<Binding>>();
 
     static Dictionary<Plate, List<Binding>> disposePostUpdate = new Dictionary<Plate, List<Binding>>();
+    static Dictionary<Plate, List<Binding>> createPostUpdate = new Dictionary<Plate, List<Binding>>();
 
     internal static uint bindingsCount;
 
@@ -29,6 +31,7 @@ namespace Graphene
     {
       bindings = new Dictionary<Plate, List<Binding>>();
       disposePostUpdate = new Dictionary<Plate, List<Binding>>();
+      createPostUpdate = new Dictionary<Plate, List<Binding>>();
       bindingsCount = 0;
     }
 #endif
@@ -68,9 +71,19 @@ namespace Graphene
         }
       }
 
+      // Create bindings
+      foreach (var kvp in createPostUpdate)
+      {
+        var list = GetList(kvp.Key, bindings);
+        foreach (var binding in kvp.Value)
+          list.Add(binding);
+      }
+
+      // Dispose unused bindings
       foreach (var kvp in disposePostUpdate)
         foreach (var binding in kvp.Value)
           Destroy(kvp.Key, binding);
+
 
       disposePostUpdate.Clear();
     }
@@ -98,7 +111,7 @@ namespace Graphene
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value == BindingMode.OneTime)
         return;
 
-      CreateBinding<string>(el, ref context, in member, panel);
+      CreateBinding<string>(el, in context, in member, panel);
     }
 
     /// <summary>
@@ -109,13 +122,13 @@ namespace Graphene
     /// <param name="context"></param>
     /// <param name="member"></param>
     /// <param name="panel"></param>
-    public static void TryCreate<TValueType>(BaseField<TValueType> el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    public static void TryCreate<TValueType>(BaseField<TValueType> el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       // Specifically set to one-time
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value != BindingMode.OneTime)
         return;
 
-      CreateBinding<TValueType>(el, ref context, in member, panel);
+      CreateBinding<TValueType>(el, in context, in member, panel);
     }
 
 
@@ -126,25 +139,27 @@ namespace Graphene
     /// <param name="context"></param>
     /// <param name="bindingPath"></param>
     /// <param name="panel"></param>
-    public static void TryCreate<TValueType>(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    public static void TryCreate<TValueType>(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       // Specifically set to one-time -> cancel binding
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value == BindingMode.OneTime)
         return;
 
-      CreateBinding<TValueType>(el, ref context, in member, panel);
+      CreateBinding<TValueType>(el, in context, in member, panel);
     }
 
-    internal static void CreateBinding<TValueType>(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    internal static void CreateBinding<TValueType>(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       Binding binding = null;
-      if (member.MemberInfo is FieldInfo)
-        binding = new FieldBinding<TValueType>(el, ref context, in member);
-      else if (member.MemberInfo is PropertyInfo)
-        binding = new PropertyBinding<TValueType>(el, ref context, in member);
+      // Collection binding
+      if (el is ListView && typeof(TValueType).IsAssignableFrom(typeof(ICollection)))
+        binding = new CollectionBinding(el, in context, in member);
+      // Single binding
+      else
+        binding = new MemberBinding<TValueType>(el, in context, in member);
 
       if (binding != null)
-        GetList(panel, bindings).Add(binding);
+        GetList(panel, createPostUpdate).Add(binding);
     }
 
     public static void ScheduleDispose(Plate panel, Binding binding)
@@ -175,8 +190,7 @@ namespace Graphene
   {
     public bool scheduleDispose;
     public void Dispose()
-    {
-      throw new NotImplementedException();
+    {      
     }
 
     public abstract void PreUpdate();
@@ -199,7 +213,7 @@ namespace Graphene
     protected string memberName;
     protected ExtendedTypeInfo extendedTypeInfo;
 
-    public Binding(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member)
+    public Binding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member)
     {
       this.element = el;
       this.context = context;
@@ -213,6 +227,10 @@ namespace Graphene
 
     void DetermineBindingMode()
     {
+      if (context is INotifyPropertyChanged notifyPropertyChanged)
+      {
+        notifyPropertyChanged.PropertyChanged += Model_PropertyChanged;
+      }
       // Specifically set to not have two-way binding
       if (attribute.bindingMode.HasValue)
       {
@@ -228,6 +246,10 @@ namespace Graphene
         else if (this.element is INotifyValueChanged<T>)
           RegisterTwoWayValueChangeCallback();
       }
+    }
+
+    protected virtual void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
     }
 
     public override void PreUpdate()
@@ -251,8 +273,13 @@ namespace Graphene
 
       newValue = GetValueFromMemberInfo();
 
+      UpdateFromModel(in newValue);
+    }
+
+    protected virtual void UpdateFromModel(in T newValue)
+    {
       // Model changed -> Update view
-      if (this.lastValue != null && !this.lastValue.Equals(newValue))
+      if (!this.lastValue.Equals(newValue))
       {
         if (newValue is T && element is BaseField<T> baseField)
           baseField.SetValueWithoutNotify(newValue);
@@ -260,6 +287,8 @@ namespace Graphene
           textEl.text = text;
         else if (element is IBindableElement<object> bindableEl)
           bindableEl.OnModelChange(newValue);
+        else
+          Debug.LogError("No binding found");
       }
 
       lastValue = newValue;
@@ -269,7 +298,8 @@ namespace Graphene
     {
       if (element is INotifyValueChanged<T> notifyChangeEl)
       {
-        notifyChangeEl.RegisterValueChangedCallback((evt) => {
+        notifyChangeEl.RegisterValueChangedCallback((evt) =>
+        {
           SetValueFromMemberInfo(evt.newValue);
         });
       }
@@ -280,26 +310,16 @@ namespace Graphene
     protected abstract void SetValueFromMemberInfo(T value);
   }
 
-  public class PropertyBinding<T> : Binding<T>
+  public class MemberBinding<T> : Binding<T>
   {
-    protected PropertyInfo propertyInfo;
-
-    public PropertyBinding(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member) : base(el, ref context, in member)
+    public MemberBinding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member) : base(el, in context, in member)
     {
-      if (member.MemberInfo is PropertyInfo propInfo)
-        this.propertyInfo = propInfo;
-      else
-      {
-        scheduleDispose = true;
-        return;
-      }
-
       lastValue = GetValueFromMemberInfo();
     }
 
     protected override bool IsValidBinding()
     {
-      return propertyInfo != null;
+      return context != null;
     }
 
     protected override T GetValueFromMemberInfo()
@@ -313,14 +333,15 @@ namespace Graphene
     }
   }
 
-  public class FieldBinding<T> : Binding<T>
+  public class CollectionBinding : Binding<ICollection>
   {
-    protected FieldInfo fieldInfo;
+    protected int? lastLength;
 
-    public FieldBinding(BindableElement el, ref object context, in ValueWithAttribute<BindAttribute> member) : base(el, ref context, in member)
+    public CollectionBinding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member) : base(el, in context, in member)
     {
-      if (member.MemberInfo is FieldInfo fieldInfo)
-        this.fieldInfo = fieldInfo;
+      if (member.Value is ICollection)
+      {
+      }
       else
       {
         scheduleDispose = true;
@@ -328,19 +349,31 @@ namespace Graphene
       }
 
       lastValue = GetValueFromMemberInfo();
+      lastLength = lastValue?.Count;
     }
 
     protected override bool IsValidBinding()
     {
       return memberName != null;
     }
-    protected override T GetValueFromMemberInfo()
+    protected override ICollection GetValueFromMemberInfo()
     {
-      return (T)extendedTypeInfo.Accessor[context, memberName];
+      return (ICollection)extendedTypeInfo.Accessor[context, memberName];
     }
-    protected override void SetValueFromMemberInfo(T value)
+    protected override void SetValueFromMemberInfo(ICollection value)
     {
       extendedTypeInfo.Accessor[context, memberName] = value;
+    }
+
+    protected override void UpdateFromModel(in ICollection newValue)
+    {
+      // Collection reference/count changed -> Assign new list
+      if (!this.lastValue.Equals(newValue) || newValue.Count != lastLength.Value)
+        if (element is ListView listView && newValue is IList iList)
+        {
+          listView.itemsSource = iList;
+          lastLength = iList?.Count;
+        }
     }
   }
 }
