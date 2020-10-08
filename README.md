@@ -24,7 +24,10 @@ It's **lightweight** and modular - you get to pick and choose which parts you ne
 - **State-Based Routing**: Use the GameObject hierarchy dynamically construct your router's states. Its functionality mimics url-based addresses: `index/settings/video`.
 - **Template Composition**: Reuse your static assets by writing atomic templates, and dynamically compose them in runtime.
 
-It comes with a **component-kit** library, several VisualElement extensions and a sample application to get you started.
+It comes with a **[component-kit][e593c071]** library, **[sample package][05f1d8f6]** several VisualElement extensions and a sample application to get you started.
+
+  [e593c071]: https://github.com/LudiKha/Graphene-Components "Graphene Components"
+  [05f1d8f6]: https://github.com/LudiKha/Graphene-Demo "Graphene-Demo"
 
 
 ## Demo
@@ -49,10 +52,14 @@ It comes with a **component-kit** library, several VisualElement extensions and 
 {
   "dependencies": {
     "com.graphene.core": "https://github.com/LudiKha/Graphene.git?path=/src",
+    "com.graphene.components": "https://github.com/LudiKha/Graphene-Components.git?path=/src",
+    "com.graphene.demo": "https://github.com/LudiKha/Graphene-Demo.git?path=/src",
     ...
   },
 }
 ```
+
+>Do note that although both components and demo are optional packages, it is recommended you use them to kickstart your own Graphene-based development environment.
 
 #### Staying updated
 Updating the package can be done via `Window/Graphene/Check for updates`. Unity currently does not support updating Git packages via the Package Manager automatically.
