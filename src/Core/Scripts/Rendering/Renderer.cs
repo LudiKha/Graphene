@@ -71,10 +71,10 @@ namespace Graphene
 
       if (viewModel != null)
       {
+        viewModel.Initialize(container, plate);
+
         if (!viewModel.Render)
           return;
-
-        viewModel.Initialize(container, plate);
       }
 
       // Render & bind the dynamic items

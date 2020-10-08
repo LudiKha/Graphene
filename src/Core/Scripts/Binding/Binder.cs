@@ -8,6 +8,7 @@ namespace Graphene
 {
   using Elements;
   using Kinstrife.Core.ReflectionHelpers;
+  using System.Collections;
 
   public interface IRoute
   {
@@ -31,7 +32,7 @@ namespace Graphene
     /// <typeparam name="T"></typeparam>
     /// <param name="element"></param>
     /// <param name="context"></param>
-    public static VisualElement Instantiate(in object context, TemplateAsset template, Plate panel)
+    public static VisualElement Instantiate(in object context, TemplateAsset template, Plate plate)
     {
       var clone = template.Instantiate();
 
@@ -44,7 +45,7 @@ namespace Graphene
         // Get members
         List<ValueWithAttribute<BindAttribute>> members = new List<ValueWithAttribute<BindAttribute>>();
         TypeInfoCache.GetMemberValuesWithAttribute<BindAttribute>(context, members);
-        Binder.BindRecursive(clone, context, members, panel, false);
+        Binder.BindRecursive(clone, context, members, plate, false);
       }
       return clone;
     }
@@ -55,7 +56,7 @@ namespace Graphene
     /// <typeparam name="T"></typeparam>
     /// <param name="element"></param>
     /// <param name="fieldValue"></param>
-    public static VisualElement InstantiatePrimitive(in object context, ref ValueWithAttribute<BindAttribute> bindableMember, TemplateAsset template, Plate panel)
+    public static VisualElement InstantiatePrimitive(in object context, ref ValueWithAttribute<BindAttribute> bindableMember, TemplateAsset template, Plate plate)
     {
       var clone = template.Instantiate();
 
@@ -70,7 +71,7 @@ namespace Graphene
       members.Add(bindableMember);
 
       // Bind without scope drilldown
-      Binder.BindRecursive(clone, context, members, panel, false);
+      Binder.BindRecursive(clone, context, members, plate, false);
 
       return clone;
     }
@@ -81,7 +82,7 @@ namespace Graphene
     /// <typeparam name="T"></typeparam>
     /// <param name="element"></param>
     /// <param name="context"></param>
-    public static void BindRecursive(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel, bool notFullyDrilledDown)
+    public static void BindRecursive(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate, bool notFullyDrilledDown)
     {
       if (members == null)
       {
@@ -94,26 +95,26 @@ namespace Graphene
       if (element is BindableElement el && !string.IsNullOrWhiteSpace(el.bindingPath))
       {
         // Should drill down to a child's scope (based on binding-path '.', and scope ovveride '~')
-        bool branched = notFullyDrilledDown && TryBranch(el, context, panel);
+        bool branched = notFullyDrilledDown && TryBranch(el, context, plate);
         if (branched) // Started branch via drilled down scope branch
           return;
 
-        BindElementValues(el, ref context, members, panel);
+        BindElementValues(el, ref context, members, plate);
 
         // Context potentially has routing binding (TODO remove interface check)
-        if (context is IRoute && panel.Router)
-          panel.Router.BindRouteToContext(el, context);
+        if (context is IRoute && plate.Router)
+          plate.Router.BindRouteToContext(el, context);
       }
       // Rout el special case
       else if (element is Route route)
       {
-        BindRoute(route, ref context, panel);
+        BindRoute(route, ref context, plate);
       }
 
-      BindChildren(element, context, members, panel, notFullyDrilledDown);
+      BindChildren(element, context, members, plate, notFullyDrilledDown);
     }
 
-    static void BindChildren(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel, bool scopeDrillDown)
+    static void BindChildren(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate, bool scopeDrillDown)
     {
       //element.BindValues(data);
       if (element.childCount == 0)
@@ -124,7 +125,7 @@ namespace Graphene
       // Loop through children and bind data to them
       foreach (var child in element.Children())
       {
-        BindRecursive(child, context, members, panel, scopeDrillDown);
+        BindRecursive(child, context, members, plate, scopeDrillDown);
       }
     }
 
@@ -134,56 +135,56 @@ namespace Graphene
     /// <typeparam name="T"></typeparam>
     /// <param name="el"></param>
     /// <param name="data"></param>
-    private static void BindElementValues<V>(V el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel) where V : BindableElement
+    private static void BindElementValues<V>(V el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate) where V : BindableElement
     {
       // Pass in list of properties for possible custom logic spanning multiple properties
       if (el is Label)
-        BindLabel(el as Label, ref context, members, panel);
+        BindLabel(el as Label, ref context, members, plate);
       else if (el is Button)
-        BindButton(el as Button, ref context, members, panel);
+        BindButton(el as Button, ref context, members, plate);
       else if (el is If)
-        BindIf(el as If, ref context, members, panel);
+        BindIf(el as If, ref context, members, plate);
       else if (el is CycleField)
-        BindCycleField(el as CycleField, ref context, members, panel);
+        BindCycleField(el as CycleField, ref context, members, plate);
       else if (el is ListView)
-        BindListView(el as ListView, ref context, members, panel);
+        BindListView(el as ListView, ref context, members, plate);
       else if (el is SelectField)
-        BindSelectField(el as SelectField, ref context, members, panel);
+        BindSelectField(el as SelectField, ref context, members, plate);
       else if (el is Toggle)
-        BindBaseField<bool>(el as Toggle, ref context, members, panel);
+        BindBaseField<bool>(el as Toggle, ref context, members, plate);
       else if (el is Slider)
-        BindSlider(el as Slider, ref context, members, panel);
+        BindSlider(el as Slider, ref context, members, plate);
       else if (el is SliderInt)
-        BindSlider(el as SliderInt, ref context, members, panel);
+        BindSlider(el as SliderInt, ref context, members, plate);
       else if (el is TextField)
-        BindTextField(el as TextField, ref context, members, panel);
+        BindTextField(el as TextField, ref context, members, plate);
       else if (el is TextElement)
-        BindTextElement(el as TextElement, ref context, members, panel);
+        BindTextElement(el as TextElement, ref context, members, plate);
     }
 
-    private static void BindTextElement(TextElement el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindTextElement(TextElement el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       foreach (var item in members)
       {
         if (BindingPathOrTypeMatch<string>(el, in item))
         {
-          BindText(el, ref context, in item.Value, in item, panel);
+          BindText(el, ref context, in item.Value, in item, plate);
         }
       }
     }
-    private static void BindLabel(Label el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindLabel(Label el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       foreach (var item in members)
       {
         if (BindingPathOrTypeMatch<string>(el, in item))
         {
-          BindText(el, ref context, in item.Value, in item, panel);
+          BindText(el, ref context, in item.Value, in item, plate);
         }
       }
     }
 
 
-    private static void BindButton(Button el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindButton(Button el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       foreach (var item in members)
       {
@@ -194,12 +195,12 @@ namespace Graphene
           else if (item.Value is UnityEngine.Events.UnityEvent)
             BindClick(el, (UnityEngine.Events.UnityEvent)item.Value);
           else
-            BindText(el, ref context, in item.Value, in item, panel);
+            BindText(el, ref context, in item.Value, in item, plate);
         }
       }
     }
 
-    private static void BindRoute(Route el, ref object context, Plate panel)
+    private static void BindRoute(Route el, ref object context, Plate plate)
     {
       // Check if parent is a button -> propagate click
       if (el.parent is Button button)
@@ -211,13 +212,13 @@ namespace Graphene
             btn.clicked += el.clicked;
       }
 
-      el.router = panel.Router as Router<string>;
+      el.router = plate.Router as Router<string>;
 
       // Let the (generic) router handle the way it binds routes
-      panel.Router.BindRoute(el, context);
+      plate.Router.BindRoute(el, context);
     }
 
-    private static void BindSlider(Slider el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindSlider(Slider el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       // Slider specifics
       foreach (var item in members)
@@ -241,10 +242,10 @@ namespace Graphene
       }
 
       // Bind base field value & callback
-      BindBaseField(el, ref context, members, panel);
+      BindBaseField(el, ref context, members, plate);
     }
 
-    private static void BindSlider(SliderInt el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindSlider(SliderInt el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       // Slider specifics
       foreach (var item in members)
@@ -268,11 +269,11 @@ namespace Graphene
       }
 
       // Bind base field value & callback
-      BindBaseField(el, ref context, members, panel);
+      BindBaseField(el, ref context, members, plate);
     }
 
 
-    private static void BindTextField(TextField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindTextField(TextField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       foreach (var item in members)
       {
@@ -293,10 +294,10 @@ namespace Graphene
         }
       }
 
-      BindBaseField(el, ref context, members, panel);
+      BindBaseField(el, ref context, members, plate);
     }
 
-    private static void BindBaseField<TValueType>(BaseField<TValueType> el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindBaseField<TValueType>(BaseField<TValueType> el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       bool labelFromAttribute = false;
       foreach (var item in members)
@@ -307,7 +308,7 @@ namespace Graphene
           if (item.Value is TValueType)
           {
             el.SetValueWithoutNotify((TValueType)item.Value);
-            BindingManager.TryCreate(el, ref context, in item, panel);
+            BindingManager.TryCreate(el, in context, in item, plate);
           }
 
           // Set label from attribute
@@ -325,13 +326,13 @@ namespace Graphene
           el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<TValueType>>);
         // Set label from field
         else if (!labelFromAttribute && item.Attribute.Path == "Label" && item.Value is string labelText && !string.IsNullOrWhiteSpace(labelText))
-          BindText(el.labelElement, ref context, labelText, in item, panel);
+          BindText(el.labelElement, ref context, labelText, in item, plate);
         else if (item.Attribute is BindTooltip)
           el.tooltip = (string)item.Value;
       }
     }
 
-    private static void BindSelectField(SelectField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindSelectField(SelectField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       // Then bind the items
       foreach (var item in members)
@@ -345,38 +346,48 @@ namespace Graphene
       }
 
       // First bind base field (int)
-      BindBaseField(el, ref context, members, panel);
+      BindBaseField(el, ref context, members, plate);
     }
 
-    private static void BindListView(ListView el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindListView(ListView el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
-      foreach (var item in members)
+      foreach (var bindMember in members)
       {
         // Primary
-        if (BindingPathMatch(item.Attribute.Path, SelectField.itemsPath))
+        if (BindingPathMatch(bindMember.Attribute.Path, el.bindingPath))
         {
-          Func<VisualElement> makeItem = () => new Label("ListViewItem");
-          Action<VisualElement, int> bindItem = (e, i) => (e as Label).text = (e as Label).text + " " + i;
+          IList list = bindMember.Value as IList;
+          TemplateAsset templateAsset = plate.renderer.Templates.TryGetTemplateAsset(ControlType.ListItem);
 
-          var options = item.Value as List<string>;
-          bindItem = (e, i) => (e as Label).text = options[i];
-          el.itemsSource = options;
-          //if (item.Value is T)
-          //  el.SetValueWithoutNotify((T)item.Value);
-          //else if (item.Attribute is BindValueChangeCallbackAttribute callbackAttribute)
-          //  el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<T>>);
-
+          Func<VisualElement> makeItem = () => { return templateAsset.Instantiate(); };
+          Action<VisualElement, int> bindItem = (e, i) => { Binder.BindRecursive(e, list[i], null, plate, false); };
           el.makeItem = makeItem;
           el.bindItem = bindItem;
+          el.itemsSource = list;
+          if (templateAsset.ForceHeight > 0)
+            el.itemHeight = (int)templateAsset.ForceHeight;
 
-          // Scale in accordance with number of items
-          el.style.height = el.itemHeight * el.itemsSource.Count;
+
+          BindingManager.TryCreate<IList>(el, in context, in bindMember, plate);
           break;
         }
       }
     }
 
-    private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    internal static void BindListView(ListView el, in object context, Plate plate, TemplateAsset templateAsset, in ValueWithAttribute<BindAttribute> member)
+    {
+      IList list = member.Value as IList;
+
+      Func<VisualElement> makeItem = () => { return templateAsset.Instantiate(); };
+      Action<VisualElement, int> bindItem = (e, i) => { Binder.BindRecursive(e, list[i], null, plate, false); };
+      el.makeItem = makeItem;
+      el.bindItem = bindItem;
+      el.itemsSource = list;
+
+      BindingManager.TryCreate<IList>(el, in context, in member, plate);
+    }
+
+    private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       // Then bind the items
       foreach (var item in members)
@@ -390,10 +401,10 @@ namespace Graphene
       }
 
       // First bind base field (int)
-      BindBaseField(el, ref context, members, panel);
+      BindBaseField(el, ref context, members, plate);
     }
 
-    private static void BindIf(If el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate panel)
+    private static void BindIf(If el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       // Then bind the items
       foreach (var item in members)
@@ -402,13 +413,13 @@ namespace Graphene
         if (BindingPathMatch(el, in item))
         {
           el.OnModelChange(item.Value);
-          BindingManager.TryCreate<object>(el, ref context, in item, panel);
+          BindingManager.TryCreate<object>(el, in context, in item, plate);
           return;
         }
       }
     }
 
-    private static void BindText(TextElement el, ref object context, in object obj, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    private static void BindText(TextElement el, ref object context, in object obj, in ValueWithAttribute<BindAttribute> member, Plate plate)
     {
       // Add translation here
       if (obj is string str)
@@ -416,7 +427,7 @@ namespace Graphene
       else if (obj != null)
         el.text = obj.ToString();
 
-      BindingManager.TryCreate(el, ref context, in member, panel);
+      BindingManager.TryCreate(el, ref context, in member, plate);
     }
 
     private static void BindClick(Button el, System.Action action)
