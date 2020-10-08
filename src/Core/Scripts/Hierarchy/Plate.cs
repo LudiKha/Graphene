@@ -37,11 +37,12 @@ namespace Graphene
     /// The theme that will be applied to the root element of this plate
     /// </summary>
     [SerializeField] Theme theme;
-    //protected UIDocument doc;
+    [SerializeField] bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
 
     [SerializeField] protected string[] contentContainerSelector = new string[] { "GR__Content" };
 
-    [SerializeField] bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
+    [Tooltip("Adds any number of classes to the root element. Separated by space")]
+    [SerializeField] protected string addClasses;
 
     [SerializeField] PositionMode positionMode;
     [SerializeField] public BindingRefreshMode bindingRefreshMode = BindingRefreshMode.ModelChange;
@@ -59,13 +60,20 @@ namespace Graphene
     #endregion
 
     #region VisualElements Reference
-    protected VisualElement root; public VisualElement Root => root;
-    // Main container for repeat elements
-    protected VisualElement contentContainer; public VisualElement ContentContainer => contentContainer;
-    protected VisualElement childContainer; public VisualElement ChildContainer => childContainer;
+    public VisualElement Root { get; private set; }
+    /// <summary>
+    /// Main container for attached renderer's output of (repeat) elements.
+    /// </summary>
+    public VisualElement ContentContainer { get; private set; }
+    public VisualElement ChildContainer { get; private set; }
 
-
+    /// <summary>
+    /// The default view. This controller's children will be added to this by default.
+    /// </summary>
     View defaultView;
+    /// <summary>
+    /// List of views in the template.
+    /// </summary>
     List<View> views = new List<View>();
 
     #endregion
@@ -86,14 +94,10 @@ namespace Graphene
       if (Initialized)
         return;
       GetLocalReferences();
-      //SetupVisualTree();
     }
 
     protected virtual void GetLocalReferences()
     {
-      //if (!doc)
-      //  doc = GetComponent<UIDocument>();
-
       if (!router)
         router = GetComponentInParent<Router>();
 
@@ -107,39 +111,35 @@ namespace Graphene
 
     internal void ConstructVisualTree()
     {
-      root = visualAsset.CloneTree();
-      //root = doc.rootVisualElement;
+      Root = visualAsset.CloneTree();
 
-      contentContainer = GetVisualElement(contentContainerSelector);
+      ContentContainer = GetVisualElement(contentContainerSelector);
 
       // Get views
-      views = root.Query<View>().ToList();
+      views = Root.Query<View>().ToList();
       defaultView = views.Find(x => x.isDefault) ?? views.FirstOrDefault();
       if (theme)
-        theme.ApplyStyles(root);
+        theme.ApplyStyles(Root);
 
       if (positionMode == PositionMode.Relative)
-        root.AddToClassList("flex-grow");
+        Root.AddToClassList("flex-grow");
       else if (positionMode == PositionMode.Absolute)
-        root.AddMultipleToClassList("absolute fill");
+        Root.AddMultipleToClassList("absolute fill");
+
+      if (!string.IsNullOrWhiteSpace(addClasses))
+        Root.AddMultipleToClassList(addClasses);
 
       Initialized = true;
       onRefreshVisualTree?.Invoke();
 
-      root.RegisterCallback<PointerMoveEvent>((evt) => ChangeEvent());
-      root.RegisterCallback<PointerDownEvent>((evt) => ChangeEvent());
-      root.RegisterCallback<PointerUpEvent>((evt) => ChangeEvent());
-
-
-      root.RegisterCallback<PointerMoveEvent>((evt) =>
-      {
-        wasChangedThisFrame = true;
-      });
+      Root.RegisterCallback<PointerMoveEvent>((evt) => ChangeEvent());
+      Root.RegisterCallback<PointerDownEvent>((evt) => ChangeEvent());
+      Root.RegisterCallback<PointerUpEvent>((evt) => ChangeEvent());
     }
 
     void ChangeEvent()
     {
-
+      wasChangedThisFrame = true;
     }
 
     protected void RegisterChild(Plate child)
@@ -158,7 +158,7 @@ namespace Graphene
     protected virtual void Clear()
     {
       // Clear the dynamic content
-      contentContainer.Clear();
+      ContentContainer.Clear();
     }
 
     protected virtual void DetachChildPlates()
@@ -229,8 +229,8 @@ namespace Graphene
         return;
 
       // Enable
-      root.Show();
-      contentContainer.Focus();
+      Root.Show();
+      ContentContainer.Focus();
 
       SetActive(true);
     }
@@ -247,7 +247,7 @@ namespace Graphene
       if (!Initialized)
         return;
 
-      root.Hide();
+      Root.Hide();
 
       SetActive(false);
     }
@@ -280,7 +280,7 @@ namespace Graphene
     void Detach()
     {
       VisualElement temp = new VisualElement();
-      temp.Add(root);
+      temp.Add(Root);
     }
 
     /// <summary>
@@ -296,13 +296,13 @@ namespace Graphene
           var layoutContainer = GetViewById(child.customView.Id);
           if (layoutContainer != null)
           {
-            layoutContainer.Add(child.root);
+            layoutContainer.Add(child.Root);
             continue;
           }
         }
 
         // By default we attach children to default view
-        defaultView.Add(child.root);
+        defaultView.Add(child.Root);
       }
     }
 
@@ -314,7 +314,7 @@ namespace Graphene
     /// <returns></returns>
     public VisualElement GetVisualElement(ICollection<string> names)
     {
-      VisualElement target = root;
+      VisualElement target = Root;
 
       foreach (var name in names)
       {
