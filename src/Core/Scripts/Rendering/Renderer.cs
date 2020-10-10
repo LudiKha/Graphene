@@ -101,8 +101,12 @@ namespace Graphene
       if (model is IModel iModel)
         iModel.onModelChange?.Invoke();
     }
-
+    
+#if ODIN_INSPECTOR
     [Sirenix.OdinInspector.Button]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Button]
+#endif
     public void HardRefresh()
     {
       RenderToContainer(GetDrawContainer());
