@@ -20,15 +20,14 @@ namespace Graphene
     static void CheckForUpdates()
     {
       var owner = new PackageRequest();
-      EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner, gitUrlComponents, "Graphene Core"), owner);
+      EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner, gitUrlCore, "Graphene Core"), owner);
     }
     [MenuItem("Window/Graphene/Check for updates/Graphene Components")]
     static void CheckForUpdatesComponents()
     {
       var owner = new PackageRequest();
-      EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner, gitUrlCore, "Graphene Components"), owner);
+      EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner, gitUrlComponents, "Graphene Components"), owner);
     }
-
     static IEnumerator MonitorPackageUpdate(PackageRequest owner, string gitUrl, string packageName)
     {
       Debug.Log($"Checking for updates for {packageName}...");
