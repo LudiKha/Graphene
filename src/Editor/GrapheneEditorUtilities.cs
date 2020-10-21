@@ -11,7 +11,6 @@ namespace Graphene
     public const string uuid = "com.graphene.core";
     public const string gitUrlCore = "https://github.com/LudiKha/Graphene.git?path=/src";
     public const string gitUrlComponents = "https://github.com/LudiKha/Graphene-Components.git?path=/src";
-    public const string gitUrlDemo = "https://github.com/LudiKha/Graphene-Demo.git?path=/src";
 
     public class PackageRequest
     {
@@ -29,13 +28,6 @@ namespace Graphene
       var owner = new PackageRequest();
       EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner, gitUrlCore, "Graphene Components"), owner);
     }
-    [MenuItem("Window/Graphene/Check for updates/Graphene Demo")]
-    static void CheckForUpdatesDemo()
-    {
-      var owner = new PackageRequest();
-      EditorCoroutineUtility.StartCoroutine(MonitorPackageUpdate(owner, gitUrlDemo, "Graphene Demo"), owner);
-    }
-
 
     static IEnumerator MonitorPackageUpdate(PackageRequest owner, string gitUrl, string packageName)
     {

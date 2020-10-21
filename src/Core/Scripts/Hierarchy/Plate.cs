@@ -183,16 +183,7 @@ namespace Graphene
       // Detach the children so they don't get bound to the scope
       DetachChildPlates();
 
-      //if (renderer)
-      //{
-      //  renderer.Plate_onRefreshStatic();
-      //  Binder.BindRecursive(Root, renderer, null, this, true);
-      //  //Binder.BindRecursive(Root, renderer, null, this, true);
-      //}
       onRefreshStatic?.Invoke();
-
-      // Bind the static template to the renderer
-      //Binder.BindRecursive(Root, this, null, this, true);
 
       // (Re)attach & compose the tree
       AttachChildPlates();
