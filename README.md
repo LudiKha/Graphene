@@ -24,16 +24,17 @@ It's **lightweight** and modular - you get to pick and choose which parts you ne
 - **State-Based Routing**: Use the GameObject hierarchy dynamically construct your router's states. Its functionality mimics url-based addresses: `index/settings/video`.
 - **Template Composition**: Reuse your static assets by writing atomic templates, and dynamically compose them in runtime.
 
-It comes with a **[component-kit][e593c071]** library, **[sample package][05f1d8f6]** several VisualElement extensions and a sample application to get you started.
+It comes with a **[component-kit][e593c071]** library, **[sample project][05f1d8f6]** several VisualElement extensions and an **[online demo][84ed822d]** to get you started.
 
   [e593c071]: https://github.com/LudiKha/Graphene-Components "Graphene Components"
-  [05f1d8f6]: https://github.com/LudiKha/Graphene-Demo "Graphene-Demo"
+  [05f1d8f6]: https://github.com/LudiKha/Graphene-Sample-Project "Graphene-Sample-Project"
+  [84ed822d]: https://ludikha.github.io/Graphene-WebGL-Demo/ "Graphene-WebGL-Demo"
 
 
-## Demo
+## Online Demo
 ### [Check out the WebGL demo ][f45eaa31]
 
-  [f45eaa31]: https://ludikha.github.io/Graphene-Demo/ "Graphene WebGL demo"
+  [f45eaa31]: https://ludikha.github.io/Graphene-WebGL-Demo/ "Graphene WebGL demo"
 
 
 ## Installation
@@ -53,7 +54,6 @@ It comes with a **[component-kit][e593c071]** library, **[sample package][05f1d8
   "dependencies": {
     "com.graphene.core": "https://github.com/LudiKha/Graphene.git?path=/src",
     "com.graphene.components": "https://github.com/LudiKha/Graphene-Components.git?path=/src",
-    "com.graphene.demo": "https://github.com/LudiKha/Graphene-Demo.git?path=/src",
     ...
   },
 }
@@ -83,7 +83,9 @@ The best way to install Graphene and stay up to date with the latest versions, i
 
 # Quickstart
 
-For a quick start, Graphene comes with a Bootstrapping library and demo scene - it is **highly** recommended to start your new project using the demo scene and resources provided within this project.
+For a quick start, Graphene comes with a component library and [sample project][52a86b14] - it is **highly** recommended to start your new project using the demo scene and resources provided within this project.
+
+  [52a86b14]: https://github.com/LudiKha/Graphene-Sample-Project "Graphene Sample Project"
 
 #### 1: Constructing the hierarchy
 - Construct the high-level UI hierarchy, where each unique state is represented by a GameObject
