@@ -132,12 +132,6 @@ namespace Graphene.Elements
       // Manual dispose
       RegisterCallback<DetachFromPanelEvent>((evt) => Dispose());
 
-      //m_ListContainer = new VisualElement();
-      //m_ListContainer.AddToClassList(listContainerUssClassName);
-      //m_ListContainer.AddManipulator(new Clickable(OnClickBackground));
-
-      //hierarchy.Add(m_ListContainer);
-
     }
 
     private void M_ListView_onItemsChosen(IEnumerable<object> obj)
@@ -258,15 +252,10 @@ namespace Graphene.Elements
 
     void SetToggleState(bool value)
     {
-      //m_ListContainer.SetEnabled(value);
-
       if (value)
       {
-        //var root = this.GetRootRecursively();
-        //root.Add(m_ListContainer);
         m_ListView = CreateListView();
         m_Dialog = new Dialog(panel, m_ListView);
-        //m_Dialog.WithStyles(this.styleSheets);
         m_Dialog.onClose += M_Dialog_onClose;
       }
     }
@@ -294,7 +283,7 @@ namespace Graphene.Elements
       listView.itemHeight = defaultItemHeight;
 
       listView.AddToClassList(listViewUssClassName);
-      listView.AddToClassList("h2");
+      listView.AddToClassList("h6");
       listView.bindingPath = "Items";
       listView.focusable = true;
 
