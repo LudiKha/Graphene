@@ -17,7 +17,7 @@ namespace Graphene
     [SerializeField, Tooltip("Disable this if you want to manually initialize Graphene")] bool initializeOnAwake = true;
     [SerializeField] Theme globalTheme;
 
-    [SerializeField] float bindingRefreshRate = 0.02f;
+    [SerializeField] float bindingRefreshRate = 0.2f;
     #region ReadOnlyAttribute
 #if ODIN_INSPECTOR
     [Sirenix.OdinInspector.ReadOnly]
