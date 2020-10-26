@@ -195,12 +195,12 @@ namespace Graphene
     {
       foreach (var item in members)
       {
-        if (BindingPathOrTypeMatch<Action>(el, in item))
+        if (BindingPathOrTypeMatch<string>(el, in item))
+          BindText(el, ref context, in item.Value, in item, plate);
+        else if (BindingPathOrTypeMatch<Action>(el, in item))
           BindClick(el, (Action)item.Value);
         else if(BindingPathOrTypeMatch<UnityEngine.Events.UnityEvent>(el, in item))
           BindClick(el, (UnityEngine.Events.UnityEvent)item.Value);
-        else if(BindingPathOrTypeMatch<string>(el, in item))
-          BindText(el, ref context, in item.Value, in item, plate);
       }
     }
 

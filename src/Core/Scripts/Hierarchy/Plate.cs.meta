@@ -4,7 +4,8 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - theme: {fileID: 11400000, guid: aa0bacd2e1794254faff54ffba0ce4ad, type: 2}
+  - visualAsset: {instanceID: 0}
+  - theme: {instanceID: 0}
   - parent: {instanceID: 0}
   - customView: {instanceID: 0}
   - router: {instanceID: 0}
