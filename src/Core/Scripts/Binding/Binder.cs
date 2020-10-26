@@ -105,6 +105,11 @@ namespace Graphene
         if (context is IRoute && plate.Router)
           plate.Router.BindRouteToContext(el, context);
       }
+      // Image (not bindable)
+      else if (element is Image image)
+      {
+        BindImage(image, ref context, members, plate);
+      }
       // Rout el special case
       else if (element is Route route)
       {
@@ -144,6 +149,8 @@ namespace Graphene
         BindButton(el as Button, ref context, members, plate);
       else if (el is If)
         BindIf(el as If, ref context, members, plate);
+      else if (el is Image image)
+        BindImage(image, ref context, members, plate);
       else if (el is CycleField)
         BindCycleField(el as CycleField, ref context, members, plate);
       else if (el is ListView)
@@ -188,15 +195,12 @@ namespace Graphene
     {
       foreach (var item in members)
       {
-        if (el.bindingPath.Equals(item.Attribute.Path))
-        {
-          if (item.Value is System.Action)
-            BindClick(el, (System.Action)item.Value);
-          else if (item.Value is UnityEngine.Events.UnityEvent)
-            BindClick(el, (UnityEngine.Events.UnityEvent)item.Value);
-          else
-            BindText(el, ref context, in item.Value, in item, plate);
-        }
+        if (BindingPathOrTypeMatch<Action>(el, in item))
+          BindClick(el, (Action)item.Value);
+        else if(BindingPathOrTypeMatch<UnityEngine.Events.UnityEvent>(el, in item))
+          BindClick(el, (UnityEngine.Events.UnityEvent)item.Value);
+        else if(BindingPathOrTypeMatch<string>(el, in item))
+          BindText(el, ref context, in item.Value, in item, plate);
       }
     }
 
@@ -419,6 +423,25 @@ namespace Graphene
       }
     }
 
+    private static void BindImage(Image el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+    {
+      // Then bind the items
+      foreach (var item in members)
+      {
+        // Model items
+        if (BindingPathOrTypeMatch<Texture>("Image", item))
+        {
+          el.image = item.Value as Texture;
+          return;
+        }
+        else if (BindingPathOrTypeMatch<Sprite>("Image", item))
+        {
+          el.sprite = item.Value as Sprite;
+          return;
+        }
+      }
+    }
+
     private static void BindText(TextElement el, ref object context, in object obj, in ValueWithAttribute<BindAttribute> member, Plate plate)
     {
       // Add translation here
@@ -537,7 +560,10 @@ namespace Graphene
     {
       return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Value.GetType().IsAssignableFrom(typeof(T)));
     }
-
+    internal static bool BindingPathOrTypeMatch<T>(in string path, in ValueWithAttribute<BindAttribute> member)
+    {
+      return string.CompareOrdinal(path, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Value.GetType().IsAssignableFrom(typeof(T)));
+    }
     internal static bool BindingPathAndTypeMatch<T>(in string a, in ValueWithAttribute<BindAttribute> member)
     {
       return string.CompareOrdinal(a, member.Attribute.Path) == 0 && member.Value.GetType().IsAssignableFrom(typeof(T));
