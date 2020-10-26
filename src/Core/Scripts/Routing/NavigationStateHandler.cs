@@ -76,7 +76,7 @@ namespace Graphene
 
     private void Router_onStateChange(string newState)
     {
-      if (!HasElements())
+      if (navigationButtonGroup == null)
         return;
 
       int i = 0;
