@@ -475,7 +475,7 @@ namespace Graphene
 
     private static void BindClick(Button el, UnityEngine.Events.UnityEvent unityEvent)
     {
-      el.clicked += delegate { unityEvent.Invoke(); };
+      el.clicked += delegate { unityEvent?.Invoke(); };
       OnBindElement?.Invoke(el);
     }
 
