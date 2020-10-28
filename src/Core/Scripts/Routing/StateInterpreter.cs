@@ -4,12 +4,21 @@ using UnityEngine;
 
 namespace Graphene
 {
-  public abstract class StateInterpreter : MonoBehaviour
+  public interface IStateInterpreter 
+  {
+    bool TryCatch(object state);
+  }
+  public interface IStateInterpreter<TStateType> : IStateInterpreter 
+  {
+    bool TryCatch(TStateType state);
+  }
+
+  public abstract class StateInterpreter : MonoBehaviour, IStateInterpreter
   {
     public abstract bool TryCatch(object state);
   }
 
-  public abstract class StateInterpreter<TStateType> : StateInterpreter
+  public abstract class StateInterpreter<TStateType> : StateInterpreter, IStateInterpreter<TStateType>
   {
     public abstract bool TryCatch(TStateType state);
   }

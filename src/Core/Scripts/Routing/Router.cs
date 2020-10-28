@@ -36,7 +36,7 @@ namespace Graphene
     /// <summary>
     /// List of interpreters in the hierarchy that can intercept a state change request
     /// </summary>
-    [SerializeField] List<StateInterpreter> interpreters = new List<StateInterpreter>();
+    [SerializeField] List<IStateInterpreter> interpreters = new List<IStateInterpreter>();
 
     // Debug
     public List<T> StatesList = new List<T>();
@@ -174,12 +174,12 @@ namespace Graphene
         states.Add(state, parentState);
     }
 
-    public void RegisterInterpreter(StateInterpreter<T> stateInterpreter)
+    public void RegisterInterpreter(IStateInterpreter<T> stateInterpreter)
     {
       if(!interpreters.Contains(stateInterpreter))
         interpreters.Add(stateInterpreter);
     }
-    public void UnregisterInterpreter(StateInterpreter<T> stateInterpreter)
+    public void UnregisterInterpreter(IStateInterpreter<T> stateInterpreter)
     {
       if (interpreters.Contains(stateInterpreter))
         interpreters.Remove(stateInterpreter);

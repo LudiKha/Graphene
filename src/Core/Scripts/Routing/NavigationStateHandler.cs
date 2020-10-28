@@ -8,6 +8,7 @@ namespace Graphene
 {
   using Elements;
 
+  // Comment K: This should be split up into (ButtonGroup->StateButtonGroup) & (NavigationStateInterpreter)
   [RequireComponent(typeof(Plate))]
   public class NavigationStateHandler : StateInterpreter<string>, IInjectable, IInitializable
   {
