@@ -163,6 +163,8 @@ namespace Graphene
         BindSlider(el as Slider, ref context, members, plate);
       else if (el is SliderInt)
         BindSlider(el as SliderInt, ref context, members, plate);
+      else if (el is Foldout foldout)
+        BindFoldout(foldout, ref context, members, plate);
       else if (el is TextField)
         BindTextField(el as TextField, ref context, members, plate);
       else if (el is TextElement)
@@ -442,13 +444,25 @@ namespace Graphene
       }
     }
 
-    private static void BindText(TextElement el, ref object context, in object obj, in ValueWithAttribute<BindAttribute> member, Plate plate)
+
+    private static void BindFoldout(Foldout el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+    {
+      foreach (var item in members)
+      {
+        if (BindingPathOrTypeMatch<string>(el, in item))
+          el.text = ObjectToString(in item.Value);
+        else if (BindingPathAndTypeMatch<bool>(el.bindingPath, in item))
+        {
+          el.value = (bool)item.Value;
+          BindingManager.TryCreate<bool>(el, in context, in item, plate);
+        }
+      }
+    }
+
+    private static void BindText(TextElement el, ref object context, in object valueObject, in ValueWithAttribute<BindAttribute> member, Plate plate)
     {
       // Add translation here
-      if (obj is string str)
-        el.text = str;
-      else if (obj != null)
-        el.text = obj.ToString();
+      el.text = ObjectToString(in valueObject);
 
       BindingManager.TryCreate(el, ref context, in member, plate);
     }
@@ -567,6 +581,17 @@ namespace Graphene
     internal static bool BindingPathAndTypeMatch<T>(in string a, in ValueWithAttribute<BindAttribute> member)
     {
       return string.CompareOrdinal(a, member.Attribute.Path) == 0 && member.Type.IsAssignableFrom(typeof(T));
+    }
+
+    internal static string ObjectToString(in object obj)
+    {
+      // Add translation here
+      if (obj is string str)
+        return str;
+      else if (obj != null)
+        return obj.ToString();
+
+      return default;
     }
     #endregion
   }
