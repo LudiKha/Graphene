@@ -558,15 +558,15 @@ namespace Graphene
     }
     internal static bool BindingPathOrTypeMatch<T>(BindableElement el, in ValueWithAttribute<BindAttribute> member)
     {
-      return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Value.GetType().IsAssignableFrom(typeof(T)));
+      return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Type.IsAssignableFrom(typeof(T)));
     }
     internal static bool BindingPathOrTypeMatch<T>(in string path, in ValueWithAttribute<BindAttribute> member)
     {
-      return string.CompareOrdinal(path, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Value.GetType().IsAssignableFrom(typeof(T)));
+      return string.CompareOrdinal(path, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Type.IsAssignableFrom(typeof(T)));
     }
     internal static bool BindingPathAndTypeMatch<T>(in string a, in ValueWithAttribute<BindAttribute> member)
     {
-      return string.CompareOrdinal(a, member.Attribute.Path) == 0 && member.Value.GetType().IsAssignableFrom(typeof(T));
+      return string.CompareOrdinal(a, member.Attribute.Path) == 0 && member.Type.IsAssignableFrom(typeof(T));
     }
     #endregion
   }

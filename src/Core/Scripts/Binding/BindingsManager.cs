@@ -217,7 +217,7 @@ namespace Graphene
     {
       this.element = el;
       this.context = context;
-      this.extendedTypeInfo = TypeInfoCache.GetExtendedTypeInfo(context.GetType());
+      this.extendedTypeInfo = TypeInfoCache.GetExtendedTypeInfo(context.GetType()); // K: 28-10-2020 -> Could be optimized with member.MemberInfo.DeclaringType;
 
       this.attribute = member.Attribute;
       this.memberName = member.MemberInfo.Name;
