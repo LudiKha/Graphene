@@ -281,8 +281,8 @@ namespace Graphene
       // Model changed -> Update view
       if (!this.lastValue.Equals(newValue))
       {
-        if (newValue is T && element is BaseField<T> baseField)
-          baseField.SetValueWithoutNotify(newValue);
+        if (newValue is T && element is INotifyValueChanged<T> notifyValueChanged)
+          notifyValueChanged.SetValueWithoutNotify(newValue);
         else if (newValue is string text && element is TextElement textEl)
           textEl.text = text;
         else if (element is IBindableElement<object> bindableEl)
