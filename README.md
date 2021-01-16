@@ -149,7 +149,7 @@ Congrats! You're now done with the Quickstart and ready to tackle your first pro
 Graphene decouples fine-grained authoring from high-level logic, and in doing so aims to leverage UI Toolkit's innovations to the fullest.
 
 ## Plates
-A `Plate` represents a view controller in the VisualTree, and is used when by Graphene to the hierarchy, its states and views.
+A `Plate` represents a view controller in the VisualTree, and is used by Graphene to display the hierarchy, its states and views.
 
 A Graphene hierarchy consists of nested components called `Plates`, with a `Graphene` component at the root. `Plate`s are the core of Graphene, are analogous for a general-purpose UI controller that can be switched on or off. Other, optional MonoBehaviour components may hook into a plate, and have their functionality based on whether a plate is active or not.
 
