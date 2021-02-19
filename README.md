@@ -149,14 +149,14 @@ Congrats! You're now done with the Quickstart and ready to tackle your first pro
 Graphene decouples fine-grained authoring from high-level logic, and in doing so aims to leverage UI Toolkit's innovations to the fullest.
 
 ## Plates
-A `Plate` represents a view controller in the VisualTree, and is used when by Graphene to the hierarchy, its states and views.
+A `Plate` represents a view controller in the VisualTree, and is used by Graphene to display the hierarchy, its states and views.
 
 A Graphene hierarchy consists of nested components called `Plates`, with a `Graphene` component at the root. `Plate`s are the core of Graphene, are analogous for a general-purpose UI controller that can be switched on or off. Other, optional MonoBehaviour components may hook into a plate, and have their functionality based on whether a plate is active or not.
 
 The following components and logic depends on plates:
 - View
 
-These can be authored in the familiar GameObject hierarchy. Graphene then constructs the VisualElement tree in runtime into a nested view.
+These can be authored in the familiar GameObject hierarchy. Graphene then constructs the VisualElement tree at runtime into a nested view.
 
 ## Views
 
@@ -166,7 +166,7 @@ These can be authored in the familiar GameObject hierarchy. Graphene then constr
 
 ## Templating
 ### Template
-A `Template` is a semantic name for static asset that represents a chunk of UXML of varying granularity and complexity, which are used as building blocks to build and render the application. Moreover, templates can be declared directly in UXML based, and will be rendered in runtime based on the `Renderer` template configuration. Templates are wrapped in a `TemplateAsset` ScriptableObject, where additional variants can be created without needing to create and maintain copies of the base template.
+A `Template` is a semantic name for static asset that represents a chunk of UXML of varying granularity and complexity, which are used as building blocks to build and render the application. Moreover, templates can be declared directly in UXML based, and will be rendered at runtime based on the `Renderer` template configuration. Templates are wrapped in a `TemplateAsset` ScriptableObject, where additional variants can be created without needing to create and maintain copies of the base template.
 
 #### Why use templates
 
@@ -184,7 +184,7 @@ When creating a simple element, such as a button, it may quickly end up consisti
 </ui:Button>
 ```
 
-Maintaining multiple versions and instances of the same chunk of UXML throughout multiple files can be both error prone and time intensive. Graphene allows you to reuse the same template, and instantiate them in runtime when required.
+Maintaining multiple versions and instances of the same chunk of UXML throughout multiple files can be both error prone and time intensive. Graphene allows you to reuse the same template, and instantiate them at runtime when required.
 
 #### Creating a template
 
@@ -206,12 +206,12 @@ var clone = myTemplateAsset.Instantiate();
 ```html
 <gr:Button text="Button" name="ButtonFramed" focusable="true" tooltip="This is a button" binding-path="Value" class="button button-framed light" />
 ```
-In runtime, the button will be rendered to the full syntax of the first snippet, using the `Template` configuration of the `Renderer` component that initiates the binding.
+At runtime, the button will be rendered to the full syntax of the first snippet, using the `Template` configuration of the `Renderer` component that initiates the binding.
 
 ## Binding
 
 ### Binding Modes
-Graphene supports 3 modes of binding a model to the view. These can be specified in either the BindAttribute on the model, or the Binder API directly.
+Graphene supports 3 modes of binding a model to the view. These can either be specified in the BindAttribute on the model, or using the Binder API directly.
 - **OneTime**: Instructs the `Binder` to only "print" the model once onto the view. No continuous binding will be attempted. Useful for immutable data, such as titles, labels or button callbacks.
 >Note: Prefixing the binding-path with the `::` syntax instructs the binder to use a one-time binding.
 >```html
