@@ -5,7 +5,7 @@
   "description": "A lightweight & flexible open-source UI framework for Unity's UI Toolkit.",
   "unity": "2018.3",
   "dependencies": {
-    "com.unity.ui": "1.0.0-preview.14",
+    "com.unity.ui": "1.0.0-preview.13",
     "com.unity.editorcoroutines": "1.0.0"
   },
   "keywords": [],
