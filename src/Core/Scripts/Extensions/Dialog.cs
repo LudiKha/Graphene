@@ -60,13 +60,16 @@ namespace Graphene.Elements
       // Set-up the label and text...
       //this.AddManipulator(new Clickable(OnClickEvent));
 
+      if (panel == null)
+        panel = this.panel;
+
       m_Background = new VisualElement();
       m_Background.AddToClassList(dialogBackgroundUssClassName);
       m_Background.AddToClassList("unity-ui-document__child");
       m_Background.AddManipulator(new Clickable(OnClickBackground));
 
       // Add background to root
-      panel.TopRoot().Add(m_Background);
+      panel?.TopRoot().Add(m_Background);
       //panel.visualTree.Add(m_Background);
       
       // Add dialog to background

@@ -197,16 +197,16 @@ namespace Graphene
     {
       foreach (var item in members)
       {
-        if (BindingPathOrTypeMatch<string>(el, in item))
+        if (BindingPathAndTypeMatch<string>(el, in item))
           BindText(el, ref context, in item.Value, in item, plate);
-        else if (BindingPathOrTypeMatch<Action>(el, in item))
+        else if (BindingPathAndTypeMatch<Action>(el, in item))
           BindClick(el, (Action)item.Value);
-        else if(BindingPathOrTypeMatch<UnityEngine.Events.UnityEvent>(el, in item))
+        else if (BindingPathOrTypeMatch<UnityEngine.Events.UnityEvent>(el, in item))
           BindClick(el, (UnityEngine.Events.UnityEvent)item.Value);
       }
     }
 
-    private static void BindRoute(Route el, ref object context, Plate plate)
+    internal static void BindRoute(Route el, ref object context, Plate plate)
     {
       // Check if parent is a button -> propagate click
       if (el.parent is Button button)
@@ -303,18 +303,19 @@ namespace Graphene
       BindBaseField(el, ref context, members, plate);
     }
 
-    private static void BindBaseField<TValueType>(BaseField<TValueType> el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+    private static (TValueType value, string label) BindNotifyValueChange<TElementType, TValueType>(TElementType el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate) where TElementType : BindableElement, INotifyValueChanged<TValueType>
     {
       bool labelFromAttribute = false;
+      string label = null;
       foreach (var item in members)
       {
         // Primary (value)
         if (BindingPathOrTypeMatch<TValueType>(el, in item))
         {
-          if (item.Value is TValueType)
+          if (item.Value is TValueType value)
           {
-            el.SetValueWithoutNotify((TValueType)item.Value);
-            BindingManager.TryCreate(el, in context, in item, plate);
+            el.SetValueWithoutNotify(value);
+            BindingManager.TryCreate<TValueType>(el, in context, in item, plate);
           }
 
           // Set label from attribute
@@ -322,20 +323,31 @@ namespace Graphene
           {
             if (!string.IsNullOrWhiteSpace(att.label))
             {
-              el.label = att.label;
+              //el.text = att.label;
               labelFromAttribute = true;
+              label = att.label;
             }
           }
         }
         // Set register callback event
         else if (item.Attribute is BindValueChangeCallbackAttribute callbackAttribute)
           el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<TValueType>>);
-        // Set label from field
-        else if (!labelFromAttribute && item.Attribute.Path == "Label" && item.Value is string labelText && !string.IsNullOrWhiteSpace(labelText))
-          BindText(el.labelElement, ref context, labelText, in item, plate);
+        // Set label from field, if not from attribute
+        else if (!labelFromAttribute && item.Attribute.Path == "Label" && item.Value is string labelText)
+          label = labelText;
+        //BindText(el.labelElement, ref context, labelText, in item, plate);
         else if (item.Attribute is BindTooltip)
           el.tooltip = (string)item.Value;
       }
+
+      // Returning value & label tuple because each element implements text differently. (E.g. Foldout vs. Basefield)
+      return (el.value, label);
+    }
+
+    private static void BindBaseField<TValueType>(BaseField<TValueType> el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+    {
+      var results = BindNotifyValueChange<BaseField<TValueType>, TValueType>(el, ref context, members, plate);
+      el.label = results.label;
     }
 
     private static void BindSelectField(SelectField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
@@ -445,19 +457,26 @@ namespace Graphene
     }
 
 
+
     private static void BindFoldout(Foldout el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
-      foreach (var item in members)
-      {
-        if (BindingPathOrTypeMatch<string>(el, in item))
-          el.text = ObjectToString(in item.Value);
-        else if (BindingPathAndTypeMatch<bool>(el.bindingPath, in item))
-        {
-          el.value = (bool)item.Value;
-          BindingManager.TryCreate<bool>(el, in context, in item, plate);
-        }
-      }
+      var results = BindNotifyValueChange<Foldout, bool>(el, ref context, members, plate);
+      el.text = results.label;
     }
+
+    //private static void BindFoldout(Foldout el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+    //{
+    //  foreach (var item in members)
+    //  {
+    //    if (BindingPathOrTypeMatch<string>(el, in item))
+    //      el.text = ObjectToString(in item.Value);
+    //    else if (BindingPathAndTypeMatch<bool>(el.bindingPath, in item))
+    //    {
+    //      el.value = (bool)item.Value;
+    //      BindingManager.TryCreate<bool>(el, in context, in item, plate);
+    //    }
+    //  }
+    //}
 
     private static void BindText(TextElement el, ref object context, in object valueObject, in ValueWithAttribute<BindAttribute> member, Plate plate)
     {
@@ -578,11 +597,14 @@ namespace Graphene
     {
       return string.CompareOrdinal(path, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Type.IsAssignableFrom(typeof(T)));
     }
+    internal static bool BindingPathAndTypeMatch<T>(in BindableElement el, in ValueWithAttribute<BindAttribute> member)
+    {
+      return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 && member.Type.IsAssignableFrom(typeof(T));
+    }
     internal static bool BindingPathAndTypeMatch<T>(in string a, in ValueWithAttribute<BindAttribute> member)
     {
       return string.CompareOrdinal(a, member.Attribute.Path) == 0 && member.Type.IsAssignableFrom(typeof(T));
     }
-
     internal static string ObjectToString(in object obj)
     {
       // Add translation here

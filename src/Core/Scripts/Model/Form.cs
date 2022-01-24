@@ -14,10 +14,26 @@ namespace Graphene
     System.Action onModelChange { get; set; }
   }
 
+  /// <summary>
+  /// Instructs the <see cref="Renderer"/> to use a custom <see cref="BindAttribute"/> context
+  /// </summary>
+  public interface ICustomBindContext
+  {
+    public object GetCustomBindContext { get; }
+  }
+
+  /// <summary>
+  /// Instructs the <see cref="Renderer"/> to use a custom <see cref="DrawAttribute"/> context
+  /// </summary>
+  public interface ICustomDrawContext
+  {
+    public object GetCustomDrawContext { get; }
+  }
+
   public interface IForm
   {
     [Bind("Title")]
-    string Title { get; set; }
+    string Title { get; }
     void OnSubmit();
     void OnCancel();
   }

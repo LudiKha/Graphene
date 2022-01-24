@@ -12,15 +12,12 @@ namespace Graphene
     public static void Show(this VisualElement el)
     {
       el.RemoveFromClassList(hiddenUssClassName);
-
-      //el.style.display = DisplayStyle.Flex;
     }
     public static void Hide(this VisualElement el)
     {
       el.AddToClassList(hiddenUssClassName);
-
-      //el.style.display = DisplayStyle.None;
     }
+
     public static VisualElement GetRootRecursively(this VisualElement el)
     {
       if (el.parent == null)
@@ -51,7 +48,13 @@ namespace Graphene
     {
       for (int i = 0; i < styleSheets.count; i++)
       {
-        el.styleSheets.Add(styleSheets[i]);
+        var sheet = styleSheets[i];
+        if (sheet != null)
+          el.styleSheets.Add(sheet);
+#if UNITY_EDITOR
+        else
+          UnityEngine.Debug.LogError("Trying to add null stylesheet");
+#endif
       }
     }
 
@@ -59,7 +62,12 @@ namespace Graphene
     {
       foreach (var styleSheet in styleSheets)
       {
-        el.styleSheets.Add(styleSheet);
+        if(styleSheet)
+          el.styleSheets.Add(styleSheet);
+#if UNITY_EDITOR
+        else
+          UnityEngine.Debug.LogError("Trying to add null stylesheet");
+#endif
       }
     }
 

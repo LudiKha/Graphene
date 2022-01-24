@@ -12,40 +12,69 @@ namespace Graphene
   [DisallowMultipleComponent]
   public abstract class Router : MonoBehaviour, IGrapheneDependent, IInitializable
   {
+    /// <summary>
+    /// List of interpreters in the hierarchy that can intercept a state change request
+    /// </summary>
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ShowInInspector]
+#endif
+    protected List<IStateInterpreter> interpreters = new List<IStateInterpreter>();
+
     public abstract void InjectIntoHierarchy();
     public abstract void Initialize();
     public abstract void BindRouteToContext(BindableElement el, object data);
     public abstract void BindRoute(Route el, object data);
     public abstract void TryGoToPreviousState();
     public abstract void TryGoToNextState();
+
+    public void RegisterInterpreter(IStateInterpreter stateInterpreter)
+    {
+      if (!interpreters.Contains(stateInterpreter))
+        interpreters.Add(stateInterpreter);
+    }
+    public void UnregisterInterpreter(IStateInterpreter stateInterpreter)
+    {
+      if (interpreters.Contains(stateInterpreter))
+        interpreters.Remove(stateInterpreter);
+    }
+
+    protected virtual void Awake()
+    {
+      interpreters.Clear();
+    }
   }
 
   public abstract class Router<T> : Router, IInitializable, ILateInitializable
   {
     // state & parent
-    [SerializeField] protected SortedDictionary<T, T> states = new SortedDictionary<T, T>();
+    protected SortedDictionary<T, T> states = new SortedDictionary<T, T>();
     public SortedDictionary<T, T> States => states;
 
     [SerializeField] protected T startingState; public T StartingState => startingState;
 
     public T CurrentState => activeStates.LastOrDefault();
 
-    [SerializeField] List<T> activeStates = new List<T>();
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ShowInInspector]
+#endif
+    List<T> activeStates = new List<T>();
     public IReadOnlyList<T> ActiveStates => activeStates;
 
-    /// <summary>
-    /// List of interpreters in the hierarchy that can intercept a state change request
-    /// </summary>
-    [SerializeField] List<IStateInterpreter> interpreters = new List<IStateInterpreter>();
-
-    // Debug
-    public List<T> StatesList = new List<T>();
-
-    [SerializeField] List<T> traversedStates = new List<T>();
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ShowInInspector]
+#endif
+    List<T> traversedStates = new List<T>();
     public IReadOnlyList<T> TraversedStates => traversedStates;
 
     // Events
     public event System.Action<T> onStateChange;
+
+#if UNITY_EDITOR && ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ShowInInspector, Sirenix.OdinInspector.ValueDropdown("StateKeys"), Sirenix.OdinInspector.OnValueChanged("TryChangeState")]
+    T changeState;
+
+    internal IEnumerable<T> StateKeys => states.Keys;
+#endif
 
     #region Initialization
 
@@ -61,19 +90,20 @@ namespace Graphene
     public bool Initialized { get; private set; }
     public override void Initialize()
     {
-      if (Initialized)
+      if (Application.isPlaying && Initialized)
         return;
       Initialized = true;
 
+      traversedStates.Clear();
       states.Clear();
-      StatesList.Clear();
+      onStateChange = null;
       RegisterState(startingState, default);
     }
 
     public bool LateInitialized { get; private set; }
     public void LateInitialize()
     {
-      if (LateInitialized)
+      if (Application.isPlaying && LateInitialized)
         return;
 
       var targetState = StartingState;
@@ -191,7 +221,7 @@ namespace Graphene
       // See if the router
       foreach (var interpreter in interpreters)
       {
-        if (interpreter.TryCatch(state))
+        if (interpreter != null && interpreter.TryCatch(state))
           return true;
       }
 

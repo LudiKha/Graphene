@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene.Elements
 {
-  public class ButtonGroup : BindableElement, IBindableElement<int>, INotifyValueChanged<int>
+  public class ButtonGroup : View, IBindableElement<int>, INotifyValueChanged<int>
   {
     /// <summary>
     /// Instantiates a <see cref="id"/> using the data read from a UXML file.

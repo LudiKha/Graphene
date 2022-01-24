@@ -16,6 +16,9 @@ namespace Graphene
 
     public override string[] GetStatesFromAddress(string address)
     {
+      if (string.IsNullOrWhiteSpace(address))
+        return new string[0];
+
       var states = address.Split(separatorArray, System.StringSplitOptions.RemoveEmptyEntries);
       return states;
     }

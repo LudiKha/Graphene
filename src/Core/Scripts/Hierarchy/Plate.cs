@@ -31,29 +31,44 @@ namespace Graphene
   [DisallowMultipleComponent]
   public class Plate : MonoBehaviour, IInitializable, IDisposable
   {
-    [SerializeField] VisualTreeAsset visualAsset;
+    [SerializeField] VisualTreeAsset visualAsset; public VisualTreeAsset VisualTreeAsset => visualAsset;
 
-    /// <summary>
-    /// The theme that will be applied to the root element of this plate
-    /// </summary>
-    [SerializeField] Theme theme;
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ReadOnly]
+#endif
     [SerializeField] bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
 
-    [SerializeField] protected string[] contentContainerSelector = new string[] { "GR__Content" };
+    //[SerializeField] protected string[] contentContainerSelector = new string[] { contentViewSelector };
 
     [Tooltip("Adds any number of classes to the root element. Separated by space")]
     [SerializeField] protected string addClasses;
 
-    [SerializeField] PositionMode positionMode;
+    [SerializeField] PositionMode positionMode = PositionMode.Relative;
+    [SerializeField] JustifyOverride justifyContent =  new JustifyOverride();
+    //[SerializeField] AlignContentOverride alignContent = new AlignContentOverride();
+    [SerializeField] AlignItemsOverride alignItemsOverride = new AlignItemsOverride();
+    [SerializeField] FlexDirectionOverride flexDirectionOverride = new FlexDirectionOverride();
+    [SerializeField] WrapOverride wrapOverride = new WrapOverride();
+
     [SerializeField] public BindingRefreshMode bindingRefreshMode = BindingRefreshMode.ModelChange;
     internal bool wasChangedThisFrame;
 
     public bool IsRootPlate => !parent;
 
+    #region Constants
+
+    public const string contentViewSelector = "GR__Content";
+    public const string childViewSelector = "GR__Children";
+    #endregion
+
     #region Component Reference
-    [SerializeField] Plate parent;
+    [SerializeField] Plate parent; public Plate Parent => parent;
     [SerializeField] List<Plate> children = new List<Plate>();
-    [SerializeField] ViewHandle customView; public ViewHandle CustomView => customView;
+
+    [SerializeField] public ViewRef defaultViewRef = new ViewRef(childViewSelector);
+    [SerializeField] public ViewRef contentViewRef = new ViewRef(contentViewSelector);
+    [SerializeField] public ViewRef attachToParentView = new ViewRef("");
+
     [SerializeField] protected Router router; public Router Router => router;
     [SerializeField] public StateHandle stateHandle { get; internal set; }
     [SerializeField] new public Renderer renderer { get; internal set; }
@@ -64,17 +79,16 @@ namespace Graphene
     /// <summary>
     /// Main container for attached renderer's output of (repeat) elements.
     /// </summary>
-    public VisualElement ContentContainer { get; private set; }
-    public VisualElement ChildContainer { get; private set; }
+    public VisualElement ContentContainer => contentViewRef.view;
 
     /// <summary>
     /// The default view. This controller's children will be added to this by default.
     /// </summary>
-    View defaultView;
+    View defaultView => defaultViewRef.view;
     /// <summary>
     /// List of views in the template.
     /// </summary>
-    List<View> views = new List<View>();
+    List<View> views = new List<View>(); public IReadOnlyList<View> Views => views;
 
     #endregion
 
@@ -91,41 +105,39 @@ namespace Graphene
     public bool Initialized { get; set; }
     public virtual void Initialize()
     {
-      if (Initialized)
-        return;
       GetLocalReferences();
     }
 
     protected virtual void GetLocalReferences()
     {
-      if (!router)
-        router = GetComponentInParent<Router>();
+      // Clear events
+      onRefreshDynamic = null;
+      onRefreshStatic= null;
+      onRefreshVisualTree = null;
+
+      onShow.RemoveAllListeners();
+      onHide.RemoveAllListeners();
+
+      router ??= GetComponentInParent<Router>();
+      //customView ??= GetComponent<ViewHandle>();
+
+      children.Clear();
 
       // Get nearest parent
-      if (parent || (parent = transform.parent.GetComponentInParent<Plate>()))
+      if ((Application.isPlaying && parent) || (parent = transform.parent.GetComponentInParent<Plate>()))
         parent.RegisterChild(this);
-
-      if (!customView)
-        customView = GetComponent<ViewHandle>();
     }
 
     internal void ConstructVisualTree()
     {
       Root = visualAsset.CloneTree();
 
-      ContentContainer = GetVisualElement(contentContainerSelector);
-
       // Get views
-      views = Root.Query<View>().ToList();
-      defaultView = views.Find(x => x.isDefault) ?? views.FirstOrDefault();
-      if (theme)
-        theme.ApplyStyles(Root);
+      InitViews();
 
-      if (positionMode == PositionMode.Relative)
-        Root.AddToClassList("flex-grow");
-      else if (positionMode == PositionMode.Absolute)
-        Root.AddMultipleToClassList("absolute fill");
+      RefreshClassesAndStyles();
 
+      Root.AddToClassList("plate");
       if (!string.IsNullOrWhiteSpace(addClasses))
         Root.AddMultipleToClassList(addClasses);
 
@@ -136,6 +148,8 @@ namespace Graphene
       Root.RegisterCallback<PointerDownEvent>((evt) => ChangeEvent());
       Root.RegisterCallback<PointerUpEvent>((evt) => ChangeEvent());
     }
+
+
 
     void ChangeEvent()
     {
@@ -158,14 +172,15 @@ namespace Graphene
     protected virtual void Clear()
     {
       // Clear the dynamic content
-      ContentContainer.Clear();
+      ContentContainer?.Clear();
     }
 
     protected virtual void DetachChildPlates()
     {
       foreach (var child in children)
       {
-        child.Detach();
+        if(child)
+          child.Detach();
       }
     }
 
@@ -197,6 +212,7 @@ namespace Graphene
       if (!Initialized)
         return;
 
+      RefreshClassesAndStyles();
       ReevaluateState();
     }
 
@@ -205,6 +221,25 @@ namespace Graphene
       if (!Initialized)
         return;
       Hide();
+    }
+
+    void InitViews()
+    {
+      if (Root == null)
+        return;
+
+      views = Root.Query<View>().ToList();
+
+      defaultViewRef.OnValidate(this);
+      if (!defaultViewRef.initialized)
+        defaultViewRef.view = views.Find(v => v.isDefault) ?? views.FirstOrDefault();
+
+      contentViewRef.OnValidate(this);
+
+      if (parent != null)
+        attachToParentView.OnValidate(parent);
+      else
+        attachToParentView.NoParent();
     }
 
     #region ButtonAttribute
@@ -221,7 +256,7 @@ namespace Graphene
 
       // Enable
       Root.Show();
-      ContentContainer.Focus();
+      ContentContainer?.Focus();
 
       SetActive(true);
     }
@@ -251,10 +286,24 @@ namespace Graphene
 
       this.isActive = active;
 
+      RefreshClassesAndStyles();
+
       if (this.isActive)
         onShow.Invoke();
       else
         onHide.Invoke();
+
+
+#if UNITY_EDITOR
+      if (Application.isPlaying)
+      {
+        //gameObject.SetActive(IsActive);
+
+        gameObject.name = gameObject.name.Trim('*');
+        if (isActive)
+          gameObject.name = gameObject.name + "*";
+      }
+#endif
     }
 
     internal void ReevaluateState()
@@ -282,12 +331,12 @@ namespace Graphene
       foreach (var child in children)
       {
         // Child can have optional view override
-        if (child.CustomView)
+        if (child.attachToParentView)
         {
-          var layoutContainer = GetViewById(child.customView.Id);
-          if (layoutContainer != null)
+          var customView = GetViewById(child.attachToParentView.Id);
+          if (customView != null && customView == child.attachToParentView.view)
           {
-            layoutContainer.Add(child.Root);
+            customView.Add(child.Root);
             continue;
           }
         }
@@ -332,7 +381,6 @@ namespace Graphene
       return view;
     }
 
-
     private void OnDestroy()
     {
       Dispose();
@@ -341,6 +389,93 @@ namespace Graphene
     {
       BindingManager.DisposePlate(this);
     }
+
+    void OnValidate()
+    {
+      if (Root== null)
+        return;
+
+      InitViews();
+      RefreshClassesAndStyles();
+    }
+
+    const string positionModeRelativeClassNames = "flex-grow";
+    const string positionModeAbsoluteClassNames = "absolute fill";
+
+    internal void RefreshClassesAndStyles()
+    {
+      if (positionMode == PositionMode.Relative)
+      {
+        Root.RemoveFromClassList(positionModeAbsoluteClassNames);
+        Root.AddToClassList(positionModeRelativeClassNames);
+      }
+      else if (positionMode == PositionMode.Absolute)
+      {
+        Root.RemoveFromClassList(positionModeRelativeClassNames);
+        Root.AddMultipleToClassList(positionModeAbsoluteClassNames);
+      }
+
+      justifyContent.TryApply(Root);
+      //alignContent.TryApply(Root);
+      alignItemsOverride.TryApply(Root);
+      flexDirectionOverride.TryApply(Root);
+      wrapOverride.TryApply(Root);
+    }
     #endregion
+  }
+
+#if ODIN_INSPECTOR
+  [Sirenix.OdinInspector.Toggle("enabled")]
+#endif
+  [System.Serializable]
+  public abstract class StyleOverride<T>
+  {
+    public bool enabled;
+    public T value;
+
+    public abstract void TryApply(VisualElement visualElement);
+
+    public static implicit operator bool (StyleOverride<T> styleOverride) => styleOverride != null && styleOverride.enabled;
+  }
+
+
+
+  [System.Serializable]
+  public sealed class JustifyOverride : StyleOverride<Justify>
+  {
+    public override void TryApply(VisualElement visualElement)
+    {
+      if(enabled)
+        visualElement.style.justifyContent = value;
+    }
+  }
+
+  [System.Serializable]
+  public sealed class AlignItemsOverride : StyleOverride<Align>
+  {
+    public override void TryApply(VisualElement visualElement)
+    {
+      if (enabled)
+        visualElement.style.alignItems = value;
+    }
+  }
+
+  [System.Serializable]
+  public sealed class FlexDirectionOverride : StyleOverride<FlexDirection>
+  {
+    public override void TryApply(VisualElement visualElement)
+    {
+      if (enabled)
+        visualElement.style.flexDirection = value;
+    }
+  }
+  [System.Serializable]
+  public sealed class WrapOverride : StyleOverride<Wrap>
+  {
+    public override void TryApply(VisualElement visualElement)
+    {
+      if (enabled)
+        visualElement.style.flexWrap = value;
+    }
   }
 }

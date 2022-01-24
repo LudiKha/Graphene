@@ -97,12 +97,13 @@ namespace Graphene.Elements
         clone.Query<TemplateContainer>().Children<BindableElement>().ForEach(x =>
         {
           x.bindingPath = bindingPath;
-          x.AddMultipleToClassList(this.GetClasses().Where(c => c != ussClassName));
+          x.AddMultipleToClassList(this.GetClasses().Where(c => c != ussClassName));          
         }
         );
       }
 
       Add(clone);
+      m_ChildTemplate = clone;
     }
 
     public void Render()

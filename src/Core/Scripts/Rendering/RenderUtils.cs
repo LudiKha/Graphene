@@ -30,6 +30,11 @@ namespace Graphene
         UnityEngine.Debug.LogError($"Assign templates to Renderer for plate for {plate}", plate);
         return;
       }
+      else if (container == null)
+      {
+        UnityEngine.Debug.LogError("Container is null", plate);
+        return;
+      }
 
       // Get members
       List<ValueWithAttribute<DrawAttribute>> drawableMembers = new List<ValueWithAttribute<DrawAttribute>>();

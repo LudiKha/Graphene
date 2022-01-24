@@ -55,12 +55,12 @@ namespace Graphene
     {
       if (navigationButtonGroup != null)
         return true;
-      else
-        navigationButtonGroup = plate.Root.Q<ButtonGroup>();
+
+      navigationButtonGroup = plate.Root.Q<ButtonGroup>();
 
       if (navigationButtonGroup == null)
       {
-        Debug.LogError($"{GetType().Name} requires a ButtonGroup VisualElement in its static template. Select a template that contains a ButtonGroup element.", this);
+        Debug.LogError($"{GetType().Name} requires a RadioButtonGroup VisualElement in its static template. Select a template that contains a ButtonGroup element.", this);
         return false;
       }
 
@@ -71,13 +71,13 @@ namespace Graphene
     {
       if (!HasElements())
         return;
-      else
-        navigationButtonGroup.onChangeIndex += NavigationButtonGroup_onChangeIndex;
+      //else
+      navigationButtonGroup.onChangeIndex += NavigationButtonGroup_onChangeIndex;
     }
 
     private void Router_onStateChange(string newState)
     {
-      if (navigationButtonGroup == null)
+      if (!HasElements())
         return;
 
       int i = 0;

@@ -58,8 +58,7 @@ namespace Graphene
       base.Initialize();
 
       // Get the router in case we didn't inject
-      if (!router)
-        router = GetComponentInParent<Router<T>>();
+      router ??= GetComponentInParent<Router<T>>();
 
       // Get parent state
       StateHandle<T> parentStateHandle = transform.parent.GetComponentInParent<StateHandle<T>>();
