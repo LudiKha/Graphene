@@ -85,6 +85,7 @@ namespace Graphene
           Destroy(kvp.Key, binding);
 
 
+      createPostUpdate.Clear();
       disposePostUpdate.Clear();
     }
 
@@ -279,7 +280,7 @@ namespace Graphene
     protected virtual void UpdateFromModel(in T newValue)
     {
       // Model changed -> Update view
-      if (!this.lastValue.Equals(newValue))
+      if (this.lastValue != null && !this.lastValue.Equals(newValue))
       {
         if (newValue is T && element is INotifyValueChanged<T> notifyValueChanged)
           notifyValueChanged.SetValueWithoutNotify(newValue);
