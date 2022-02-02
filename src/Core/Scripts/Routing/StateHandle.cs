@@ -11,7 +11,7 @@ namespace Graphene
 
   [RequireComponent(typeof(Plate))]
   [DisallowMultipleComponent]
-  public abstract class StateHandle : MonoBehaviour, IInjectable, IInitializable
+  public abstract class StateHandle : MonoBehaviour, IGrapheneInjectable, IGrapheneInitializable
   {
     public abstract Router Router { get; }
 

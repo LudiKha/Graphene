@@ -9,8 +9,9 @@ namespace Graphene
   using Elements;
   using Kinstrife.Core.ReflectionHelpers;
 
+  [DefaultExecutionOrder(-100)]
   [DisallowMultipleComponent]
-  public abstract class Router : MonoBehaviour, IGrapheneDependent, IInitializable
+  public abstract class Router : MonoBehaviour, IGrapheneDependent, IGrapheneInitializable
   {
     /// <summary>
     /// List of interpreters in the hierarchy that can intercept a state change request
@@ -38,13 +39,27 @@ namespace Graphene
         interpreters.Remove(stateInterpreter);
     }
 
-    protected virtual void Awake()
+    private Object blocker; public bool IsBlocked => blocker;
+    public event System.Action onRoutingBlocked;
+    public event System.Action onRoutingUnblocked;
+    public void TryBlock(Object caller)
     {
-      interpreters.Clear();
+      if (blocker)
+        return;
+      blocker = caller;
+      onRoutingBlocked?.Invoke();
+    }
+
+    public void TryUnblock(Object caller)
+    {
+      if (!blocker)
+        return;
+      blocker = null;
+      onRoutingUnblocked?.Invoke();
     }
   }
 
-  public abstract class Router<T> : Router, IInitializable, ILateInitializable
+  public abstract class Router<T> : Router, IGrapheneInitializable, IGrapheneLateInitializable
   {
     // state & parent
     protected SortedDictionary<T, T> states = new SortedDictionary<T, T>();
@@ -218,6 +233,9 @@ namespace Graphene
 
     public virtual bool TryChangeState(T state)
     {
+      if (IsBlocked)
+        return false;
+
       // See if the router
       foreach (var interpreter in interpreters)
       {

@@ -13,7 +13,7 @@ namespace Graphene
     bool TryCatch(TStateType state);
   }
 
-  public abstract class StateInterpreter : MonoBehaviour, IStateInterpreter
+  public abstract class StateInterpreter : GrapheneComponent, IStateInterpreter
   {
     public abstract bool TryCatch(object state);
   }

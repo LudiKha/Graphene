@@ -5,7 +5,7 @@ namespace Graphene
 {
   [RequireComponent(typeof(Plate))]
   [DisallowMultipleComponent]
-  public abstract class EnableOnState<T> : MonoBehaviour, IInjectable, IInitializable
+  public abstract class EnableOnState<T> : MonoBehaviour, IGrapheneInjectable, IGrapheneInitializable
   {
     public enum ActivationMode
     {
