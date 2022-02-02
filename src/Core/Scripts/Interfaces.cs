@@ -22,16 +22,16 @@
   }
 
 #if !DEPENDENCY_INJEcTION
-  public interface IInitializable : IGrapheneDependent
+  public interface IGrapheneInitializable : IGrapheneDependent
   {
     void Initialize();
   }
-  public interface ILateInitializable : IGrapheneDependent
+  public interface IGrapheneLateInitializable : IGrapheneDependent
   {
     void LateInitialize();
   }
 
-  public interface IInjectable : IGrapheneDependent
+  public interface IGrapheneInjectable : IGrapheneDependent
   {    
   }
 #endif
