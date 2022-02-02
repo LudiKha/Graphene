@@ -70,6 +70,15 @@ namespace Graphene
       // Clone & bind the control
       VisualElement clone = Binder.Instantiate(in drawMember.Value, template, panel);
 
+      // Needs optimization      
+      foreach (var child in clone.Children())
+      {
+        if (drawMember.Value is ICustomAddClasses customAddClasses)
+          child.AddMultipleToClassList(customAddClasses.ClassesToAdd);
+        if (drawMember.Value is ICustomName customName && !string.IsNullOrWhiteSpace(customName.CustomName))
+          child.name = customName.CustomName;
+      }
+      
       // Add the control to the container
       container.Add(clone);
     }

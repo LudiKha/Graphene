@@ -7,7 +7,7 @@ namespace Graphene
   using Elements;
 
   [RequireComponent(typeof(Plate))]
-  public class Renderer : MonoBehaviour, IInitializable
+  public class Renderer : MonoBehaviour, IGrapheneInitializable
   {
     [SerializeField] Plate plate; public Plate Plate => plate;
     [field: SerializeField]/*[Bind("Model")]*/ public Object Model { get; set; }
