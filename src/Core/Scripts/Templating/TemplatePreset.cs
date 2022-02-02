@@ -27,7 +27,8 @@ namespace Graphene
     Title,
     SubTitle,
     Body,
-    Border
+    Border,
+    DropdownField
   }
 
   public interface ICustomControlType
@@ -35,8 +36,17 @@ namespace Graphene
     ControlType ControlType { get; }
   }
 
-  [Serializable]
-  public class ControlTemplateMapping : SerializableDictionary<ControlType, TemplateAsset> { }
+  public interface ICustomAddClasses
+  {
+    string ClassesToAdd { get; }
+  }
+
+  public interface ICustomName
+  {
+    string CustomName { get; }
+  }
+
+  [Serializable] public class ControlVisualTreeAssetMapping : SerializableDictionary<ControlType, VisualTreeAsset> { }
 
 
   [CreateAssetMenu(menuName = "Graphene/Templating/ComponentTemplates")]
@@ -44,10 +54,10 @@ namespace Graphene
   {
     [SerializeField] TemplatePreset parent; public TemplatePreset Parent => parent;
 
-    [SerializeField] ControlTemplateMapping mapping = new ControlTemplateMapping();
+    [SerializeField] ControlVisualTreeAssetMapping data = new ControlVisualTreeAssetMapping();
 
 
-    public TemplateAsset TryGetTemplateAsset(object data, DrawAttribute drawAttribute = null, ControlType? overrideControlType = null)
+    public VisualTreeAsset TryGetTemplateAsset(object data, DrawAttribute drawAttribute = null, ControlType? overrideControlType = null)
     {
       ControlType controlType = ControlType.None;
 
@@ -93,9 +103,9 @@ namespace Graphene
       return ControlType.None;
     }
 
-    public TemplateAsset TryGetTemplateAsset(ControlType controlType)
+    public VisualTreeAsset TryGetTemplateAsset(ControlType controlType)
     {
-      if (mapping.TryGetValue(controlType, out var result))
+      if (data.TryGetValue(controlType, out var result))
         return result;
       else if (parent)
         return parent.TryGetTemplateAsset(controlType);
