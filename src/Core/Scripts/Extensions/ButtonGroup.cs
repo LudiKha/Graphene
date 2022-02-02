@@ -1,12 +1,28 @@
 ﻿
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Graphene.Elements
 {
-  public class ButtonGroup : View, IBindableElement<int>, INotifyValueChanged<int>
+  public class ButtonGroup : GroupBox, IBindableElement<int>, INotifyValueChanged<int>
   {
+    public const string itemsPath = "Items";
+
+    [SerializeField]
+    private List<string> m_Items = new List<string>();
+
+    public List<string> items
+    {
+      get => m_Items;
+      set
+      {
+        SetItems(value);
+      }
+    }
+
     /// <summary>
     /// Instantiates a <see cref="id"/> using the data read from a UXML file.
     /// </summary>
@@ -18,6 +34,7 @@ namespace Graphene.Elements
     public new class UxmlTraits : BindableElement.UxmlTraits
     {
       UxmlIntAttributeDescription m_ActiveIndex = new UxmlIntAttributeDescription { name = "activeIndex" };
+      UxmlStringAttributeDescription m_Items = new UxmlStringAttributeDescription { name = "items" };
 
       /// <summary>
       /// Initialize <see cref="id"/> properties using values from the attribute bag.
@@ -30,6 +47,7 @@ namespace Graphene.Elements
         base.Init(ve, bag, cc);
 
         ((ButtonGroup)ve).value = m_ActiveIndex.GetValueFromBag(bag, cc);
+        ((ButtonGroup)ve).items = m_Items.GetValueFromBag(bag, cc).Split(';').Where(x => !string.IsNullOrEmpty(x)).ToList();
       }
     }
 
@@ -40,16 +58,29 @@ namespace Graphene.Elements
       get { return m_ActiveIndex; }
       set
       {
-        SetValueWithoutNotify(value);
-        onChangeIndex?.Invoke(m_ActiveIndex);
+        value = Mathf.Clamp(value, 0, childCount - 1);
+        if (m_ActiveIndex == value)
+        {
+          SetValueWithoutNotify(value);
+          return;
+        }
+
+        // in order for the serialization binding to update it's expecting you
+        // to dispatch the event
+        using (ChangeEvent<int> valueChangeEvent = ChangeEvent<int>.GetPooled(m_ActiveIndex, value))
+        {
+          valueChangeEvent.target = this; // very umportant
+          SetValueWithoutNotify(value); // actually set the value and do any init with the value
+          SendEvent(valueChangeEvent);
+        }
       }
     }
 
-    public event System.Action<int> onChangeIndex;
+    public event System.Action<string> clicked;
 
     public void SetValueWithoutNotify(int value)
     {
-      m_ActiveIndex = Mathf.Clamp(value, 0, childCount);
+      m_ActiveIndex = Mathf.Clamp(value, 0, childCount - 1);
       SetButtonActive();
     }
 
@@ -60,7 +91,7 @@ namespace Graphene.Elements
     /// Unity adds this USS class to every instance of the TabGroup element. Any styling applied to
     /// this class affects every button located beside, or below the stylesheet in the visual tree.
     /// </remarks>
-    public static readonly string ussClassName = "gr-button-group";
+    public static readonly string ussClassName = "gr-button-group ";
     public static readonly string ussActiveClassName = "active";
 
     /// <summary>
@@ -93,6 +124,29 @@ namespace Graphene.Elements
           child.RemoveFromClassList(ussActiveClassName);
         i++;
       }
+    }
+
+    public void SetItems(List<string> items)
+    {
+      m_Items = items ?? new List<string>();
+
+      Clear();
+
+      for (int i = 0; i < items.Count; i++)
+      {
+        var item = items[i];
+        int buttonIndex = i;
+        var btn = new Button(() => ButtonClicked(buttonIndex));
+        btn.text = item.ToUpper();
+        btn.AddToClassList("gr-button");
+        Add(btn);
+      }
+    }
+
+    internal void ButtonClicked(int i)
+    {
+      value = i;
+      clicked?.Invoke(items[i]);
     }
   }
 }

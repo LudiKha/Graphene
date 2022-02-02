@@ -32,7 +32,7 @@ namespace Graphene
     /// <typeparam name="T"></typeparam>
     /// <param name="element"></param>
     /// <param name="context"></param>
-    public static VisualElement Instantiate(in object context, TemplateAsset template, Plate plate)
+    public static VisualElement Instantiate(in object context, VisualTreeAsset template, Plate plate)
     {
       var clone = template.Instantiate();
 
@@ -56,7 +56,7 @@ namespace Graphene
     /// <typeparam name="T"></typeparam>
     /// <param name="element"></param>
     /// <param name="fieldValue"></param>
-    public static VisualElement InstantiatePrimitive(in object context, ref ValueWithAttribute<BindAttribute> bindableMember, TemplateAsset template, Plate plate)
+    public static VisualElement InstantiatePrimitive(in object context, ref ValueWithAttribute<BindAttribute> bindableMember, VisualTreeAsset template, Plate plate)
     {
       var clone = template.Instantiate();
 
@@ -153,6 +153,8 @@ namespace Graphene
         BindImage(image, ref context, members, plate);
       else if (el is CycleField)
         BindCycleField(el as CycleField, ref context, members, plate);
+      else if (el is DropdownField)
+        BindDropdownField(el as DropdownField, ref context, members, plate);
       else if (el is ListView)
         BindListView(el as ListView, ref context, members, plate);
       else if (el is SelectField)
@@ -165,6 +167,8 @@ namespace Graphene
         BindSlider(el as SliderInt, ref context, members, plate);
       else if (el is Foldout foldout)
         BindFoldout(foldout, ref context, members, plate);
+      else if (el is ButtonGroup buttonGroup)
+        BindButtonGroup(buttonGroup, ref context, members, plate);
       else if (el is TextField)
         BindTextField(el as TextField, ref context, members, plate);
       else if (el is TextElement)
@@ -210,15 +214,26 @@ namespace Graphene
     {
       // Check if parent is a button -> propagate click
       if (el.parent is Button button)
-        button.clicked += el.clicked;
+      {
+        BindClick(button, el.clicked);
+      }
       else
       {
         foreach (var item in el.Children())
+        {
           if (item is Button btn)
-            btn.clicked += el.clicked;
+          {
+            BindClick(btn, el.clicked);
+          }
+          else if (item is ButtonGroup btnGroup)
+          {
+            btnGroup.clicked += (string route) => { el.route = route; el.clicked?.Invoke(); }; // A bit hacky perhaps
+            OnBindElement?.Invoke(btnGroup);
+          }
+        }
       }
 
-      el.router = plate.Router as Router<string>;
+      el.SetRouter(plate.Router);
 
       // Let the (generic) router handle the way it binds routes
       plate.Router.BindRoute(el, context);
@@ -348,6 +363,24 @@ namespace Graphene
     {
       var results = BindNotifyValueChange<BaseField<TValueType>, TValueType>(el, ref context, members, plate);
       el.label = results.label;
+      OnBindElement?.Invoke(el);
+    }
+
+    private static void BindDropdownField(DropdownField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+    {
+      // Then bind the items
+      foreach (var item in members)
+      {
+        // Model items
+        if (BindingPathMatch(item.Attribute.Path, SelectField.itemsPath))
+        {
+          el.choices = item.Value as List<string>;
+          break;
+        }
+      }
+
+      // First bind base field (string)
+      BindBaseField(el, ref context, members, plate);
     }
 
     private static void BindSelectField(SelectField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
@@ -375,15 +408,15 @@ namespace Graphene
         if (BindingPathMatch(bindMember.Attribute.Path, el.bindingPath))
         {
           IList list = bindMember.Value as IList;
-          TemplateAsset templateAsset = plate.renderer.Templates.TryGetTemplateAsset(ControlType.ListItem);
+          var templateAsset = plate.renderer.Templates.TryGetTemplateAsset(ControlType.ListItem);
 
           Func<VisualElement> makeItem = () => { return templateAsset.Instantiate(); };
           Action<VisualElement, int> bindItem = (e, i) => { Binder.BindRecursive(e, list[i], null, plate, false); };
           el.makeItem = makeItem;
           el.bindItem = bindItem;
           el.itemsSource = list;
-          if (templateAsset.ForceHeight > 0)
-            el.itemHeight = (int)templateAsset.ForceHeight;
+          //if (templateAsset.ForceHeight > 0)
+          //  el.fixedItemHeight = (int)templateAsset.ForceHeight;
 
 
           BindingManager.TryCreate<IList>(el, in context, in bindMember, plate);
@@ -392,7 +425,7 @@ namespace Graphene
       }
     }
 
-    internal static void BindListView(ListView el, in object context, Plate plate, TemplateAsset templateAsset, in ValueWithAttribute<BindAttribute> member)
+    internal static void BindListView(ListView el, in object context, Plate plate, VisualTreeAsset templateAsset, in ValueWithAttribute<BindAttribute> member)
     {
       IList list = member.Value as IList;
 
@@ -462,6 +495,20 @@ namespace Graphene
     {
       var results = BindNotifyValueChange<Foldout, bool>(el, ref context, members, plate);
       el.text = results.label;
+    }
+
+    private static void BindButtonGroup(ButtonGroup el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+    {
+      // Then bind the items
+      foreach (var item in members)
+      {
+        // Model items
+        if (BindingPathAndTypeMatch<ICollection<string>>(el, item))
+        {
+          el.items = item.Value as List<string>;
+          break;
+        }
+      }
     }
 
     //private static void BindFoldout(Foldout el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
@@ -591,19 +638,19 @@ namespace Graphene
     }
     internal static bool BindingPathOrTypeMatch<T>(BindableElement el, in ValueWithAttribute<BindAttribute> member)
     {
-      return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Type.IsAssignableFrom(typeof(T)));
+      return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && typeof(T).IsAssignableFrom(member.Type));
     }
     internal static bool BindingPathOrTypeMatch<T>(in string path, in ValueWithAttribute<BindAttribute> member)
     {
-      return string.CompareOrdinal(path, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && member.Type.IsAssignableFrom(typeof(T)));
+      return string.CompareOrdinal(path, member.Attribute.Path) == 0 || (string.IsNullOrEmpty(member.Attribute.Path) && typeof(T).IsAssignableFrom(member.Type));
     }
     internal static bool BindingPathAndTypeMatch<T>(in BindableElement el, in ValueWithAttribute<BindAttribute> member)
     {
-      return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 && member.Type.IsAssignableFrom(typeof(T));
+      return string.CompareOrdinal(el.bindingPath, member.Attribute.Path) == 0 && typeof(T).IsAssignableFrom(member.Type);
     }
     internal static bool BindingPathAndTypeMatch<T>(in string a, in ValueWithAttribute<BindAttribute> member)
     {
-      return string.CompareOrdinal(a, member.Attribute.Path) == 0 && member.Type.IsAssignableFrom(typeof(T));
+      return string.CompareOrdinal(a, member.Attribute.Path) == 0 && typeof(T).IsAssignableFrom(member.Type);
     }
     internal static string ObjectToString(in object obj)
     {

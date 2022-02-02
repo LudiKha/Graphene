@@ -115,5 +115,22 @@ namespace Graphene.Elements
         clicked.Invoke();
       }
     }
+
+    internal void SetRouter(Router r)
+    {
+      this.router = r as Router<string>;
+      r.onRoutingBlocked += OnRoutingBlocked;
+      r.onRoutingUnblocked += OnRoutingUnblocked;
+    }
+
+    private void OnRoutingUnblocked()
+    {
+      SetEnabled(true);
+    }
+
+    private void OnRoutingBlocked()
+    {
+      SetEnabled(false);
+    }
   }
 }

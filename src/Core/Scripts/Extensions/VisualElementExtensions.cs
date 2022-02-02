@@ -78,6 +78,9 @@ namespace Graphene
     /// <param name="classes"></param>
     public static void AddMultipleToClassList(this VisualElement el, string classes)
     {
+      if (string.IsNullOrWhiteSpace(classes))
+        return;
+
       AddMultipleToClassList(el, classes.Split(new string[] { " " }, System.StringSplitOptions.RemoveEmptyEntries));
     }
 
