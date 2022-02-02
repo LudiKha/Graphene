@@ -5,9 +5,14 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Graphene
 {
   using Elements;
+  using UnityEngine.Profiling;
 
   public enum PositionMode
   {
@@ -23,26 +28,33 @@ namespace Graphene
     ModelChange
   }
 
+  public enum Mode
+  {
+    Prebuilt,
+    OnDemand
+  }
+
   ///<summary>
   /// <para>A `Plate` represents a view controller in the VisualTree, and is used when by Graphene to the hierarchy, its states and views.</para> 
   /// <para><see href="https://github.com/LudiKha/Graphene#plates">Read more in the online documentation</see></para>
   ///</summary>
   //[RequireComponent(typeof(UIDocument))]
   [DisallowMultipleComponent]
-  public class Plate : MonoBehaviour, IInitializable, IDisposable
+  public class Plate : GrapheneComponent, IGrapheneInitializable, IDisposable
   {
     [SerializeField] VisualTreeAsset visualAsset; public VisualTreeAsset VisualTreeAsset => visualAsset;
 
 #if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.ReadOnly]
+    [Sirenix.OdinInspector.ReadOnly, ShowInInspector]
 #endif
-    [SerializeField] bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
+    bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
 
     //[SerializeField] protected string[] contentContainerSelector = new string[] { contentViewSelector };
 
     [Tooltip("Adds any number of classes to the root element. Separated by space")]
     [SerializeField] protected string addClasses;
 
+    [SerializeField] Mode drawMode = Mode.OnDemand; public Mode Drawmode => Mode.OnDemand;
     [SerializeField] PositionMode positionMode = PositionMode.Relative;
     [SerializeField] JustifyOverride justifyContent =  new JustifyOverride();
     //[SerializeField] AlignContentOverride alignContent = new AlignContentOverride();
@@ -62,8 +74,8 @@ namespace Graphene
     #endregion
 
     #region Component Reference
-    [SerializeField] Plate parent; public Plate Parent => parent;
-    [SerializeField] List<Plate> children = new List<Plate>();
+    [ShowInInspector] Plate parent; public Plate Parent => parent;
+    [ShowInInspector] List<Plate> children = new List<Plate>(); public IReadOnlyList<Plate> Children => children;
 
     [SerializeField] public ViewRef defaultViewRef = new ViewRef(childViewSelector);
     [SerializeField] public ViewRef contentViewRef = new ViewRef(contentViewSelector);
@@ -108,28 +120,38 @@ namespace Graphene
       GetLocalReferences();
     }
 
-    protected virtual void GetLocalReferences()
+    private void Awake()
     {
       // Clear events
       onRefreshDynamic = null;
-      onRefreshStatic= null;
+      onRefreshStatic = null;
       onRefreshVisualTree = null;
-
       onShow.RemoveAllListeners();
       onHide.RemoveAllListeners();
-
-      router ??= GetComponentInParent<Router>();
-      //customView ??= GetComponent<ViewHandle>();
-
       children.Clear();
+
+    }
+
+    protected virtual void GetLocalReferences()
+    {
+      router ??= graphene.Router;
+      //customView ??= GetComponent<ViewHandle>();
 
       // Get nearest parent
       if ((Application.isPlaying && parent) || (parent = transform.parent.GetComponentInParent<Plate>()))
         parent.RegisterChild(this);
+
+      if (parent)
+      {
+        parent.onShow.AddListener(Parent_OnShow);
+        parent.onHide.AddListener(Parent_OnHide);
+      }
     }
 
     internal void ConstructVisualTree()
     {
+      Profiler.BeginSample("Graphene Plate Construct VisualTree", this);
+      Root?.Clear();
       Root = visualAsset.CloneTree();
 
       // Get views
@@ -147,9 +169,14 @@ namespace Graphene
       Root.RegisterCallback<PointerMoveEvent>((evt) => ChangeEvent());
       Root.RegisterCallback<PointerDownEvent>((evt) => ChangeEvent());
       Root.RegisterCallback<PointerUpEvent>((evt) => ChangeEvent());
+
+      if (IsRootPlate)
+      {
+        graphene.GrapheneRoot.Add(Root);
+        Root.AddToClassList("unity-ui-document__child");
+      }
+      Profiler.EndSample();
     }
-
-
 
     void ChangeEvent()
     {
@@ -193,10 +220,10 @@ namespace Graphene
     #endregion
     internal virtual void RenderAndComposeChildren()
     {
-      Clear();
-
+      Profiler.BeginSample("Graphene Plate RenderAndComposeChildren");
       // Detach the children so they don't get bound to the scope
       DetachChildPlates();
+      Clear();
 
       onRefreshStatic?.Invoke();
 
@@ -204,6 +231,7 @@ namespace Graphene
       AttachChildPlates();
 
       onRefreshDynamic?.Invoke();
+      Profiler.EndSample();
     }
 
     // UIDocument removes the root OnDisable, so we only need OnEnable
@@ -254,11 +282,15 @@ namespace Graphene
       if (!Initialized)
         return;
 
+      //ConstructVisualTree();
+      //RenderAndComposeChildren();
+
       // Enable
       Root.Show();
       ContentContainer?.Focus();
 
       SetActive(true);
+
     }
 
     #region ButtonAttribute
@@ -273,6 +305,9 @@ namespace Graphene
       if (!Initialized)
         return;
 
+      //Root?.Clear();
+      //Root?.RemoveFromHierarchy();
+
       Root.Hide();
 
       SetActive(false);
@@ -285,7 +320,7 @@ namespace Graphene
         return;
 
       this.isActive = active;
-
+      gameObject.SetActive(active);
       RefreshClassesAndStyles();
 
       if (this.isActive)
@@ -312,9 +347,24 @@ namespace Graphene
         return;
 
       if (!stateHandle)
-        Show();
+      {
+        if(!parent || parent.isActive)
+          Show();
+      }
 
       onEvaluateState?.Invoke();
+    }
+
+    void Parent_OnShow()
+    {
+      if (!stateHandle)
+        Show();
+    }
+
+    void Parent_OnHide()
+    {
+      if (!stateHandle)
+        Hide();
     }
 
     void Detach()
