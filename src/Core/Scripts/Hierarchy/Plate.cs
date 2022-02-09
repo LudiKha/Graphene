@@ -34,6 +34,12 @@ namespace Graphene
     OnDemand
   }
 
+  public enum ShowHideMode
+  {
+    Immediate,
+    Transition
+  }
+
   ///<summary>
   /// <para>A `Plate` represents a view controller in the VisualTree, and is used when by Graphene to the hierarchy, its states and views.</para> 
   /// <para><see href="https://github.com/LudiKha/Graphene#plates">Read more in the online documentation</see></para>
@@ -55,7 +61,9 @@ namespace Graphene
     [SerializeField] protected string addClasses;
 
     [SerializeField] Mode drawMode = Mode.OnDemand; public Mode Drawmode => Mode.OnDemand;
+    
     [SerializeField] PositionMode positionMode = PositionMode.Relative;
+    [SerializeField] ShowHideMode showHideMode = ShowHideMode.Immediate;
     [SerializeField] JustifyOverride justifyContent =  new JustifyOverride();
     //[SerializeField] AlignContentOverride alignContent = new AlignContentOverride();
     [SerializeField] AlignItemsOverride alignItemsOverride = new AlignItemsOverride();
@@ -138,7 +146,7 @@ namespace Graphene
       //customView ??= GetComponent<ViewHandle>();
 
       // Get nearest parent
-      if ((Application.isPlaying && parent) || (parent = transform.parent.GetComponentInParent<Plate>()))
+      if ((Application.isPlaying && parent) || (parent = transform.parent.GetComponentInParent<Plate>(true)))
         parent.RegisterChild(this);
 
       if (parent)
@@ -166,6 +174,8 @@ namespace Graphene
       Initialized = true;
       onRefreshVisualTree?.Invoke();
 
+      Root.RegisterCallback<MouseOverEvent>((evt) => ChangeEvent());
+      Root.RegisterCallback<PointerCaptureEvent>((evt) => ChangeEvent());
       Root.RegisterCallback<PointerMoveEvent>((evt) => ChangeEvent());
       Root.RegisterCallback<PointerDownEvent>((evt) => ChangeEvent());
       Root.RegisterCallback<PointerUpEvent>((evt) => ChangeEvent());
@@ -175,7 +185,26 @@ namespace Graphene
         graphene.GrapheneRoot.Add(Root);
         Root.AddToClassList("unity-ui-document__child");
       }
+
+      // Fadeout events
+      Root.RegisterCallback<TransitionStartEvent>(Root_StartTransition);
+      Root.RegisterCallback<TransitionEndEvent>(Root_EndTransition);
+
       Profiler.EndSample();
+    }
+
+    void Root_StartTransition(TransitionStartEvent evt)
+    {
+    }
+    void Root_EndTransition(TransitionEndEvent evt)
+    {
+      ApplyActiveState();
+      //if (!isActive || Root.ClassListContains(VisualElementExtensions.fadeoutUssClassName))
+      //{
+        
+      //}
+      //else
+      //  Show();
     }
 
     void ChangeEvent()
@@ -240,8 +269,9 @@ namespace Graphene
       if (!Initialized)
         return;
 
-      RefreshClassesAndStyles();
-      ReevaluateState();
+      //ConstructVisualTree();
+      //RenderAndComposeChildren();
+      //ReevaluateState();
     }
 
     private void OnDisable()
@@ -282,15 +312,12 @@ namespace Graphene
       if (!Initialized)
         return;
 
-      //ConstructVisualTree();
-      //RenderAndComposeChildren();
+      SetActive(true);
+      ApplyActiveState(); // Immediately activate GO
 
       // Enable
-      Root.Show();
-      ContentContainer?.Focus();
-
-      SetActive(true);
-
+      if (showHideMode == ShowHideMode.Transition)
+        Root.FadeIn();
     }
 
     #region ButtonAttribute
@@ -305,29 +332,51 @@ namespace Graphene
       if (!Initialized)
         return;
 
-      //Root?.Clear();
-      //Root?.RemoveFromHierarchy();
-
-      Root.Hide();
-
       SetActive(false);
+
+      if (showHideMode == ShowHideMode.Immediate)
+        ApplyActiveState();
+      else
+        Root.FadeOut();
     }
 
-    public void SetActive(bool active)
+    internal void HideImmediately()
+    {
+      if (!Initialized)
+        return;
+      SetActive(false);
+      ApplyActiveState();
+    }
+
+    void SetActive(bool active)
     {
       // Not changed
       if (this.isActive == active)
         return;
 
       this.isActive = active;
-      gameObject.SetActive(active);
+    }
+
+    void ApplyActiveState()
+    {
+      gameObject.SetActive(isActive);
       RefreshClassesAndStyles();
 
-      if (this.isActive)
-        onShow.Invoke();
-      else
-        onHide.Invoke();
-
+      if (Root != null)
+      {
+        if (isActive)
+        {
+          Root.Show();
+          ContentContainer?.Focus();
+          onShow.Invoke();
+          ChangeEvent();
+        }
+        else
+        {
+          Root.Hide();
+          onHide.Invoke();
+        }
+      }
 
 #if UNITY_EDITOR
       if (Application.isPlaying)
@@ -451,6 +500,7 @@ namespace Graphene
 
     const string positionModeRelativeClassNames = "flex-grow";
     const string positionModeAbsoluteClassNames = "absolute fill";
+    const string showHideModeTransitionClassNames = "fade";
 
     internal void RefreshClassesAndStyles()
     {
@@ -462,6 +512,17 @@ namespace Graphene
       else if (positionMode == PositionMode.Absolute)
       {
         Root.RemoveFromClassList(positionModeRelativeClassNames);
+        Root.AddMultipleToClassList(positionModeAbsoluteClassNames);
+      }
+
+      if(showHideMode == ShowHideMode.Immediate)
+      {
+        Root.RemoveFromClassList(showHideModeTransitionClassNames);
+      }
+      else if(showHideMode == ShowHideMode.Transition)
+      {
+        Root.AddToClassList(showHideModeTransitionClassNames);
+        // When transitioning, we can only position absolutely, as the fadeout process will interfere with routing 
         Root.AddMultipleToClassList(positionModeAbsoluteClassNames);
       }
 

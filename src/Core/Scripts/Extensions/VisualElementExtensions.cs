@@ -8,6 +8,8 @@ namespace Graphene
     internal const string documentRootUssClassName = "unity-ui-document__root";
     internal const string documentChildUssClassName = "unity-ui-document__child";
     internal const string hiddenUssClassName = "hidden";
+    internal const string fadeoutUssClassName = "fadeout";
+    //internal const string fadeinUssClassName = "fadein";
 
     public static void Show(this VisualElement el)
     {
@@ -17,6 +19,17 @@ namespace Graphene
     {
       el.AddToClassList(hiddenUssClassName);
     }
+
+    public static void FadeIn(this VisualElement el)
+    {
+      el.RemoveFromClassList(fadeoutUssClassName);
+    }
+
+    public static void FadeOut(this VisualElement el)
+    {
+      el.AddToClassList(fadeoutUssClassName);
+    }
+
 
     public static VisualElement GetRootRecursively(this VisualElement el)
     {
