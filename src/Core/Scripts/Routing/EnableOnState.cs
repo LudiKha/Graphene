@@ -5,7 +5,7 @@ namespace Graphene
 {
   [RequireComponent(typeof(Plate))]
   [DisallowMultipleComponent]
-  public abstract class EnableOnState<T> : MonoBehaviour, IGrapheneInjectable, IGrapheneInitializable
+  public abstract class EnableOnState<T> : GrapheneComponent, IGrapheneInjectable, IGrapheneInitializable
   {
     public enum ActivationMode
     {
@@ -28,9 +28,8 @@ namespace Graphene
       if (plate || (plate = GetComponent<Plate>()))
         plate.onEvaluateState += Plate_onEvaluateState;
 
-      // Get the router in case we didn't inject
-      if (!router)
-        router = GetComponentInParent<Router<T>>();
+      // Get the router in case we didn't inject      
+      router ??= graphene.Router as Router<T>;
 
       // Subscribe to router state changes
       router.onStateChange += Router_onStateChange;

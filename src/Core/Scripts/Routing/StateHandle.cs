@@ -11,7 +11,7 @@ namespace Graphene
 
   [RequireComponent(typeof(Plate))]
   [DisallowMultipleComponent]
-  public abstract class StateHandle : MonoBehaviour, IGrapheneInjectable, IGrapheneInitializable
+  public abstract class StateHandle : GrapheneComponent, IGrapheneInjectable, IGrapheneInitializable
   {
     public abstract Router Router { get; }
 
@@ -58,10 +58,10 @@ namespace Graphene
       base.Initialize();
 
       // Get the router in case we didn't inject
-      router ??= GetComponentInParent<Router<T>>();
+      router ??= graphene.Router as Router<T>;
 
       // Get parent state
-      StateHandle<T> parentStateHandle = transform.parent.GetComponentInParent<StateHandle<T>>();
+      StateHandle<T> parentStateHandle = transform.parent.GetComponentInParent<StateHandle<T>>(true);
       parentStateID = parentStateHandle ? parentStateHandle.StateID : default;
 
       // Register the state at the router
