@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 namespace Graphene
 {
   using Elements;
+  using global::Graphene.ViewModel;
   using Kinstrife.Core.ReflectionHelpers;
   using System.Collections;
 
@@ -26,6 +27,13 @@ namespace Graphene
     }
 #endif
 
+    internal static VisualElement InternalInstantiate(VisualTreeAsset template, Plate plate)
+    {
+      var clone = template.Instantiate();
+      clone.pickingMode = plate.Graphene.defaultPickingMode;
+      return clone;
+    }
+
     /// <summary>
     /// Binds the tree recursively
     /// </summary>
@@ -34,7 +42,7 @@ namespace Graphene
     /// <param name="context"></param>
     public static VisualElement Instantiate(in object context, VisualTreeAsset template, Plate plate)
     {
-      var clone = template.Instantiate();
+      var clone = InternalInstantiate(template, plate);
 
       if (context.GetType().IsPrimitive)
       {
@@ -58,7 +66,7 @@ namespace Graphene
     /// <param name="fieldValue"></param>
     public static VisualElement InstantiatePrimitive(in object context, ref ValueWithAttribute<BindAttribute> bindableMember, VisualTreeAsset template, Plate plate)
     {
-      var clone = template.Instantiate();
+      var clone = InternalInstantiate(template, plate);
 
       if (bindableMember.Attribute == null)
       {
@@ -201,12 +209,17 @@ namespace Graphene
     {
       foreach (var item in members)
       {
-        if (BindingPathAndTypeMatch<string>(el, in item))
+        if (BindingPathAndTypeMatch<BindableObject>(el, in item))
+        {
+          //var data = item.Value as BindableObject;
+          BindRecursive(el, item.Value, null, plate, false);
+        }
+        else if (BindingPathAndTypeMatch<string>(el, in item))
           BindText(el, ref context, in item.Value, in item, plate);
         else if (BindingPathAndTypeMatch<Action>(el, in item))
-          BindClick(el, (Action)item.Value);
+          BindClick(el, (Action)item.Value, context, plate);
         else if (BindingPathOrTypeMatch<UnityEngine.Events.UnityEvent>(el, in item))
-          BindClick(el, (UnityEngine.Events.UnityEvent)item.Value);
+          BindClick(el, (UnityEngine.Events.UnityEvent)item.Value, context, plate);
       }
     }
 
@@ -215,7 +228,7 @@ namespace Graphene
       // Check if parent is a button -> propagate click
       if (el.parent is Button button)
       {
-        BindClick(button, el.clicked);
+        BindClick(button, el.clicked, context, plate);
       }
       else
       {
@@ -223,12 +236,13 @@ namespace Graphene
         {
           if (item is Button btn)
           {
-            BindClick(btn, el.clicked);
+            BindClick(btn, el.clicked, context, plate);
           }
           else if (item is ButtonGroup btnGroup)
           {
             btnGroup.clicked += (string route) => { el.route = route; el.clicked?.Invoke(); }; // A bit hacky perhaps
             OnBindElement?.Invoke(btnGroup);
+            plate.Graphene?.BroadcastBindCallback(el, context, plate);
           }
         }
       }
@@ -241,6 +255,8 @@ namespace Graphene
 
     private static void BindSlider(Slider el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
+      el.Q("unity-dragger").pickingMode = PickingMode.Ignore;
+
       // Slider specifics
       foreach (var item in members)
       {
@@ -268,6 +284,8 @@ namespace Graphene
 
     private static void BindSlider(SliderInt el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
+      el.Q("unity-dragger").pickingMode = PickingMode.Ignore;
+
       // Slider specifics
       foreach (var item in members)
       {
@@ -289,6 +307,9 @@ namespace Graphene
           el.highValue = (int)item.Value;
       }
 
+      //el.showMixedValue = true;
+      el.showInputField = true;
+      
       // Bind base field value & callback
       BindBaseField(el, ref context, members, plate);
     }
@@ -332,6 +353,13 @@ namespace Graphene
             el.SetValueWithoutNotify(value);
             BindingManager.TryCreate<TValueType>(el, in context, in item, plate);
           }
+          else if(item.Value is BindableBaseField<TValueType> baseField)
+          {
+            el.SetValueWithoutNotify(baseField.value);
+            if(!string.IsNullOrWhiteSpace(baseField.Label))
+              label = baseField.Label;
+            BindingManager.TryCreate<TValueType>(el, in item.Value, in item, plate);
+          }
 
           // Set label from attribute
           if (item.Attribute is BindBaseFieldAttribute att)
@@ -363,6 +391,8 @@ namespace Graphene
     {
       var results = BindNotifyValueChange<BaseField<TValueType>, TValueType>(el, ref context, members, plate);
       el.label = results.label;
+
+      plate.Graphene?.BroadcastBindCallback(el, context, plate);
       OnBindElement?.Invoke(el);
     }
 
@@ -408,9 +438,9 @@ namespace Graphene
         if (BindingPathMatch(bindMember.Attribute.Path, el.bindingPath))
         {
           IList list = bindMember.Value as IList;
-          var templateAsset = plate.renderer.Templates.TryGetTemplateAsset(ControlType.ListItem);
+          var templateAsset = plate.GetComponent<Renderer>().Templates.TryGetTemplateAsset(ControlType.ListItem);
 
-          Func<VisualElement> makeItem = () => { return templateAsset.Instantiate(); };
+          Func<VisualElement> makeItem = () => { return InternalInstantiate(templateAsset, plate); };
           Action<VisualElement, int> bindItem = (e, i) => { Binder.BindRecursive(e, list[i], null, plate, false); };
           el.makeItem = makeItem;
           el.bindItem = bindItem;
@@ -429,7 +459,7 @@ namespace Graphene
     {
       IList list = member.Value as IList;
 
-      Func<VisualElement> makeItem = () => { return templateAsset.Instantiate(); };
+      Func<VisualElement> makeItem = () => { return InternalInstantiate(templateAsset, plate); };
       Action<VisualElement, int> bindItem = (e, i) => { Binder.BindRecursive(e, list[i], null, plate, false); };
       el.makeItem = makeItem;
       el.bindItem = bindItem;
@@ -493,8 +523,31 @@ namespace Graphene
 
     private static void BindFoldout(Foldout el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
-      var results = BindNotifyValueChange<Foldout, bool>(el, ref context, members, plate);
-      el.text = results.label;
+      foreach (var member in members)
+      {
+        if (BindingPathMatch(el, in member) && member.Value is BindableBaseField baseField)
+        {
+          BindRecursive(el, baseField, null, plate, false);
+          return;
+        }
+      }
+
+      if (context is BindableBaseField<bool> baseFieldContext)
+      {
+        el.SetValueWithoutNotify(baseFieldContext.value);
+        if (!string.IsNullOrWhiteSpace(baseFieldContext.Label))
+          el.text = baseFieldContext.Label;
+      }
+
+      foreach (var member in members)
+      {
+        if(member.Value is bool)
+          BindingManager.TryCreate<bool>(el, in context, in member, plate);
+        else if(member.Value is string)
+          BindingManager.TryCreate<string>(el, in context, in member, plate);
+      }
+
+      //var results = BindNotifyValueChange<Foldout, bool>(el, ref context, members, plate);
     }
 
     private static void BindButtonGroup(ButtonGroup el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
@@ -533,22 +586,24 @@ namespace Graphene
       BindingManager.TryCreate(el, ref context, in member, plate);
     }
 
-    private static void BindClick(Button el, System.Action action)
+    private static void BindClick(Button el, System.Action action, in object context, Plate plate)
     {
       el.clicked += action;
       OnBindElement?.Invoke(el);
+      plate.Graphene?.BroadcastBindCallback(el, context, plate);
     }
 
-    private static void BindClick(Button el, UnityEngine.Events.UnityEvent unityEvent)
+    private static void BindClick(Button el, UnityEngine.Events.UnityEvent unityEvent, in object context, Plate plate)
     {
       el.clicked += delegate { unityEvent?.Invoke(); };
       OnBindElement?.Invoke(el);
+      plate.Graphene?.BroadcastBindCallback(el, context, plate);
     }
 
-    public static string[] stringSplitOptions = new string[] { ".", "~", "::" };
+    public static string[] stringSplitOptions = new string[] { ".", "~", "::", "_" };
 
     public const char nestedScopeChar = '.';
-    public const char relativeScopeChar = '~';
+    public const char relativeScopeChar = '_';
     public const string oneTimeBindingChar = "::";
 
     private static bool TryBranch(BindableElement el, object data, Plate owner)

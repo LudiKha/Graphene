@@ -190,6 +190,41 @@ namespace Graphene
     }
   }
 
+  public enum Typography
+  {
+    None,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    subtitle1,
+    subtitle2,
+    body1,
+    body2,
+    caption,
+    overline
+  }
+
+  /// <summary>
+  /// Marks a field or property to be drawn when an entire type is marked for rendering
+  /// </summary>
+  [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property | System.AttributeTargets.Class)]
+  public class DrawTextAttribute : DrawAttribute
+  {
+    public Typography typography = Typography.None;
+
+    public DrawTextAttribute([CallerLineNumber] int order = 0) : base(order)
+    {
+      this.order = order;
+    }
+
+    public DrawTextAttribute(Typography typography, [CallerLineNumber] int order = 0) : base(ControlType.Label, order)
+    {
+      this.typography = typography;
+    }
+  }
 
   [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property)]
   public class RouteAttribute : UIAttribute

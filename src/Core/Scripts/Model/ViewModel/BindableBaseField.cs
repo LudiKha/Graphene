@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -8,8 +9,13 @@ using UnityEngine.UIElements;
 
 namespace Graphene.ViewModel
 {
+  [System.Serializable]
+  public abstract class BindableBaseField
+  {
+  }
+
   [System.Serializable][DataContract]
-  public class BindableBaseField<T>: INotifyValueChanged<T>
+  public abstract class BindableBaseField<T> : BindableBaseField, INotifyValueChanged<T>, INotifyPropertyChanged
   {
     [SerializeField]
     protected T m_Value;
@@ -34,6 +40,7 @@ namespace Graphene.ViewModel
     public EventCallback<ChangeEvent<T>> ValueChange => (changeEvent) => { ValueChangeCallback(changeEvent.newValue); };
 
     public event System.EventHandler<T> OnValueChange;
+    public event PropertyChangedEventHandler PropertyChanged;
 
     public virtual void SetValueWithoutNotify(T newValue)
     {
@@ -43,6 +50,7 @@ namespace Graphene.ViewModel
     protected virtual void ValueChangeCallback(T value)
     {
       OnValueChange?.Invoke(this, value);
+      PropertyChanged?.Invoke(null, null);
     }
 
     public void ResetCallbacks() => OnValueChange = null;
@@ -62,10 +70,19 @@ namespace Graphene.ViewModel
   {
     public abstract float normalizedValue { get; }
 
+    [BindBaseField("Value")][DataMember(Name = "Value")]
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ShowInInspector, Sirenix.OdinInspector.PropertyRange(0, 1, MinGetter = nameof(min), MaxGetter = nameof(max))]
+#endif
+    public override TValueType value { get => base.value; set => base.value = value; }
+
     [Bind("Min"), DataMember(Name = "Min")]
     public TValueType min;
     [Bind("Max"), DataMember(Name = "Max")]
     public TValueType max;
+
+    public RangeBaseField([CallerMemberName] string label = null) : base(label) { }    
+
   }
 
   [System.Serializable, Draw(ControlType.Slider), DataContract]
@@ -163,6 +180,13 @@ namespace Graphene.ViewModel
       this.items = list.ToList();
     }
   }
+
+
+  [System.Serializable, Draw(ControlType.TextField), DataContract]
+  public class BindableInput : BindableBaseField<string>
+  {
+  }
+
 
   static class StringUtility
   {

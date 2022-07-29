@@ -90,8 +90,8 @@ namespace Graphene
     [SerializeField] public ViewRef attachToParentView = new ViewRef("");
 
     [SerializeField] protected Router router; public Router Router => router;
-    [SerializeField] public StateHandle stateHandle { get; internal set; }
-    [SerializeField] new public Renderer renderer { get; internal set; }
+    [SerializeField] protected StateHandle stateHandle; public StateHandle StateHandle => stateHandle;
+    [SerializeField] new protected Renderer renderer; public Renderer Renderer => renderer;
     #endregion
 
     #region VisualElements Reference
@@ -142,12 +142,17 @@ namespace Graphene
 
     protected virtual void GetLocalReferences()
     {
-      router ??= graphene.Router;
+      if (graphene)
+      {
+        router ??= graphene.Router;
+        stateHandle ??= GetComponent<StateHandle>();
+        renderer ??= GetComponent<Renderer>();
+      }
       //customView ??= GetComponent<ViewHandle>();
 
       // Get nearest parent
-      if ((Application.isPlaying && parent) || (parent = transform.parent.GetComponentInParent<Plate>(true)))
-        parent.RegisterChild(this);
+      if ((Application.isPlaying && parent) || (parent = transform.parent?.GetComponentInParent<Plate>(true))) 
+          parent.RegisterChild(this);
 
       if (parent)
       {
@@ -161,6 +166,7 @@ namespace Graphene
       Profiler.BeginSample("Graphene Plate Construct VisualTree", this);
       Root?.Clear();
       Root = visualAsset.CloneTree();
+      Root.pickingMode = Graphene.defaultPickingMode;
 
       // Get views
       InitViews();
@@ -312,6 +318,8 @@ namespace Graphene
       if (!Initialized)
         return;
 
+      if (isActive) return;
+
       SetActive(true);
       ApplyActiveState(); // Immediately activate GO
 
@@ -330,6 +338,9 @@ namespace Graphene
     public void Hide()
     {
       if (!Initialized)
+        return;
+
+      if (!isActive)
         return;
 
       SetActive(false);
@@ -491,7 +502,9 @@ namespace Graphene
 
     void OnValidate()
     {
-      if (Root== null)
+      GetLocalReferences();
+
+      if (Root == null)
         return;
 
       InitViews();

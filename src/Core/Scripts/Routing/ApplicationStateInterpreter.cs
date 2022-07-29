@@ -18,19 +18,34 @@ namespace Graphene
     Exit
   }
 
-  [RequireComponent(typeof(Plate))]
+  //[RequireComponent(typeof(Plate))]
   public class ApplicationStateInterpreter : StateInterpreter<string>, IGrapheneInjectable, IGrapheneInitializable
   {
 
-    [System.Serializable, Toggle("enabled")]
+    [System.Serializable, Toggle("enabled", CollapseOthersOnExpand = false)]
     public struct StateCommandHandle
     {
+      public string name => stateCommand;
       public bool enabled;
       [SerializeField] public string stateCommand;
-      public RouterCommand routerCommand;
-      public UnityEvent OnStateEnter;
+
+#if ODIN_INSPECTOR
+      [ValidateInput(nameof(ValidateCustomState), "Custom state reroute should be different from input state command")]
+#endif
+      [BoxGroup("Output")] public string customState;
+      [BoxGroup("Output"), DisableIf(nameof(hasCustomState))] public RouterCommand routerCommand;
+      [BoxGroup("Output")] public UnityEvent OnStateEnter;
+
+      internal bool hasCustomState => !System.String.IsNullOrWhiteSpace(customState) && customState != stateCommand;
+#if ODIN_INSPECTOR
+      bool ValidateCustomState(string customState)
+      {
+        return customState != stateCommand;
+      }
+#endif
     }
 
+    [ListDrawerSettings(ListElementLabelName = nameof(StateCommandHandle.name))]
     public StateCommandHandle[] commands = new StateCommandHandle[0];
 
     Router<string> router;
@@ -50,9 +65,8 @@ namespace Graphene
       router = graphene.Router as Router<string>;
       router.RegisterInterpreter(this);
 
-      if (!plate)
+      if (plate ??= GetComponent<Plate>())
       {
-        plate = GetComponent<Plate>();
         plate.onShow.AddListener(Plate_OnShow);
         plate.onHide.AddListener(Plate_OnHide);
       }
@@ -72,29 +86,35 @@ namespace Graphene
       {
         if(command.stateCommand == state)
         {
-          if(command.OnStateEnter != null || command.routerCommand != RouterCommand.None)
+          if(command.OnStateEnter != null || command.routerCommand != RouterCommand.None || command.hasCustomState)
           {
-            switch (command.routerCommand)
+            if (command.hasCustomState)
+              router.TryChangeState(command.customState);
+            else
             {
-              case RouterCommand.None:
-                break;
-              case RouterCommand.Back:
-                router.TryGoToPreviousState();
-                break;
-              case RouterCommand.Previous:
-                break;
-              case RouterCommand.Exit:
+              switch (command.routerCommand)
+              {
+                case RouterCommand.None:
+                  break;
+                case RouterCommand.Back:
+                  router.TryGoToPreviousState();
+                  break;
+                case RouterCommand.Previous:
+                  break;
+                case RouterCommand.Exit:
 #if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
+                  UnityEditor.EditorApplication.isPlaying = false;
 #elif UNITY_WEBPLAYER
       Application.OpenURL("https://github.com/LudiKha/Graphene");
 #else
         Application.Quit();
 #endif
-                break;
-              default:
-                break;
+                  break;
+                default:
+                  break;
+              }
             }
+
             command.OnStateEnter?.Invoke();
             return true;
           }

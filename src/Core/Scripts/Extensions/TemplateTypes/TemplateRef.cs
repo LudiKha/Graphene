@@ -89,7 +89,7 @@ namespace Graphene.Elements
     void InstantiateTemplate()
     {
       VisualTreeAsset template = renderer.Templates.TryGetTemplateAsset(this.type);
-      var clone = template.Instantiate();
+      var clone = Binder.InternalInstantiate(template, renderer.Plate);
 
       // Transfer binding path to top-level children & custom classes
       if (!string.IsNullOrWhiteSpace(bindingPath))

@@ -31,7 +31,6 @@ namespace Graphene
 
       if (plate || (plate = GetComponent<Plate>()))
       {
-        plate.stateHandle = this;
         plate.onEvaluateState += Plate_onEvaluateState;
       }
     }

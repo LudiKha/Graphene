@@ -53,10 +53,10 @@ namespace Graphene
         return false;
       }
 
-      navigationButtonGroup.RegisterValueChangedCallback(evt =>
-      {
-        router.TryChangeState(navigationButtonGroup.items[navigationButtonGroup.value]);
-      });
+      //navigationButtonGroup.RegisterValueChangedCallback(evt =>
+      //{
+      //  router.TryChangeState(navigationButtonGroup.items[navigationButtonGroup.value]);
+      //});
 
       return true;
     }

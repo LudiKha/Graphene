@@ -9,9 +9,10 @@ namespace Graphene
   using Elements;
   using Kinstrife.Core.ReflectionHelpers;
 
+  [RequireComponent(typeof(Graphene))]
   [DefaultExecutionOrder(-100)]
   [DisallowMultipleComponent]
-  public abstract class Router : MonoBehaviour, IGrapheneDependent, IGrapheneInitializable
+  public abstract class Router : GrapheneComponent, IGrapheneDependent, IGrapheneInitializable
   {
     /// <summary>
     /// List of interpreters in the hierarchy that can intercept a state change request
@@ -27,6 +28,7 @@ namespace Graphene
     public abstract void BindRoute(Route el, object data);
     public abstract void TryGoToPreviousState();
     public abstract void TryGoToNextState();
+    public abstract void ResetState();
 
     public void RegisterInterpreter(IStateInterpreter stateInterpreter)
     {
@@ -57,6 +59,11 @@ namespace Graphene
       blocker = null;
       onRoutingUnblocked?.Invoke();
     }
+
+    protected void OnValidate()
+    {
+      graphene ??= GetComponent<Graphene>();
+    }
   }
 
   public abstract class Router<T> : Router, IGrapheneInitializable, IGrapheneLateInitializable
@@ -65,6 +72,9 @@ namespace Graphene
     protected SortedDictionary<T, T> states = new SortedDictionary<T, T>();
     public SortedDictionary<T, T> States => states;
 
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ValueDropdown(nameof(GetStateKeys))]
+#endif
     [SerializeField] protected T startingState; public T StartingState => startingState;
 
     public T CurrentState => activeStates.LastOrDefault();
@@ -88,8 +98,19 @@ namespace Graphene
     [Sirenix.OdinInspector.ShowInInspector, Sirenix.OdinInspector.ValueDropdown("StateKeys"), Sirenix.OdinInspector.OnValueChanged("TryChangeState")]
     T changeState;
 
-    internal IEnumerable<T> StateKeys => states.Keys;
 #endif
+    internal IEnumerable<T> StateKeys => states.Keys;
+    IEnumerable<T> GetStateKeys()
+    {
+      foreach (var plate in graphene.Plates)
+      {
+        if (!plate)
+          continue;
+
+        if (plate.StateHandle is StateHandle<T> stateHandle)
+          yield return stateHandle.StateID;
+      }
+    }
 
     #region Initialization
 
@@ -268,6 +289,11 @@ namespace Graphene
 
     public override void TryGoToNextState()
     {
+    }
+
+    public override void ResetState()
+    {
+      TryChangeState(startingState);
     }
 
     public bool StateIsActive(T state)

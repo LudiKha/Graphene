@@ -286,6 +286,8 @@ namespace Graphene
           notifyValueChanged.SetValueWithoutNotify(newValue);
         else if (newValue is string text && element is TextElement textEl)
           textEl.text = text;
+        else if (newValue is string foldoutText && element is Foldout foldout)
+          foldout.text = foldoutText;
         else if (element is IBindableElement<object> bindableEl)
           bindableEl.OnModelChange(newValue);
         else

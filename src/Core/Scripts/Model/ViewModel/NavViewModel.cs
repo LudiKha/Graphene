@@ -9,6 +9,12 @@ namespace Graphene.ViewModel
 {
   public class NavViewModel : MonoBehaviour, IModel
   {
+    [Bind("Title")]
+    [field: SerializeField] public string Title { get; private set; }
+
+
+    [Bind("HasContent")] public bool HasContent => Routes != null && Routes.Count > 0;
+
     public enum RenderMode
     {
       None,
@@ -23,6 +29,9 @@ namespace Graphene.ViewModel
 
     public Action onModelChange { get; set; }
 
+
+    [field: SerializeField] public Plate OverridePlate { get; private set; }
+
     [Bind("Routes")]
     public List<string> Routes =  new List<string>();
 
@@ -31,7 +40,7 @@ namespace Graphene.ViewModel
       switch (renderMode)
       {
         case RenderMode.SiblingsWithState:
-          CreateBindableObjectsFromSiblingsWithState(plate);
+          CreateBindableObjectsFromSiblingsWithState(OverridePlate ?? plate);
           break;
       }
     }
@@ -41,7 +50,7 @@ namespace Graphene.ViewModel
       this.Routes.Clear();
       foreach (var sibling in plate.Parent.Children)
       {
-        if (!sibling || !(sibling.stateHandle is StringStateHandle stringStateHandle))
+        if (!sibling || !(sibling.StateHandle is StringStateHandle stringStateHandle))
           continue;
 
         if (stringStateHandle)

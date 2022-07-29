@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 using Kinstrife.Core.ReflectionHelpers;
+using UnityEngine;
 
 namespace Graphene
 {
@@ -33,6 +34,11 @@ namespace Graphene
       else if (container == null)
       {
         UnityEngine.Debug.LogError("Container is null", plate);
+        return;
+      }
+      else if (context == null)
+      {
+        UnityEngine.Debug.LogError("Context is null", plate);
         return;
       }
 
@@ -67,6 +73,12 @@ namespace Graphene
         controlType = customControl.ControlType;
 
       var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute, controlType);
+      if (!template)
+      {
+        Debug.LogError($"Failed to instantiate template {controlType}", panel);
+        return;
+      }
+
       // Clone & bind the control
       VisualElement clone = Binder.Instantiate(in drawMember.Value, template, panel);
 
@@ -86,13 +98,19 @@ namespace Graphene
     internal static void DrawFromPrimitiveContext(Plate panel, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember, List<ValueWithAttribute<BindAttribute>> bindableMembers)
     {
       var bind = bindableMembers.Find(x => x.MemberInfo.Equals(drawMember.MemberInfo));
+      if(bind.MemberInfo == null)
+        bind = new ValueWithAttribute<BindAttribute>(drawMember.Value, new BindAttribute("Label", BindingMode.OneTime), drawMember.MemberInfo);
 
+      // Get template, clone & bind the control
       var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute);
-      // Clone & bind the control
       VisualElement clone = Binder.InstantiatePrimitive(in context, ref bind, template, panel);
 
-      // Add the control to the container
-      container.Add(clone);
+      // Add any custom typography
+      if (drawMember.Attribute is DrawTextAttribute text && text.typography != Typography.None)
+        clone.AddToClassList(Enum.GetName(typeof(Typography), text.typography));
+
+        // Add the control to the container
+        container.Add(clone);
     }
 
     internal static void DrawFromEnumerableContext(Plate plate, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember, List<ValueWithAttribute<BindAttribute>> bindableMembers)

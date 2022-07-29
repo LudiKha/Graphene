@@ -17,12 +17,14 @@ namespace Graphene
     [SerializeField, Tooltip("Disable this if you want to manually initialize Graphene")] bool initializeOnStart = true;
     [SerializeField, Tooltip("Disable this if you want to manually initialize Graphene")] bool runInEditMode = false;
     [SerializeField] string addClasses;
+    [SerializeField] public PickingMode defaultPickingMode;
+
 #if ODIN_INSPECTOR
     [Sirenix.OdinInspector.InfoBox("$bindingsInfo")]
 #elif NAUGHTY_ATTRIBUTES    
     [NaughtyAttributes.InfoBox("bindingsInfo")]
 #endif
-    [SerializeField] float bindingRefreshRate = 0.1f;
+    [SerializeField] float bindingRefreshRate = 0.2f;
     
     #region ReadOnlyAttribute
 #if ODIN_INSPECTOR
@@ -38,6 +40,7 @@ namespace Graphene
     List<IGrapheneDependent> dependents = new List<IGrapheneDependent>();
     public event System.Action<ICollection<IGrapheneDependent>> onPreInitialize;
     public event System.Action<ICollection<IGrapheneDependent>> onPostInitialize;
+    public event System.Action<BindableElement, object> onBindElement;
 
     /// <summary>
     /// Root Graphene element controller
@@ -55,6 +58,8 @@ namespace Graphene
 
     public bool IsActiveAndInitialized => isActiveAndEnabled && grapheneRoot != null;
 
+    public bool IsActiveAndVisible => IsActiveAndInitialized && !grapheneRoot.ClassListContains("hidden");
+
     #region Events
     public event System.Action<Plate> plateOnShow;
     public event System.Action<Plate> plateOnHide;
@@ -62,14 +67,33 @@ namespace Graphene
 
     protected void Start()
     {
+      GetLocalReferences();
       if (!Application.isPlaying)
+      {
+        GetChildPlates();
         return;
+      }
 
       if (enabled && initializeOnStart)
         Initialize();
     }
 
+    #region Attributes
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ShowInInspector]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.ShowInInspector]
+#endif
+    #endregion
     public bool Initialized { get; private set; }
+
+    #region ButtonAttribute
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ResponsiveButtonGroup]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Button]
+#endif
+    #endregion
     public void Initialize()
     {
       if (Initialized)
@@ -91,13 +115,18 @@ namespace Graphene
       router ??= GetComponent<Router>();
     }
 
+    public void GetChildPlates()
+    {
+      plates = GetComponentsInChildren<Plate>(true).ToList();
+    }
+
     protected void RunInstallation()
     {
       var sw = new Stopwatch();
       sw.Start();
 
       dependents = GetComponentsInChildren<IGrapheneDependent>(true).ToList();
-      plates = dependents.Where(x => x is Plate).Select(x => x as Plate).ToList();
+      GetChildPlates();
 
       // Inject Graphene into
       foreach(var c in dependents)
@@ -126,7 +155,7 @@ namespace Graphene
       Profiler.EndSample();
 
       sw.Stop();
-      UnityEngine.Debug.Log($"Graphene initialization time: {sw.ElapsedMilliseconds}ms", this);
+      UnityEngine.Debug.Log($"Graphene ({gameObject.scene.name}/{gameObject.name}) initialization: {sw.ElapsedMilliseconds}ms", this);
     }
 
 
@@ -163,6 +192,12 @@ namespace Graphene
       //UnityEngine.Debug.Log($"Graphene ConstructVisualTree: {sw.ElapsedMilliseconds}ms");
     }
 
+    public void AddPlate(Plate plate)
+    {
+      if (!plates.Contains(plate))
+        plates.Add(plate);
+    }
+
     public void RegisterPlate(Plate plate)
     {
       if (plate.IsRootPlate)
@@ -188,6 +223,7 @@ namespace Graphene
       // Create the root controller
       grapheneRoot = new GrapheneRoot(router);
       grapheneRoot.AddMultipleToClassList(addClasses);
+      grapheneRoot.pickingMode = defaultPickingMode;
 
       doc.rootVisualElement.Add(grapheneRoot);
     }
@@ -248,7 +284,12 @@ namespace Graphene
     // Needs to be in because UIDocument destroys the root
     private void OnEnable()
     {
-      if(grapheneRoot != null && initializeOnStart)
+#if UNITY_EDITOR
+      if (UnityEditor.EditorApplication.isCompiling || UnityEditor.BuildPipeline.isBuildingPlayer)
+        return;
+#endif
+
+      if (grapheneRoot != null && initializeOnStart)
       // Live reload
       Rebuild();
       return;
@@ -268,6 +309,10 @@ namespace Graphene
 
     private void OnDisable()
     {
+#if UNITY_EDITOR
+      if (UnityEditor.EditorApplication.isCompiling || UnityEditor.BuildPipeline.isBuildingPlayer)
+        return;
+#endif
     }
 
     bool canRebuild => Initialized && doc.enabled && isActiveAndEnabled;
@@ -287,8 +332,13 @@ namespace Graphene
       if (!canRebuild)
         return;
 
-      grapheneRoot?.Clear();
-      grapheneRoot = null;
+      if (grapheneRoot != null)
+      {
+        grapheneRoot.parent?.Remove(grapheneRoot);
+        grapheneRoot.Clear();
+        grapheneRoot = null;
+      }
+
       ConstructVisualTree(plates);
       FinalizeInitialzation();
     }
@@ -306,5 +356,7 @@ namespace Graphene
 
     //  RebuildRootElement();
     //}
+
+    public void BroadcastBindCallback(BindableElement el, object context, Plate plate) => onBindElement?.Invoke(el, context);
   }
 }

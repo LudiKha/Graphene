@@ -13,8 +13,6 @@ namespace Graphene
     [field: SerializeField]/*[Bind("Model")]*/ public Object Model { get; set; }
     [SerializeField] protected TemplatePreset templates; public TemplatePreset Templates => templates;
 
-    private TemplatePreset template;
-
     /// <summary>
     /// Overriding this will target a non-default content container (as defined in Plate)
     /// </summary>
@@ -29,7 +27,6 @@ namespace Graphene
     {
       if (plate || (plate = GetComponent<Plate>()))
       {
-        plate.renderer = this;
         plate.onRefreshStatic += Plate_onRefreshStatic;
         plate.onRefreshDynamic += Plate_onRefreshDynamic;
 
@@ -64,7 +61,14 @@ namespace Graphene
       // Initialize the ViewModel
       if (viewModel != null)
       {
-        viewModel.Initialize(GetDrawContainer(), plate);
+        try
+        {
+          viewModel.Initialize(GetDrawContainer(), plate);
+        }
+        catch(System.Exception e)
+        {
+          Debug.LogException(e, this);
+        }
 
         if (!viewModel.Render)
           return;
