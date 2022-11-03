@@ -4,14 +4,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Graphene
 {
-  using Elements;
   using Kinstrife.Core.ReflectionHelpers;
-  using System.ComponentModel;
 
   public static class BindingManager
   {
@@ -42,17 +39,18 @@ namespace Graphene
       // Update the bindings for active/visible panels
       foreach (var kvp in bindings)
       {
+        var plate = kvp.Key;
         // Was disposed
-        if (!kvp.Key)
+        if (!plate)
           continue;
 
         // The panel is invisible, or inactive
-        if (!kvp.Key.IsActive)
+        if (!plate.IsActive)
           continue;
 
-        if (kvp.Key.bindingRefreshMode == BindingRefreshMode.None || (kvp.Key.bindingRefreshMode == BindingRefreshMode.ModelChange && !kvp.Key.wasChangedThisFrame))
+        if (plate.bindingRefreshMode == BindingRefreshMode.None || (plate.bindingRefreshMode == BindingRefreshMode.ModelChange && !plate.wasChangedThisFrame))
           continue;
-        kvp.Key.wasChangedThisFrame = false;
+        plate.wasChangedThisFrame = false;
 
         foreach (var binding in kvp.Value)
         {
@@ -184,199 +182,4 @@ namespace Graphene
     }
   }
 
-  /// <summary>
-  /// Non-generic base class
-  /// </summary>
-  public abstract class Binding : IDisposable, IBinding
-  {
-    public bool scheduleDispose;
-    public void Dispose()
-    {      
-    }
-
-    public abstract void PreUpdate();
-
-    public abstract void Release();
-
-    public abstract void Update();
-  }
-
-  public abstract class Binding<T> : Binding
-  {
-    protected object context;
-    [SerializeField] protected T lastValue;
-    [SerializeField] protected T newValue;
-
-    protected BindableElement element;
-    [SerializeField] BindAttribute attribute;
-
-    // The target field
-    protected string memberName;
-    protected ExtendedTypeInfo extendedTypeInfo;
-
-    public Binding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member)
-    {
-      this.element = el;
-      this.context = context;
-      this.extendedTypeInfo = TypeInfoCache.GetExtendedTypeInfo(context.GetType()); // K: 28-10-2020 -> Could be optimized with member.MemberInfo.DeclaringType;
-
-      this.attribute = member.Attribute;
-      this.memberName = member.MemberInfo.Name;
-
-      DetermineBindingMode();
-    }
-
-    void DetermineBindingMode()
-    {
-      if (context is INotifyPropertyChanged notifyPropertyChanged)
-      {
-        notifyPropertyChanged.PropertyChanged += Model_PropertyChanged;
-      }
-      // Specifically set to not have two-way binding
-      if (attribute.bindingMode.HasValue)
-      {
-        if (attribute.bindingMode == BindingMode.TwoWay)
-          RegisterTwoWayValueChangeCallback();
-      }
-      // No value set - Determine based on control type
-      else
-      {
-        // Can't two-way bind a label
-        if (this.element is Label || element is If)
-          return;
-        else if (this.element is INotifyValueChanged<T>)
-          RegisterTwoWayValueChangeCallback();
-      }
-    }
-
-    protected virtual void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
-    {
-    }
-
-    public override void PreUpdate()
-    {
-      throw new NotImplementedException();
-    }
-
-    public override void Release()
-    {
-      throw new NotImplementedException();
-    }
-
-    public override void Update()
-    {
-      // Needs to be disposed because the context ceased to exist
-      if (context == null || !IsValidBinding())
-      {
-        scheduleDispose = true;
-        return;
-      }
-
-      newValue = GetValueFromMemberInfo();
-
-      UpdateFromModel(in newValue);
-    }
-
-    protected virtual void UpdateFromModel(in T newValue)
-    {
-      // Model changed -> Update view
-      if (this.lastValue != null && !this.lastValue.Equals(newValue))
-      {
-        if (newValue is T && element is INotifyValueChanged<T> notifyValueChanged)
-          notifyValueChanged.SetValueWithoutNotify(newValue);
-        else if (newValue is string text && element is TextElement textEl)
-          textEl.text = text;
-        else if (newValue is string foldoutText && element is Foldout foldout)
-          foldout.text = foldoutText;
-        else if (element is IBindableElement<object> bindableEl)
-          bindableEl.OnModelChange(newValue);
-        else
-          Debug.LogError("No binding found");
-      }
-
-      lastValue = newValue;
-    }
-
-    void RegisterTwoWayValueChangeCallback()
-    {
-      if (element is INotifyValueChanged<T> notifyChangeEl)
-      {
-        notifyChangeEl.RegisterValueChangedCallback((evt) =>
-        {
-          SetValueFromMemberInfo(evt.newValue);
-        });
-      }
-    }
-
-    protected abstract bool IsValidBinding();
-    protected abstract T GetValueFromMemberInfo();
-    protected abstract void SetValueFromMemberInfo(T value);
-  }
-
-  public class MemberBinding<T> : Binding<T>
-  {
-    public MemberBinding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member) : base(el, in context, in member)
-    {
-      lastValue = GetValueFromMemberInfo();
-    }
-
-    protected override bool IsValidBinding()
-    {
-      return context != null;
-    }
-
-    protected override T GetValueFromMemberInfo()
-    {
-      return (T)extendedTypeInfo.Accessor[context, memberName];
-    }
-
-    protected override void SetValueFromMemberInfo(T value)
-    {
-      extendedTypeInfo.Accessor[context, memberName] = value;
-    }
-  }
-
-  public class CollectionBinding : Binding<ICollection>
-  {
-    protected int? lastLength;
-
-    public CollectionBinding(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member) : base(el, in context, in member)
-    {
-      if (member.Value is ICollection)
-      {
-      }
-      else
-      {
-        scheduleDispose = true;
-        return;
-      }
-
-      lastValue = GetValueFromMemberInfo();
-      lastLength = lastValue?.Count;
-    }
-
-    protected override bool IsValidBinding()
-    {
-      return memberName != null;
-    }
-    protected override ICollection GetValueFromMemberInfo()
-    {
-      return (ICollection)extendedTypeInfo.Accessor[context, memberName];
-    }
-    protected override void SetValueFromMemberInfo(ICollection value)
-    {
-      extendedTypeInfo.Accessor[context, memberName] = value;
-    }
-
-    protected override void UpdateFromModel(in ICollection newValue)
-    {
-      // Collection reference/count changed -> Assign new list
-      if (!this.lastValue.Equals(newValue) || newValue.Count != lastLength.Value)
-        if (element is ListView listView && newValue is IList iList)
-        {
-          listView.itemsSource = iList;
-          lastLength = iList?.Count;
-        }
-    }
-  }
 }

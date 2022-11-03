@@ -240,7 +240,7 @@ namespace Graphene
           }
           else if (item is ButtonGroup btnGroup)
           {
-            btnGroup.clicked += (string route) => { el.route = route; el.clicked?.Invoke(); }; // A bit hacky perhaps
+            btnGroup.clicked += (int index, string route) => { el.route = route; el.clicked?.Invoke(); }; // A bit hacky perhaps
             OnBindElement?.Invoke(btnGroup);
             plate.Graphene?.BroadcastBindCallback(el, context, plate);
           }
@@ -353,10 +353,10 @@ namespace Graphene
             el.SetValueWithoutNotify(value);
             BindingManager.TryCreate<TValueType>(el, in context, in item, plate);
           }
-          else if(item.Value is BindableBaseField<TValueType> baseField)
+          else if (item.Value is BindableBaseField<TValueType> baseField)
           {
             el.SetValueWithoutNotify(baseField.value);
-            if(!string.IsNullOrWhiteSpace(baseField.Label))
+            if (!string.IsNullOrWhiteSpace(baseField.Label))
               label = baseField.Label;
             BindingManager.TryCreate<TValueType>(el, in item.Value, in item, plate);
           }
@@ -374,7 +374,13 @@ namespace Graphene
         }
         // Set register callback event
         else if (item.Attribute is BindValueChangeCallbackAttribute callbackAttribute)
-          el.RegisterValueChangedCallback(item.Value as EventCallback<ChangeEvent<TValueType>>);
+        {
+          var target = item.Value as EventCallback<ChangeEvent<TValueType>>;
+#if UNITY_ASSERTIONS
+          UnityEngine.Assertions.Assert.IsNotNull(target, "Bindable item Invalid callback - ValueType mismatch.");
+#endif
+          el.RegisterValueChangedCallback(target);
+        }
         // Set label from field, if not from attribute
         else if (!labelFromAttribute && item.Attribute.Path == "Label" && item.Value is string labelText)
           label = labelText;
