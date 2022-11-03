@@ -33,12 +33,16 @@ namespace Graphene
       }
       else if (container == null)
       {
-        UnityEngine.Debug.LogError("Container is null", plate);
+#if UNITY_ASSERTIONS
+        UnityEngine.Debug.LogError("Trying to draw to null VisualElement container", plate);
+#endif
         return;
       }
       else if (context == null)
       {
-        UnityEngine.Debug.LogError("Context is null", plate);
+#if UNITY_ASSERTIONS
+        UnityEngine.Debug.LogError("Trying to draw null context", plate);
+#endif
         return;
       }
 
