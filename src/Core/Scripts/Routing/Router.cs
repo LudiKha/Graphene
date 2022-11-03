@@ -69,7 +69,9 @@ namespace Graphene
   public abstract class Router<T> : Router, IGrapheneInitializable, IGrapheneLateInitializable
   {
     // state & parent
-    protected SortedDictionary<T, T> states = new SortedDictionary<T, T>();
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ShowInInspector] protected SortedDictionary<T, T> states = new SortedDictionary<T, T>();
+#endif
     public SortedDictionary<T, T> States => states;
 
 #if ODIN_INSPECTOR

@@ -40,7 +40,7 @@ namespace Graphene
 
   public class StateHandle<T> : StateHandle
   {
-    [SerializeField] T stateID; public T StateID => stateID;
+    [SerializeField] protected T stateID; public virtual T StateID => stateID;
     [SerializeField] T parentStateID;
     protected Router<T> router; public override Router Router => router as Router;
     /// <summary>

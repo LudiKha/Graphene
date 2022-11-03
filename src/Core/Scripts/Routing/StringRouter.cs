@@ -85,6 +85,11 @@ namespace Graphene
       return list;
     }
 
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.Button]
+#endif
+    public bool ChangeState(string path) => base.TryChangeState(path);
+
     #region Helper Methods
 
     public override bool ValidState(string state)
