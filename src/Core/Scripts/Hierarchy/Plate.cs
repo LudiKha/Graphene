@@ -12,6 +12,7 @@ using Sirenix.OdinInspector;
 namespace Graphene
 {
   using Elements;
+  using UnityEngine.Assertions;
   using UnityEngine.Profiling;
 
   public enum PositionMode
@@ -77,6 +78,7 @@ namespace Graphene
 
     #region Constants
 
+    public const string plateClassName = "plate";
     public const string contentViewSelector = "GR__Content";
     public const string childViewSelector = "GR__Children";
     #endregion
@@ -96,6 +98,7 @@ namespace Graphene
 
     #region VisualElements Reference
     public VisualElement Root { get; private set; }
+    public VisualElement RootPlateEl { get; private set; }
     /// <summary>
     /// Main container for attached renderer's output of (repeat) elements.
     /// </summary>
@@ -123,9 +126,18 @@ namespace Graphene
     #endregion
 
     public bool Initialized { get; set; }
+    bool registeredToParent;
+
     public virtual void Initialize()
     {
       GetLocalReferences();
+
+      if (parent && !registeredToParent)
+      {
+        parent.onShow.AddListener(Parent_OnShow);
+        parent.onHide.AddListener(Parent_OnHide);
+        registeredToParent = true;
+      }
     }
 
     private void Awake()
@@ -145,20 +157,15 @@ namespace Graphene
       if (graphene)
       {
         router ??= graphene.Router;
-        stateHandle ??= GetComponent<StateHandle>();
-        renderer ??= GetComponent<Renderer>();
       }
       //customView ??= GetComponent<ViewHandle>();
+
+      stateHandle ??= GetComponent<StateHandle>();
+      renderer ??= GetComponent<Renderer>();
 
       // Get nearest parent
       if ((Application.isPlaying && parent) || (parent = transform.parent?.GetComponentInParent<Plate>(true))) 
           parent.RegisterChild(this);
-
-      if (parent)
-      {
-        parent.onShow.AddListener(Parent_OnShow);
-        parent.onHide.AddListener(Parent_OnHide);
-      }
     }
 
     internal void ConstructVisualTree()
@@ -166,16 +173,27 @@ namespace Graphene
       Profiler.BeginSample("Graphene Plate Construct VisualTree", this);
       Root?.Clear();
       Root = visualAsset.CloneTree();
+      RootPlateEl = Root.Children().First();
+
+#if UNITY_ASSERTIONS
+      Assert.IsNotNull(Root);
+      Assert.IsNotNull(RootPlateEl);
+#endif
+
       Root.pickingMode = Graphene.defaultPickingMode;
+      RootPlateEl.pickingMode = Graphene.defaultPickingMode;
 
       // Get views
       InitViews();
 
       RefreshClassesAndStyles();
 
-      Root.AddToClassList("plate");
+      Root.AddToClassList(plateClassName);
       if (!string.IsNullOrWhiteSpace(addClasses))
+      {
         Root.AddMultipleToClassList(addClasses);
+        RootPlateEl.AddMultipleToClassList(addClasses);
+      }
 
       Initialized = true;
       onRefreshVisualTree?.Invoke();
@@ -521,11 +539,15 @@ namespace Graphene
       {
         Root.RemoveFromClassList(positionModeAbsoluteClassNames);
         Root.AddToClassList(positionModeRelativeClassNames);
+        RootPlateEl.RemoveFromClassList(positionModeAbsoluteClassNames);
+        RootPlateEl.AddToClassList(positionModeRelativeClassNames);
       }
       else if (positionMode == PositionMode.Absolute)
       {
         Root.RemoveFromClassList(positionModeRelativeClassNames);
         Root.AddMultipleToClassList(positionModeAbsoluteClassNames);
+        RootPlateEl.RemoveFromClassList(positionModeRelativeClassNames);
+        RootPlateEl.AddMultipleToClassList(positionModeAbsoluteClassNames);
       }
 
       if(showHideMode == ShowHideMode.Immediate)

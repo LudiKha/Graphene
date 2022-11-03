@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Sirenix.OdinInspector;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,7 +12,7 @@ using UnityEngine.UIElements;
 namespace Graphene.ViewModel
 {
   [System.Serializable]
-  public abstract class BindableBaseField
+  public abstract class BindableBaseField : BindableObjectBase
   {
   }
 
@@ -33,10 +35,10 @@ namespace Graphene.ViewModel
     }
 
     [field: SerializeField]
-    [Bind("Label", BindingMode.OneWay)][IgnoreDataMember]
+    [Bind(nameof(Label), BindingMode.OneWay)][IgnoreDataMember]
     public virtual string Label { get; set; }
 
-    [BindValueChangeCallback("ValueChange")][IgnoreDataMember]
+    /*[BindValueChangeCallback(nameof(ValueChange))]*/[IgnoreDataMember]
     public EventCallback<ChangeEvent<T>> ValueChange => (changeEvent) => { ValueChangeCallback(changeEvent.newValue); };
 
     public event System.EventHandler<T> OnValueChange;
@@ -53,7 +55,12 @@ namespace Graphene.ViewModel
       PropertyChanged?.Invoke(null, null);
     }
 
-    public void ResetCallbacks() => OnValueChange = null;
+    public override void ResetCallbacks()
+    {
+      base.ResetCallbacks();
+      OnValueChange = null;
+      PropertyChanged = null;
+    }
   }
 
 

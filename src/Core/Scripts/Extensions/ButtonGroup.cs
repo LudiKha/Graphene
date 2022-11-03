@@ -76,7 +76,7 @@ namespace Graphene.Elements
       }
     }
 
-    public event System.Action<string> clicked;
+    public event System.Action<int, string> clicked;
 
     public void SetValueWithoutNotify(int value)
     {
@@ -146,7 +146,7 @@ namespace Graphene.Elements
     internal void ButtonClicked(int i)
     {
       value = i;
-      clicked?.Invoke(items[i]);
+      clicked?.Invoke(i, items[i]);
     }
   }
 }

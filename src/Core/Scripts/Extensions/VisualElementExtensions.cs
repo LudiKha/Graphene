@@ -11,6 +11,14 @@ namespace Graphene
     internal const string fadeoutUssClassName = "fadeout";
     //internal const string fadeinUssClassName = "fadein";
 
+    internal const string activeUssClassName = "active";
+    internal const string selectedUssClassName = "selected";
+
+    public static bool IsHidden(this VisualElement el)
+    { 
+      return el.ClassListContains(hiddenUssClassName);
+    }
+
     public static void Show(this VisualElement el)
     {
       el.RemoveFromClassList(hiddenUssClassName);
@@ -18,6 +26,22 @@ namespace Graphene
     public static void Hide(this VisualElement el)
     {
       el.AddToClassList(hiddenUssClassName);
+    }
+
+    public static void SetShowHide(this VisualElement el, bool value)
+    {
+      if (value)
+        el.Show();
+      else
+        el.Hide();
+    }
+
+    public static void SetActive(this VisualElement el, bool value)
+    {
+      if(value)
+        el.AddToClassList(activeUssClassName);
+      else
+        el.RemoveFromClassList(activeUssClassName);
     }
 
     public static void FadeIn(this VisualElement el)
@@ -29,24 +53,6 @@ namespace Graphene
     {
       el.AddToClassList(fadeoutUssClassName);
     }
-
-
-    public static VisualElement GetRootRecursively(this VisualElement el)
-    {
-      if (el.parent == null)
-      {
-        return el;
-        foreach (var child in el.Children())
-        {
-          if (child.style.display != DisplayStyle.None && child.ClassListContains(documentRootUssClassName))
-            return child;
-        }
-        return null;// el.Q(null, "unity-ui-document__root");
-      }
-
-      return el.parent.GetRootRecursively();
-    }
-
 
     public static VisualElement TopRoot(this VisualElement el)
     {

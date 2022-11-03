@@ -1,13 +1,53 @@
 
+using Sirenix.OdinInspector;
+using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Graphene.ViewModel
 {
+  [System.Serializable]
+  public abstract class BindableObjectBase : IBindableToVisualElement
+  {
+#if ODIN_INSPECTOR
+    [field: InlineButton(nameof(ToggleEnable))]
+#endif
+    [field: SerializeField, IgnoreDataMember] public bool isEnabled { get; private set; } = true;
+    public Action<bool> onSetEnabled { get; set; }
+
+#if ODIN_INSPECTOR
+    [field: InlineButton(nameof(ToggleShow))]
+#endif
+    [field: SerializeField, IgnoreDataMember] public bool isShown { get; private set; } = true;
+    public Action<bool> onShowHide { get; set; }
+
+    void ToggleEnable() => SetEnabled(!isEnabled);
+    void ToggleShow() => SetShow(!isShown);
+
+    public void SetEnabled(bool enabled)
+    {
+      isEnabled = enabled;
+      onSetEnabled?.Invoke(enabled);
+    }
+
+    public void SetShow(bool show)
+    {
+      isShown = show;
+      onShowHide?.Invoke(show);
+    }
+
+    public virtual void ResetCallbacks()
+    {
+      onSetEnabled = null;
+      onShowHide = null;
+    }
+  }
+
   // Atomic "Über" object for the view
   [System.Serializable, Draw(ControlType.Button)]
-  public class BindableObject : IRoute, ICustomControlType, ICustomAddClasses, ICustomName
+  public class BindableObject : BindableObjectBase, IRoute, ICustomControlType, ICustomAddClasses, ICustomName
   {
     [field: SerializeField]
     public ControlType ControlType { get; set; }

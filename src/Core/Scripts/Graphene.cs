@@ -115,6 +115,9 @@ namespace Graphene
       router ??= GetComponent<Router>();
     }
 
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ResponsiveButtonGroup]
+#endif
     public void GetChildPlates()
     {
       plates = GetComponentsInChildren<Plate>(true).ToList();
@@ -267,7 +270,7 @@ namespace Graphene
       if (Time.time - lastRefreshTime < bindingRefreshRate)
         return;
 
-      if (grapheneRoot == null)
+      if (grapheneRoot == null || !grapheneRoot.visible || grapheneRoot.IsHidden())
         return;
 
       Profiler.BeginSample($"Update Graphene bindings ({BindingManager.bindingsCount} bindings)", this);

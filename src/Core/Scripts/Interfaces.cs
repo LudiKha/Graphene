@@ -7,6 +7,18 @@
   }
 
 
+  public interface IBindableToVisualElement
+  {
+    bool isShown { get; }
+    System.Action<bool> onShowHide { get; set; }
+
+    bool isEnabled { get; }
+    System.Action<bool> onSetEnabled { get; set; }
+    void ResetCallbacks ();
+
+    //System.Action syncVisualElement { get; set; }
+  }
+
   public interface IBindableElement<TValue>
   {
     /// <summary>
