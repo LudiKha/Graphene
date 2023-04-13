@@ -59,9 +59,13 @@ namespace Graphene
       blocker = null;
       onRoutingUnblocked?.Invoke();
     }
+	bool isPrefab => !gameObject.scene.isLoaded;
 
-    protected void OnValidate()
+	protected void OnValidate()
     {
+      if (isPrefab)
+        return;
+
       graphene ??= GetComponent<Graphene>();
     }
   }

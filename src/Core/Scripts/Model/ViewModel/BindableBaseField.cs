@@ -1,5 +1,6 @@
 ﻿using Sirenix.OdinInspector;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -11,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene.ViewModel
 {
-  [System.Serializable]
+	[System.Serializable]
   public abstract class BindableBaseField : BindableObjectBase
   {
   }
@@ -88,14 +89,22 @@ namespace Graphene.ViewModel
     [Bind("Max"), DataMember(Name = "Max")]
     public TValueType max;
 
-    public RangeBaseField([CallerMemberName] string label = null) : base(label) { }    
+    public RangeBaseField([CallerMemberName] string label = null) : base(label) { }
+
+	protected float Normalize(float value, float min, float max)
+	{
+	  // Clamp the input value between the min and max values
+	  value = Mathf.Clamp(value, min, max);
+	  // Normalize the input value based on the range
+	  return (value - min) / (max - min);
+	}
 
   }
 
   [System.Serializable, Draw(ControlType.Slider), DataContract]
   public class BindableFloat : RangeBaseField<float>
   {
-    public override float normalizedValue => m_Value / (max - min);
+    public override float normalizedValue => Normalize(m_Value, min, max);
 
     public BindableFloat()
     {
@@ -113,9 +122,9 @@ namespace Graphene.ViewModel
   [System.Serializable, Draw(ControlType.SliderInt), DataContract]
   public class BindableInt : RangeBaseField<int>
   {
-    public override float normalizedValue => (float)m_Value / ((float)max - (float)min);
+	public override float normalizedValue => Normalize(m_Value, min, max);
 
-    public BindableInt()
+	public BindableInt()
     {
       min = 0;
       max = 10;
@@ -195,7 +204,7 @@ namespace Graphene.ViewModel
   }
 
 
-  static class StringUtility
+  public static class StringUtility
   {
     public static string InsertSpaceBeforeUpperCase(this string str)
     {

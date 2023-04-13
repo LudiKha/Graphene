@@ -15,7 +15,7 @@ namespace Graphene
   public class Graphene : MonoBehaviour
   {
     [SerializeField, Tooltip("Disable this if you want to manually initialize Graphene")] bool initializeOnStart = true;
-    [SerializeField, Tooltip("Disable this if you want to manually initialize Graphene")] bool runInEditMode = false;
+    [SerializeField, Tooltip("Disable this if you want to manually initialize Graphene")] new bool runInEditMode = false;
     [SerializeField] string addClasses;
     [SerializeField] public PickingMode defaultPickingMode;
 
@@ -56,7 +56,9 @@ namespace Graphene
     /// </summary>
     [SerializeField] Router router; public Router Router => router;
 
-    public bool IsActiveAndInitialized => isActiveAndEnabled && grapheneRoot != null;
+    public bool IsInitialized => grapheneRoot!= null;
+
+    public bool IsActiveAndInitialized => isActiveAndEnabled && IsInitialized;
 
     public bool IsActiveAndVisible => IsActiveAndInitialized && !grapheneRoot.ClassListContains("hidden");
 
@@ -87,6 +89,8 @@ namespace Graphene
     #endregion
     public bool Initialized { get; private set; }
 
+    public bool IsValid => doc && doc.panelSettings && doc.visualTreeAsset;
+
     #region ButtonAttribute
 #if ODIN_INSPECTOR
     [Sirenix.OdinInspector.ResponsiveButtonGroup]
@@ -99,6 +103,12 @@ namespace Graphene
       if (Initialized)
         return;
       GetLocalReferences();
+
+      if (!IsValid)
+      {
+        UnityEngine.Debug.LogError($"Graphene missing requirements. Please make sure UIDocument is present, has PanelSettings and a VisualTreeAsset", this);
+        return;
+      }
 
       RunInstallation();
 
@@ -173,23 +183,30 @@ namespace Graphene
       // Clone the visual tree for each plate
       foreach (Plate plate in plates)
       {
-#if UNITY_EDITOR
-        try
+        if (!plate.VisualTreeAsset)
         {
-          plate.ConstructVisualTree();
+          UnityEngine.Debug.LogError($"Missing Plate VisualTreeAsset {plate}", plate);
+          continue;
         }
-        catch (System.Exception e)
-        {
-          UnityEngine.Debug.LogError(e, plate);
-        }
-#else
-        plate.ConstructVisualTree();
-#endif
-      }
+
+		try
+		{
+		  plate.ConstructVisualTree();
+		}
+		catch (System.Exception e)
+		{
+		  UnityEngine.Debug.LogError(e, plate);
+		}
+	  }
 
       // Refresh hierarchy -> render & compose children
       foreach (Plate plate in plates)
+      {
+        if (!plate.VisualTreeAsset)
+          continue;
+
         RegisterPlate(plate);
+      }
 
       sw.Stop();
       //UnityEngine.Debug.Log($"Graphene ConstructVisualTree: {sw.ElapsedMilliseconds}ms");

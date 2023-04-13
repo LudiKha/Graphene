@@ -94,13 +94,13 @@ namespace Graphene
     /// Adds multiple classes to VisualElement. ClassNames separated by space ' '.
     /// </summary>
     /// <param name="el"></param>
-    /// <param name="classes"></param>
+    /// <param name="classes">Separated by space</param>
     public static void AddMultipleToClassList(this VisualElement el, string classes)
     {
       if (string.IsNullOrWhiteSpace(classes))
         return;
 
-      AddMultipleToClassList(el, classes.Split(new string[] { " " }, System.StringSplitOptions.RemoveEmptyEntries));
+      AddMultipleToClassList(el, Parse(classes));
     }
 
     public static void AddMultipleToClassList(this VisualElement el, IEnumerable<string> classes)
@@ -108,5 +108,30 @@ namespace Graphene
       foreach (var className in classes)
         el.AddToClassList(className);
     }
+
+
+	/// <summary>
+	/// Removes multiple classes from VisualElement. ClassNames separated by space ' '.
+	/// </summary>
+	/// <param name="el"></param>
+	/// <param name="classes">Separated by space</param>
+	public static void RemoveMultipleFromClassList(this VisualElement el, string classes)
+	{
+	  if (string.IsNullOrWhiteSpace(classes))
+		return;
+
+	  RemoveMultipleFromClassList(el, Parse(classes));
+	}
+	public static void RemoveMultipleFromClassList(this VisualElement el, IEnumerable<string> classes)
+	{
+	  foreach (var className in classes)
+		el.RemoveFromClassList(className);
+	}
+
+    public static IEnumerable<string> Parse(string classes)
+    {
+      return classes?.Split(new string[] { " " }, System.StringSplitOptions.RemoveEmptyEntries);
+
+	}
   }
 }

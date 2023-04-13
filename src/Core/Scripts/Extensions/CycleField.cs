@@ -37,6 +37,8 @@ namespace Graphene.Elements
     {
       UxmlStringAttributeDescription m_Text = new UxmlStringAttributeDescription { name = "text" };
       UxmlStringAttributeDescription m_Items = new UxmlStringAttributeDescription { name = "items" };
+      UxmlStringAttributeDescription m_Plus = new UxmlStringAttributeDescription { name = "plusSymbol" };
+      UxmlStringAttributeDescription m_Minus = new UxmlStringAttributeDescription { name = "minusSymbol" };
 
       /// <summary>
       /// Initialize <see cref="CycleField"/> properties using values from the attribute bag.
@@ -47,11 +49,13 @@ namespace Graphene.Elements
       public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
       {
         base.Init(ve, bag, cc);
-
-        ((CycleField)ve).text = m_Text.GetValueFromBag(bag, cc);
-        ((CycleField)ve).items = m_Items.GetValueFromBag(bag, cc).Split(';').Where(x => !string.IsNullOrEmpty(x)).ToList();
-      }
-    }
+        var cycleField = (CycleField)ve;
+		cycleField.text = m_Text.GetValueFromBag(bag, cc);
+		cycleField.items = m_Items.GetValueFromBag(bag, cc).Split(';').Where(x => !string.IsNullOrEmpty(x)).ToList();
+        cycleField.plusSymbol = m_Plus.GetValueFromBag(bag, cc);
+        cycleField.minusSymbol = m_Minus.GetValueFromBag(bag, cc);
+	  }
+	}
 
     /// <summary>
     /// USS class name of elements of this type.
@@ -88,7 +92,10 @@ namespace Graphene.Elements
     Button m_Next;
     Button m_Previous;
 
-    public CycleField()
+	public string plusSymbol = "〉";   // ▶〉→
+	public string minusSymbol = "〈";  // ◀〈 ←
+
+	public CycleField()
         : this(null) {
     }
 
@@ -111,8 +118,12 @@ namespace Graphene.Elements
       // Allocate and add the buttons to the hierarchy
       m_Previous = new Button();
       m_Next = new Button();
-      m_Previous.text = "<";
-      m_Next.text = ">";
+
+      m_Previous.text = minusSymbol;
+      m_Next.text = plusSymbol;
+      //m_Next.AddToClassList("bold");
+      //m_Previous.AddToClassList("bold");
+
       m_Previous.focusable = true;
       m_Next.focusable = true;
 
@@ -164,6 +175,7 @@ namespace Graphene.Elements
 
       text = newText;
     }
+
 
     /// <summary>
     /// Optional text after the toggle.

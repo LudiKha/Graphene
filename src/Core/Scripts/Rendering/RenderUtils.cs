@@ -10,21 +10,25 @@ namespace Graphene
 {
   internal static class RenderUtils
   {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    internal static bool IsPrimitiveContext(in object context) => context is string || context.GetType().IsPrimitive;
+	internal static TemplatePreset templatesDefault; // Hax
 
-    /// <summary>
-    /// Draws controls for all members of a context object
-    /// </summary>
-    /// <param name="plate"></param>
-    /// <param name="container"></param>
-    /// <param name="context"></param>
-    /// <param name="templates"></param>
-    internal static void DrawDataContainer(Plate plate, VisualElement container, in object context, TemplatePreset templates)
+    internal readonly static System.Type stringType = typeof(string);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="context"></param>
+	/// <returns></returns>
+	internal static bool IsPrimitiveContext(this System.Type type) => type.IsPrimitive || type.IsEnum || type == stringType;
+    
+	/// <summary>
+	/// Draws controls for all members of a context object
+	/// </summary>
+	/// <param name="plate"></param>
+	/// <param name="container"></param>
+	/// <param name="context"></param>
+	/// <param name="templates"></param>
+	internal static void DrawDataContainer(Plate plate, VisualElement container, in object context, TemplatePreset templates)
     {
       if (!templates)
       {
@@ -34,17 +38,18 @@ namespace Graphene
       else if (container == null)
       {
 #if UNITY_ASSERTIONS
-        UnityEngine.Debug.LogError("Trying to draw to null VisualElement container", plate);
+        UnityEngine.Debug.LogError($"Trying to draw to null VisualElement container {plate.name}", plate);
 #endif
         return;
       }
       else if (context == null)
       {
-#if UNITY_ASSERTIONS
+#if UNITY_ASSERTIONS && false
         UnityEngine.Debug.LogError("Trying to draw null context", plate);
 #endif
         return;
       }
+      templatesDefault = templates;
 
       // Get members
       List<ValueWithAttribute<DrawAttribute>> drawableMembers = new List<ValueWithAttribute<DrawAttribute>>();
@@ -61,7 +66,7 @@ namespace Graphene
       {
         if (member.Value is null)
           continue;
-        else if (IsPrimitiveContext(member.Value))
+        else if (member.Type.IsPrimitiveContext())
           DrawFromPrimitiveContext(plate, container, in context, templates, member, bindableMembers);
         else if (member.Value is IEnumerable enumerable)
           DrawFromEnumerableContext(plate, container, in context, templates, member, bindableMembers);
@@ -79,7 +84,7 @@ namespace Graphene
       var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute, controlType);
       if (!template)
       {
-        Debug.LogError($"Failed to instantiate template {controlType}", panel);
+        Debug.LogError($"Failed to instantiate template {controlType} for field {drawMember.MemberInfo.Name}", panel);
         return;
       }
 
@@ -133,7 +138,7 @@ namespace Graphene
 
       foreach (var item in drawMember.Value as IEnumerable)
       {
-        if (IsPrimitiveContext(in item))
+        if (IsPrimitiveContext(item.GetType()))
         {
           // Fugly, but works (for now)
           var bind = new ValueWithAttribute<BindAttribute>(item, new BindAttribute("Label", BindingMode.OneTime), drawMember.MemberInfo);

@@ -19,7 +19,7 @@ namespace Graphene.Elements
     /// Graphene adds this USS class to every instance of the Template element. Any styling applied to
     /// this class affects every button located beside, or below the stylesheet in the visual tree.
     /// </remarks>
-    public static readonly string ussClassName = "gr-button-ref";
+    public static readonly new string ussClassName = "gr-button-ref";
 
     /// <summary>
     /// Constructs an Template.

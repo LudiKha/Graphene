@@ -6,15 +6,24 @@
   {
   }
 
+  public interface IHasTooltip
+  {
+	string Tooltip { get; }
 
-  public interface IBindableToVisualElement
+  }
+
+  public interface IBindableToVisualElement : IHasTooltip
   {
     bool isShown { get; }
     System.Action<bool> onShowHide { get; set; }
 
     bool isEnabled { get; }
     System.Action<bool> onSetEnabled { get; set; }
-    void ResetCallbacks ();
+
+	bool isActive2 { get; }
+	System.Action<bool> onSetActive { get; set; }
+
+	void ResetCallbacks ();
 
     //System.Action syncVisualElement { get; set; }
   }

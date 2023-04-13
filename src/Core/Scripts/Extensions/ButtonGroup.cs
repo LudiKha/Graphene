@@ -46,8 +46,10 @@ namespace Graphene.Elements
       {
         base.Init(ve, bag, cc);
 
-        ((ButtonGroup)ve).value = m_ActiveIndex.GetValueFromBag(bag, cc);
-        ((ButtonGroup)ve).items = m_Items.GetValueFromBag(bag, cc).Split(';').Where(x => !string.IsNullOrEmpty(x)).ToList();
+		ButtonGroup buttonGroup = (ButtonGroup)ve;
+
+		buttonGroup.value = m_ActiveIndex.GetValueFromBag(bag, cc);
+		buttonGroup.items = SelectField.ParseChoiceList(m_Items.GetValueFromBag(bag, cc));
       }
     }
 
@@ -91,7 +93,7 @@ namespace Graphene.Elements
     /// Unity adds this USS class to every instance of the TabGroup element. Any styling applied to
     /// this class affects every button located beside, or below the stylesheet in the visual tree.
     /// </remarks>
-    public static readonly string ussClassName = "gr-button-group ";
+    public static new readonly string ussClassName = "gr-button-group ";
     public static readonly string ussActiveClassName = "active";
 
     /// <summary>
@@ -129,24 +131,45 @@ namespace Graphene.Elements
     public void SetItems(List<string> items)
     {
       m_Items = items ?? new List<string>();
-
-      Clear();
-
-      for (int i = 0; i < items.Count; i++)
-      {
-        var item = items[i];
-        int buttonIndex = i;
-        var btn = new Button(() => ButtonClicked(buttonIndex));
-        btn.text = item.ToUpper();
-        btn.AddToClassList("gr-button");
-        Add(btn);
-      }
+      RefreshButtons();
     }
+
+    public void RefreshButtons()
+	{
+	  Clear();
+
+      foreach (var item in items)
+      {
+		InternalAddItem(item);
+	  }
+	}
 
     internal void ButtonClicked(int i)
     {
       value = i;
       clicked?.Invoke(i, items[i]);
     }
+
+    public void ClearItems()
+    {
+      m_Items.Clear();
+      Clear();
+    }
+
+    public void AddItem(string text, string tooltip = null)
+    {
+      items.Add(text);
+      InternalAddItem(text, tooltip);
+	}
+
+    void InternalAddItem(string text, string tooltip = null)
+	{
+	  int buttonIndex = childCount;
+	  var btn = new Button(() => ButtonClicked(buttonIndex));
+	  btn.text = text.ToUpper();
+	  btn.tooltip = tooltip;
+	  btn.AddToClassList("gr-button");
+	  Add(btn);
+	}
   }
 }

@@ -34,18 +34,7 @@ namespace Graphene
       if (index == 0)
         return AddressFromRelativeState(routeRequest);
 
-
       return AddressFromRelativeState(routeRequest);
-      var states = GetStatesFromAddress(routeRequest);
-      var parentStates = GetParentStatesRecursive(states.First(), states.ToList());
-      // Not an address, single (base) state
-      if (index == -1)
-        return GetStatesFromAddress(routeRequest);
-      
-      // '/' somewhere in the middle, check for absolute address
-
-
-      return GetStatesFromAddress(routeRequest);
     }
 
 

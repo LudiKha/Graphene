@@ -29,7 +29,11 @@ namespace Graphene.Elements
       {
         base.Init(ve, bag, cc);
 
-        ((If)ve).value = m_Value.GetValueFromBag(bag, cc); 
+        bool startEnabled = false;
+#if UNITY_EDITOR
+		startEnabled = Application.isPlaying ? false : m_Value.GetValueFromBag(bag, cc);
+#endif
+        ((If)ve).value = startEnabled;
       }
     }
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,6 +9,7 @@ namespace Graphene
   using global::Graphene.ViewModel;
   using Kinstrife.Core.ReflectionHelpers;
   using System.Collections;
+  using System.Linq;
 
   public interface IRoute
   {
@@ -30,6 +30,7 @@ namespace Graphene
     internal static VisualElement InternalInstantiate(VisualTreeAsset template, Plate plate)
     {
       var clone = template.Instantiate();
+      return clone.Children().First();
       clone.pickingMode = plate.Graphene.defaultPickingMode;
       return clone;
     }
@@ -43,8 +44,8 @@ namespace Graphene
     public static VisualElement Instantiate(in object context, VisualTreeAsset template, Plate plate)
     {
       var clone = InternalInstantiate(template, plate);
-
-      if (context.GetType().IsPrimitive)
+      var t = context.GetType();
+      if (RenderUtils.IsPrimitiveContext(t))
       {
       }
       // Bind class with its own context
@@ -124,10 +125,10 @@ namespace Graphene
         BindRoute(route, ref context, plate);
       }
 
-      BindChildren(element, context, members, plate, notFullyDrilledDown);
-    }
+	  BindChildren(element, context, members, plate, notFullyDrilledDown);
+	}
 
-    static void BindChildren(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate, bool scopeDrillDown)
+	static void BindChildren(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate, bool scopeDrillDown)
     {
       //element.BindValues(data);
       if (element.childCount == 0)
@@ -189,7 +190,7 @@ namespace Graphene
       {
         if (BindingPathOrTypeMatch<string>(el, in item))
         {
-          BindText(el, ref context, in item.Value, in item, plate);
+          BindText(el, ref context, in item, plate);
         }
       }
     }
@@ -199,7 +200,7 @@ namespace Graphene
       {
         if (BindingPathOrTypeMatch<string>(el, in item))
         {
-          BindText(el, ref context, in item.Value, in item, plate);
+          BindText(el, ref context, in item, plate);
         }
       }
     }
@@ -213,10 +214,18 @@ namespace Graphene
         {
           //var data = item.Value as BindableObject;
           BindRecursive(el, item.Value, null, plate, false);
+          var bindable = (BindableObject)item.Value;
+          el.tooltip = bindable.Tooltip;
+          //Debug.Log(bindable);
         }
-        else if (BindingPathAndTypeMatch<string>(el, in item))
-          BindText(el, ref context, in item.Value, in item, plate);
-        else if (BindingPathAndTypeMatch<Action>(el, in item))
+        else if(BindingPathAndTypeMatch<ActionButton>(el, in item))
+        {
+		  BindRecursive(el, item.Value, null, plate, false);
+		  el.tooltip = ((ActionButton)item.Value).Tooltip;
+		}
+		else if (BindingPathAndTypeMatch<string>(el, in item))
+          BindText(el, ref context, in item, plate);
+        else if (BindingPathOrTypeMatch<Action>(el, in item))
           BindClick(el, (Action)item.Value, context, plate);
         else if (BindingPathOrTypeMatch<UnityEngine.Events.UnityEvent>(el, in item))
           BindClick(el, (UnityEngine.Events.UnityEvent)item.Value, context, plate);
@@ -386,7 +395,7 @@ namespace Graphene
           label = labelText;
         //BindText(el.labelElement, ref context, labelText, in item, plate);
         else if (item.Attribute is BindTooltip)
-          el.tooltip = (string)item.Value;
+          el.tooltip = ObjectToString(item.Value, item.Type);
       }
 
       // Returning value & label tuple because each element implements text differently. (E.g. Foldout vs. Basefield)
@@ -408,12 +417,30 @@ namespace Graphene
       foreach (var item in members)
       {
         // Model items
-        if (BindingPathMatch(item.Attribute.Path, SelectField.itemsPath))
+         if (BindingPathMatch(item.Attribute.Path, SelectField.itemsPath))
         {
           el.choices = item.Value as List<string>;
           break;
         }
-      }
+		else if (item.Type.IsEnum) // Primitive -> Can only do two way
+		{
+		  el.choices = Enum.GetNames(item.Type).ToList();
+		  el.SetValueWithoutNotify(ObjectToString(item.Value, item.Type) ?? el.value);
+
+		  var t = item.Type;
+		  var memberName = item.MemberInfo.Name;
+		  var accessor = TypeInfoCache.GetExtendedTypeInfo(context.GetType()).Accessor;
+		  var ctx = context;
+
+		  // Filthy hax
+		  el.RegisterValueChangedCallback<string>((evt) =>
+          {
+			var val = Enum.Parse(t, evt.newValue);
+			accessor[ctx, memberName] = val;
+            Debug.Log("Filth!");
+          });
+        }
+	  }
 
       // First bind base field (string)
       BindBaseField(el, ref context, members, plate);
@@ -439,42 +466,58 @@ namespace Graphene
     private static void BindListView(ListView el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       foreach (var bindMember in members)
-      {
-        // Primary
-        if (BindingPathMatch(bindMember.Attribute.Path, el.bindingPath))
+      { 
+		// Primary
+		if (BindingPathMatch(bindMember.Attribute.Path, el.bindingPath))
         {
-          IList list = bindMember.Value as IList;
-          var templateAsset = plate.GetComponent<Renderer>().Templates.TryGetTemplateAsset(ControlType.ListItem);
+          ControlType controlType = ControlType.ListItem;
+          if(context is IListViewBindable listViewBindable)
+          {
+            controlType = listViewBindable.ItemControlType;
+          }
 
-          Func<VisualElement> makeItem = () => { return InternalInstantiate(templateAsset, plate); };
-          Action<VisualElement, int> bindItem = (e, i) => { Binder.BindRecursive(e, list[i], null, plate, false); };
-          el.makeItem = makeItem;
-          el.bindItem = bindItem;
-          el.itemsSource = list;
-          //if (templateAsset.ForceHeight > 0)
-          //  el.fixedItemHeight = (int)templateAsset.ForceHeight;
+		  IList list = bindMember.Value as IList;
 
+		  var templateAsset = RenderUtils.templatesDefault.TryGetTemplateAsset(controlType);
+		  InternalBindListView(el, in context, list, templateAsset, plate);
 
-          BindingManager.TryCreate<IList>(el, in context, in bindMember, plate);
+		  BindingManager.TryCreate<IList>(el, in context, in bindMember, plate);
           break;
         }
       }
-    }
 
-    internal static void BindListView(ListView el, in object context, Plate plate, VisualTreeAsset templateAsset, in ValueWithAttribute<BindAttribute> member)
+      // Fallback
+	  if (context is IListViewBindable listViewBindable2)
+	  {
+		var templateAsset = RenderUtils.templatesDefault.TryGetTemplateAsset(listViewBindable2.ItemControlType);
+		InternalBindListView(el, in context, listViewBindable2.ItemsSource, templateAsset, plate);
+	  }
+	}
+
+	internal static void BindListView(ListView el, in object context, Plate plate, VisualTreeAsset templateAsset, in ValueWithAttribute<BindAttribute> member)
     {
       IList list = member.Value as IList;
-
-      Func<VisualElement> makeItem = () => { return InternalInstantiate(templateAsset, plate); };
-      Action<VisualElement, int> bindItem = (e, i) => { Binder.BindRecursive(e, list[i], null, plate, false); };
-      el.makeItem = makeItem;
-      el.bindItem = bindItem;
-      el.itemsSource = list;
-
+	  InternalBindListView(el, in context, list, templateAsset, plate);
       BindingManager.TryCreate<IList>(el, in context, in member, plate);
     }
 
-    private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+	internal static void InternalBindListView(ListView el, in object context, IList itemsSource, VisualTreeAsset templateAsset, Plate plate)
+	{
+	  Func<VisualElement> makeItem = () => { return InternalInstantiate(templateAsset, plate); };
+	  Action<VisualElement, int> bindItem = (e, i) => { Binder.BindRecursive(e, itemsSource[i], null, plate, false); };
+	  el.makeItem = makeItem;
+	  el.bindItem = bindItem;
+	  el.itemsSource = itemsSource;
+
+	  if (context is IListViewBindable bindable)
+	  {
+		bindable.onRebuild += el.Rebuild;
+		bindable.onRefresh += () => bindable.Apply(el);
+		bindable.Apply(el);
+	  }
+	}
+
+	private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       // Then bind the items
       foreach (var item in members)
@@ -567,7 +610,20 @@ namespace Graphene
           el.items = item.Value as List<string>;
           break;
         }
-      }
+		else if (BindingPathAndTypeMatch<ICollection<ActionButton>>(el, item))
+		{
+          el.items.Clear();
+		  var items = item.Value as List<ActionButton>;
+          if (items == null || items.Count == 0)
+            continue;
+
+          el.ClearItems();
+          foreach (var action in items)
+            el.AddItem(action.Label, action.Tooltip);
+          el.clicked += (int i, string name) => items[i].OnClick?.Invoke();
+		  break;
+		}
+	  }
     }
 
     //private static void BindFoldout(Foldout el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
@@ -584,10 +640,10 @@ namespace Graphene
     //  }
     //}
 
-    private static void BindText(TextElement el, ref object context, in object valueObject, in ValueWithAttribute<BindAttribute> member, Plate plate)
+    private static void BindText(TextElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate plate)
     {
       // Add translation here
-      el.text = ObjectToString(in valueObject);
+      el.text = ObjectToString(in member.Value, member.Type);
 
       BindingManager.TryCreate(el, ref context, in member, plate);
     }
@@ -595,18 +651,43 @@ namespace Graphene
     private static void BindClick(Button el, System.Action action, in object context, Plate plate)
     {
       el.clicked += action;
-      OnBindElement?.Invoke(el);
+
+	  if (context is IHasTooltip tooltip)
+	  {
+		el.tooltip = tooltip.Tooltip;
+		if (context is IBindableToVisualElement bindable)
+		{
+		  el.SetEnabled(bindable.isEnabled);
+		  el.SetShowHide(bindable.isShown);
+          el.SetActive(bindable.isActive2);
+		}
+	  }
+
+	  OnBindElement?.Invoke(el);
       plate.Graphene?.BroadcastBindCallback(el, context, plate);
     }
 
     private static void BindClick(Button el, UnityEngine.Events.UnityEvent unityEvent, in object context, Plate plate)
     {
       el.clicked += delegate { unityEvent?.Invoke(); };
-      OnBindElement?.Invoke(el);
-      plate.Graphene?.BroadcastBindCallback(el, context, plate);
-    }
 
-    public static string[] stringSplitOptions = new string[] { ".", "~", "::", "_" };
+      if (context is IHasTooltip tooltip)
+      {
+        el.tooltip = tooltip.Tooltip;
+        if(context is IBindableToVisualElement bindable)
+        {
+		  el.SetEnabled(bindable.isEnabled);
+		  el.SetShowHide(bindable.isShown);
+		  el.SetActive(bindable.isActive2);
+		}
+      }
+
+	  OnBindElement?.Invoke(el);
+      plate.Graphene?.BroadcastBindCallback(el, context, plate);
+
+	}
+
+	public static string[] stringSplitOptions = new string[] { ".", "~", "::", "_" };
 
     public const char nestedScopeChar = '.';
     public const char relativeScopeChar = '_';
@@ -673,7 +754,7 @@ namespace Graphene
       // Select the topmost scope
       string targetScope = scopes[0];
 
-      ValueWithAttribute<BindAttribute>[] matchingMembers = members.Where(x => x.Attribute.Path.ToLower() == targetScope.ToLower()).ToArray();
+      ValueWithAttribute<BindAttribute>[] matchingMembers = members.Where(x => x.Attribute.Path?.ToLower() == targetScope?.ToLower()).ToArray();
       // Might need/want to throw an error here
       if (matchingMembers.Length == 0)
         return false;
@@ -713,11 +794,13 @@ namespace Graphene
     {
       return string.CompareOrdinal(a, member.Attribute.Path) == 0 && typeof(T).IsAssignableFrom(member.Type);
     }
-    internal static string ObjectToString(in object obj)
+    internal static string ObjectToString(in object obj, in Type t)
     {
       // Add translation here
       if (obj is string str)
         return str;
+      else if (t.IsEnum)
+        return Enum.GetName(t, obj);
       else if (obj != null)
         return obj.ToString();
 

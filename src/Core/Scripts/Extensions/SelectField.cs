@@ -55,7 +55,7 @@ namespace Graphene.Elements
           ((SelectField)ve).defaultItemHeight = itemHeight;
 
         ((SelectField)ve).text = m_Text.GetValueFromBag(bag, cc);
-        ((SelectField)ve).items = m_Items.GetValueFromBag(bag, cc).Split(';').Where(x => !string.IsNullOrEmpty(x)).ToList();
+        ((SelectField)ve).items = ParseChoiceList(m_Items.GetValueFromBag(bag, cc));
       }
     }
 
@@ -279,8 +279,7 @@ namespace Graphene.Elements
 
     ListView CreateListView()
     {
-      var listView = new ListView(items, 24, MakeItem, BindItem);
-      listView.itemHeight = defaultItemHeight;
+      var listView = new ListView(items, defaultItemHeight, MakeItem, BindItem);
 
       listView.AddToClassList(listViewUssClassName);
       listView.AddToClassList("h6");
@@ -306,5 +305,30 @@ namespace Graphene.Elements
       if (m_Dialog != null)
         m_Dialog.Dispose();
     }
+
+	#region Util
+	internal static List<string> ParseChoiceList(string choicesFromBag)
+	{
+	  if (string.IsNullOrEmpty(choicesFromBag.Trim()))
+	  {
+		return null;
+	  }
+
+	  string[] array = choicesFromBag.Split(new char[1] { ',' });
+	  if (array.Length != 0)
+	  {
+		List<string> list = new List<string>();
+		string[] array2 = array;
+		foreach (string text in array2)
+		{
+		  list.Add(text.Trim());
+		}
+
+		return list;
+	  }
+
+	  return null;
+	}
+	#endregion
   }
 }

@@ -102,14 +102,8 @@ namespace Graphene
                 case RouterCommand.Previous:
                   break;
                 case RouterCommand.Exit:
-#if UNITY_EDITOR
-                  UnityEditor.EditorApplication.isPlaying = false;
-#elif UNITY_WEBPLAYER
-      Application.OpenURL("https://github.com/LudiKha/Graphene");
-#else
-        Application.Quit();
-#endif
-                  break;
+                  TryExit();
+				  break;
                 default:
                   break;
               }
@@ -124,7 +118,18 @@ namespace Graphene
       return false;
   }
 
-    internal void Plate_OnShow()
+    public virtual void TryExit()
+    {
+#if UNITY_EDITOR
+	  UnityEditor.EditorApplication.isPlaying = false;
+#elif UNITY_WEBPLAYER
+      Application.OpenURL("https://github.com/LudiKha/Graphene");
+#else
+        Application.Quit();
+#endif
+	}
+
+	internal void Plate_OnShow()
     {
       enabled = true; 
     }

@@ -29,7 +29,8 @@ namespace Graphene
     Body,
     Border,
     DropdownField,
-    Card
+    Card,
+    ButtonGroup
   }
 
   public interface ICustomControlType
@@ -70,7 +71,7 @@ namespace Graphene
       if (controlType == ControlType.None)
       {
         // No member draw attribute -> try get ControlType from class attribute
-        if ((drawAttribute == null || drawAttribute.controlType == ControlType.None) && !data.GetType().IsPrimitive && !(data is string))
+        if ((drawAttribute == null || drawAttribute.controlType == ControlType.None) && !RenderUtils.IsPrimitiveContext(data.GetType()))
         {
           var info = TypeInfoCache.GetExtendedTypeInfo(data.GetType());
           if(info.HasTypeAttribute<DrawAttribute>())
@@ -99,8 +100,10 @@ namespace Graphene
         return ControlType.Label;
       else if (data is System.Action || data is UnityEvent)
         return ControlType.Button;
-      else if (data is IList<string>)
+      else if (data is IList)
         return ControlType.ListView;
+      else if (data is Enum)
+        return ControlType.DropdownField;
       return ControlType.None;
     }
 

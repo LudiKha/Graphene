@@ -1,10 +1,10 @@
 {
     "name": "Graphene.Core",
+    "rootNamespace": "",
     "references": [
-        "GUID:7104629240eb8a645904aa070efcaeb8",
-        "GUID:8c09aa1e4b73db04094be9d510142dd2",
         "GUID:a9d2a6efafebd5e47b01684a70d95cc5",
-        "GUID:0b2cc0b34570a2247ae360ab103f281d"
+        "GUID:0b2cc0b34570a2247ae360ab103f281d",
+        "GUID:67b49b9f9092f8a46950e54a0344fbb8"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

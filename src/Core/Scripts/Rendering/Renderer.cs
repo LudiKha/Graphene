@@ -119,23 +119,7 @@ namespace Graphene
     }
 
     #region Public API
-    public void Draw()
-    {
-      // Render & bind the dynamic items
-      RenderUtils.DrawDataContainer(plate, GetDrawContainer(), Model, templates);
-
-      if (viewModel != null)
-        viewModel.onModelChange?.Invoke();
-    }
-
-    public void Draw(object model)
-    {
-      RenderUtils.DrawDataContainer(plate, GetDrawContainer(), in model, templates);
-
-      if (model is IModel iModel)
-        iModel.onModelChange?.Invoke();
-    }
-    
+        
 #if ODIN_INSPECTOR
     [Sirenix.OdinInspector.ResponsiveButtonGroup("Actions")]
 #elif NAUGHTY_ATTRIBUTES
@@ -155,7 +139,7 @@ namespace Graphene
 #endif
     public void ClearContent()
     {
-      GetDrawContainer()?.Clear();
+	  plate.RefreshContentContainer();
     }
     #endregion
 

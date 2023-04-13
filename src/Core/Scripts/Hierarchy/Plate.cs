@@ -12,7 +12,6 @@ using Sirenix.OdinInspector;
 namespace Graphene
 {
   using Elements;
-  using UnityEngine.Assertions;
   using UnityEngine.Profiling;
 
   public enum PositionMode
@@ -45,48 +44,48 @@ namespace Graphene
   /// <para>A `Plate` represents a view controller in the VisualTree, and is used when by Graphene to the hierarchy, its states and views.</para> 
   /// <para><see href="https://github.com/LudiKha/Graphene#plates">Read more in the online documentation</see></para>
   ///</summary>
-  //[RequireComponent(typeof(UIDocument))]
   [DisallowMultipleComponent]
   public class Plate : GrapheneComponent, IGrapheneInitializable, IDisposable
   {
-    [SerializeField] VisualTreeAsset visualAsset; public VisualTreeAsset VisualTreeAsset => visualAsset;
+	#region Constants
 
-#if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.ReadOnly, ShowInInspector]
-#endif
-    bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
+	public const string plateClassName = "plate";
+	public const string contentViewSelector = "Content";
+	public const string childViewSelector = "Children";
+	#endregion
 
-    //[SerializeField] protected string[] contentContainerSelector = new string[] { contentViewSelector };
+	#region Inspector/Authoring
+	[SerializeField, OnValueChanged(nameof(OnChangeDocument))] VisualTreeAsset visualAsset; public VisualTreeAsset VisualTreeAsset => visualAsset;
+    [SerializeField, HideInInspector] VisualTreeAsset cachedAsset;
 
-    [Tooltip("Adds any number of classes to the root element. Separated by space")]
-    [SerializeField] protected string addClasses;
 
-    [SerializeField] Mode drawMode = Mode.OnDemand; public Mode Drawmode => Mode.OnDemand;
-    
-    [SerializeField] PositionMode positionMode = PositionMode.Relative;
-    [SerializeField] ShowHideMode showHideMode = ShowHideMode.Immediate;
-    [SerializeField] JustifyOverride justifyContent =  new JustifyOverride();
-    //[SerializeField] AlignContentOverride alignContent = new AlignContentOverride();
-    [SerializeField] AlignItemsOverride alignItemsOverride = new AlignItemsOverride();
-    [SerializeField] FlexDirectionOverride flexDirectionOverride = new FlexDirectionOverride();
-    [SerializeField] WrapOverride wrapOverride = new WrapOverride();
+	[SerializeField] PickingMode pickingMode = PickingMode.Position;
 
     [SerializeField] public BindingRefreshMode bindingRefreshMode = BindingRefreshMode.ModelChange;
-    internal bool wasChangedThisFrame;
 
-    public bool IsRootPlate => !parent;
+    [SerializeField, FoldoutGroup("Styles Overrides")] InlineStyleOverrides styleOverrides = new InlineStyleOverrides();
+    [SerializeField, FoldoutGroup("Styles Overrides"), ListDrawerSettings(HideAddButton = true, HideRemoveButton = true)] List<SerializedView> viewStyleOverrides = new List<SerializedView>();
+	#endregion
 
-    #region Constants
+	#region State
+	internal bool wasChangedThisFrame;
+	bool isActive = true; public bool IsActive => isActive && enabled && gameObject.activeInHierarchy;
+	#endregion
 
-    public const string plateClassName = "plate";
-    public const string contentViewSelector = "GR__Content";
-    public const string childViewSelector = "GR__Children";
-    #endregion
+	#region Properties
+	public bool IsRootPlate => !parent;
+
+    public bool RequiresViews => children.Count > 0 || renderer != null;
+
+    public bool RequiresRebuild => cachedAsset != visualAsset || viewIds.Count != viewStyleOverrides.Count;
+	#endregion
+
 
     #region Component Reference
     [ShowInInspector] Plate parent; public Plate Parent => parent;
     [ShowInInspector] List<Plate> children = new List<Plate>(); public IReadOnlyList<Plate> Children => children;
 
+    [SerializeField, ReadOnly] public List<string> viewIds = new List<string>();
     [SerializeField] public ViewRef defaultViewRef = new ViewRef(childViewSelector);
     [SerializeField] public ViewRef contentViewRef = new ViewRef(contentViewSelector);
     [SerializeField] public ViewRef attachToParentView = new ViewRef("");
@@ -97,8 +96,9 @@ namespace Graphene
     #endregion
 
     #region VisualElements Reference
+    private TemplateContainer clone;
     public VisualElement Root { get; private set; }
-    public VisualElement RootPlateEl { get; private set; }
+    //public VisualElement RootPlateEl { get; private set; }
     /// <summary>
     /// Main container for attached renderer's output of (repeat) elements.
     /// </summary>
@@ -111,7 +111,8 @@ namespace Graphene
     /// <summary>
     /// List of views in the template.
     /// </summary>
-    List<View> views = new List<View>(); public IReadOnlyList<View> Views => views;
+    Dictionary<string, View> views = new Dictionary<string, View>();
+    Dictionary<View, List<Plate>> childAttachments = new Dictionary<View, List<Plate>>();
 
     #endregion
 
@@ -149,8 +150,7 @@ namespace Graphene
       onShow.RemoveAllListeners();
       onHide.RemoveAllListeners();
       children.Clear();
-
-    }
+	}
 
     protected virtual void GetLocalReferences()
     {
@@ -172,28 +172,31 @@ namespace Graphene
     {
       Profiler.BeginSample("Graphene Plate Construct VisualTree", this);
       Root?.Clear();
-      Root = visualAsset.CloneTree();
-      RootPlateEl = Root.Children().First();
+
+      clone = visualAsset.CloneTree();
+	  Root = clone.Children().First();
 
 #if UNITY_ASSERTIONS
-      Assert.IsNotNull(Root);
-      Assert.IsNotNull(RootPlateEl);
+      Debug.Assert(clone != null, this);
+      Debug.Assert(Root != null, this);
+      Debug.Assert(clone.childCount == 1, $"{nameof(Plate)} {nameof(TemplateContainer)} must have exactly 1 child {nameof(VisualElement)}", this);
+      //Assert.IsNotNull(RootPlateEl);
 #endif
 
-      Root.pickingMode = Graphene.defaultPickingMode;
-      RootPlateEl.pickingMode = Graphene.defaultPickingMode;
+      Root.pickingMode = pickingMode;
 
-      // Get views
-      InitViews();
+      if(pickingMode == PickingMode.Ignore)
+        Root.Query().ForEach(t => t.pickingMode = PickingMode.Ignore);
+
+	  if (RequiresRebuild)
+		EditModeCacheViewIds();
+
+	  // Get views
+	  InitViewsRuntime();
 
       RefreshClassesAndStyles();
 
       Root.AddToClassList(plateClassName);
-      if (!string.IsNullOrWhiteSpace(addClasses))
-      {
-        Root.AddMultipleToClassList(addClasses);
-        RootPlateEl.AddMultipleToClassList(addClasses);
-      }
 
       Initialized = true;
       onRefreshVisualTree?.Invoke();
@@ -244,7 +247,7 @@ namespace Graphene
 
     #region ButtonAttribute
 #if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.Button]
+    [Sirenix.OdinInspector.ResponsiveButtonGroup("ShowHide/Actions"), FoldoutGroup("ShowHide")]
 #elif NAUGHTY_ATTRIBUTES
     [NaughtyAttributes.Button]
 #endif
@@ -255,18 +258,16 @@ namespace Graphene
       ContentContainer?.Clear();
     }
 
-    protected virtual void DetachChildPlates()
+    public void RefreshContentContainer()
     {
-      foreach (var child in children)
-      {
-        if(child)
-          child.Detach();
-      }
+      DetachChildPlates(contentViewRef.view);
+      Clear();
+      ReattachChildPlates(contentViewRef.view);
     }
 
-    #region ButtonAttribute
+	#region ButtonAttribute
 #if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.Button]
+	[Sirenix.OdinInspector.ResponsiveButtonGroup("ShowHide/Actions"), FoldoutGroup("ShowHide")]
 #elif NAUGHTY_ATTRIBUTES
     [NaughtyAttributes.Button]
 #endif
@@ -305,28 +306,83 @@ namespace Graphene
       Hide();
     }
 
-    void InitViews()
+    void InitViewsRuntime()
     {
       if (Root == null)
         return;
 
-      views = Root.Query<View>().ToList();
+      var views = Root.Query<View>().ToList();
+      this.views.Clear();
+      View resolvedDefaultView = null;
+      foreach (var view in views)
+      {
+        this.views.Add(view.id, view);
+        if (view.isDefault || (resolvedDefaultView == null))
+		  resolvedDefaultView = view;
+      }
 
-      defaultViewRef.OnValidate(this);
+      defaultViewRef.ResolveView(this);
+
+      if (resolvedDefaultView == null)
+		resolvedDefaultView = views.FirstOrDefault();
+
       if (!defaultViewRef.initialized)
-        defaultViewRef.view = views.Find(v => v.isDefault) ?? views.FirstOrDefault();
+        defaultViewRef.view = resolvedDefaultView;
 
-      contentViewRef.OnValidate(this);
+      if (!defaultViewRef.initialized)
+      {
+        if(children.Count > 0 || renderer != null)
+          Debug.LogError($"No default view {defaultViewRef.Id}", this);
+      }
+
+	  contentViewRef.ResolveView(this);
 
       if (parent != null)
-        attachToParentView.OnValidate(parent);
-      else
-        attachToParentView.NoParent();
+        attachToParentView.ResolveView(parent);
     }
+
+    void EditModeCacheViewIds()
+    {
+      // Playing & already initialized
+      if (Root != null)
+        return;
+
+      var el = Root != null ? Root : this.visualAsset.CloneTree();
+      viewIds.Clear();
+      el.Query<View>().ForEach(v => viewIds.Add(v.id));
+
+      // Sync Ids
+      if (this.viewStyleOverrides.Count != viewIds.Count)
+      {
+        this.viewStyleOverrides = new List<SerializedView>();
+        foreach (var view in viewIds)
+          this.viewStyleOverrides.Add(new SerializedView(view));
+	  }
+    }
+
+    void OnChangeDocument()
+    {
+	  UpdateViewPlates();
+      RefreshClassesAndStyles();
+    }
+
+    void UpdateViewPlates()
+    {
+	  EditModeCacheViewIds();
+
+	  defaultViewRef.SetPlate(this);
+      contentViewRef.SetPlate(this);
+
+	  if (parent != null)
+		attachToParentView.SetPlate(parent);
+	  else
+		attachToParentView.NoParent();
+
+	}
 
     #region ButtonAttribute
 #if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.Button, Sirenix.OdinInspector.HorizontalGroup("ShowHide")]
+    [Sirenix.OdinInspector.ResponsiveButtonGroup("ShowHide/Actions"), FoldoutGroup("ShowHide")]
 #elif NAUGHTY_ATTRIBUTES
     [NaughtyAttributes.Button]
 #endif
@@ -342,13 +398,13 @@ namespace Graphene
       ApplyActiveState(); // Immediately activate GO
 
       // Enable
-      if (showHideMode == ShowHideMode.Transition)
+      if (styleOverrides.showHideMode == ShowHideMode.Transition)
         Root.FadeIn();
     }
 
     #region ButtonAttribute
 #if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.Button, Sirenix.OdinInspector.HorizontalGroup("ShowHide")]
+    [Sirenix.OdinInspector.ResponsiveButtonGroup("ShowHide/Actions"), FoldoutGroup("ShowHide")]
 #elif NAUGHTY_ATTRIBUTES
     [NaughtyAttributes.Button]
 #endif
@@ -363,7 +419,7 @@ namespace Graphene
 
       SetActive(false);
 
-      if (showHideMode == ShowHideMode.Immediate)
+      if (styleOverrides.showHideMode == ShowHideMode.Immediate)
         ApplyActiveState();
       else
         Root.FadeOut();
@@ -445,42 +501,116 @@ namespace Graphene
         Hide();
     }
 
-    void Detach()
+    VisualElement temp;
+	internal void Detach()
     {
-      VisualElement temp = new VisualElement();
+      if(temp == null)
+        temp = new VisualElement();
       temp.Add(Root);
     }
 
-    /// <summary>
-    /// Attaches child plates into designated view(s)
-    /// </summary>
-    void AttachChildPlates()
+	protected virtual void DetachChildPlates()
+	{
+	  foreach (var child in children)
+	  {
+		if (child)
+		  child.Detach();
+	  }
+	}
+	protected virtual void DetachChildPlates(View view)
+	{
+      if(view == null)
+        return;
+
+	  if (childAttachments.TryGetValue(view, out var children))
+	  {
+        foreach (var child in children)
+		  child.Detach();
+	  }
+	}
+
+	protected virtual void ReattachChildPlates(View view)
+	{
+	  if (view == null)
+		return;
+	  if (childAttachments.TryGetValue(view, out var children))
+	  {
+		foreach (var child in children)
+          InternalAttach(view, child);
+	  }
+	}
+
+	/// <summary>
+	/// Attaches child plates into designated view(s)
+	/// </summary>
+	void AttachChildPlates()
     {
-      foreach (var child in children)
+      // Prolly unnecessary and will prevent dynamic child attackments
+      if (childAttachments.Count > 0)
+        ReattachChildren();
+
+      // Rebuild from afresh
+      childAttachments.Clear();
+
+	  foreach (var child in children)
       {
         // Child can have optional view override
         if (child.attachToParentView)
         {
           var customView = GetViewById(child.attachToParentView.Id);
-          if (customView != null && customView == child.attachToParentView.view)
-          {
-            customView.Add(child.Root);
-            continue;
-          }
-        }
+		  AttachChild(customView, child);
 
-        // By default we attach children to default view
-        defaultView.Add(child.Root);
+		  //customView.Add(child.Root);
+        }
+        else
+        {
+		  // By default we attach children to default view
+		  AttachChild(defaultView, child);
+		  //defaultView.Add(child.Root);
+        }
       }
     }
 
-    #region Helper  Methods
-    /// <summary>
-    /// Gets a visual element for a collection of selectors by name
-    /// </summary>
-    /// <param name="names"></param>
-    /// <returns></returns>
-    public VisualElement GetVisualElement(ICollection<string> names)
+    void ReattachChildren()
+    {
+      foreach (var kvp in childAttachments)
+      {
+        var view = kvp.Key;
+        var children = kvp.Value;
+        foreach (var child in children)
+        {
+          InternalAttach(view, child);
+        }
+      }
+    }
+
+    void AttachChild(View view, Plate child)
+    {
+      if(childAttachments.TryGetValue(view, out var children))
+      {
+        children.Add(child);
+      }
+      else
+      {
+        var list = new List<Plate>();
+        childAttachments.Add(view, list);
+        list.Add(child);
+      }
+      InternalAttach(view, child);
+	}
+
+    void InternalAttach(View view, Plate child)
+    {
+      view.Add(child.Root);
+    }
+
+	#region Helper  Methods
+	/// <summary>
+	/// Gets a visual element for a collection of selectors by name
+	/// </summary>
+	/// <param name="names"></param>
+	/// <returns></returns>
+	public VisualElement GetVisualElement(ICollection<string> names)
     {
       VisualElement target = Root;
 
@@ -503,10 +633,10 @@ namespace Graphene
 
     public View GetViewById(string id)
     {
-      View view = views.Find(x => x.id.Equals(id));
-      if (view == null)
-        view = views.Find(x => x.isDefault);
-      return view;
+      if (views.TryGetValue(id, out View view))
+        return view;
+      else
+        return defaultView;
     }
 
     private void OnDestroy()
@@ -520,14 +650,16 @@ namespace Graphene
 
     void OnValidate()
     {
-      GetLocalReferences();
-
-      if (Root == null)
+      if (isPrefab && !RequiresRebuild)
         return;
 
-      InitViews();
+      GetLocalReferences();
+	  UpdateViewPlates();
       RefreshClassesAndStyles();
+      this.cachedAsset = visualAsset;
     }
+
+    bool isPrefab => !gameObject.scene.isLoaded;
 
     const string positionModeRelativeClassNames = "flex-grow";
     const string positionModeAbsoluteClassNames = "absolute fill";
@@ -535,93 +667,22 @@ namespace Graphene
 
     internal void RefreshClassesAndStyles()
     {
-      if (positionMode == PositionMode.Relative)
-      {
-        Root.RemoveFromClassList(positionModeAbsoluteClassNames);
-        Root.AddToClassList(positionModeRelativeClassNames);
-        RootPlateEl.RemoveFromClassList(positionModeAbsoluteClassNames);
-        RootPlateEl.AddToClassList(positionModeRelativeClassNames);
-      }
-      else if (positionMode == PositionMode.Absolute)
-      {
-        Root.RemoveFromClassList(positionModeRelativeClassNames);
-        Root.AddMultipleToClassList(positionModeAbsoluteClassNames);
-        RootPlateEl.RemoveFromClassList(positionModeRelativeClassNames);
-        RootPlateEl.AddMultipleToClassList(positionModeAbsoluteClassNames);
-      }
+      if (Root == null)
+        return;
 
-      if(showHideMode == ShowHideMode.Immediate)
+      this.styleOverrides.Apply(Root);
+            
+      foreach (var viewStyleOverride in viewStyleOverrides)
       {
-        Root.RemoveFromClassList(showHideModeTransitionClassNames);
-      }
-      else if(showHideMode == ShowHideMode.Transition)
-      {
-        Root.AddToClassList(showHideModeTransitionClassNames);
-        // When transitioning, we can only position absolutely, as the fadeout process will interfere with routing 
-        Root.AddMultipleToClassList(positionModeAbsoluteClassNames);
-      }
+        if (!viewStyleOverride.Enabled)
+          continue;
 
-      justifyContent.TryApply(Root);
-      //alignContent.TryApply(Root);
-      alignItemsOverride.TryApply(Root);
-      flexDirectionOverride.TryApply(Root);
-      wrapOverride.TryApply(Root);
+        if (views.TryGetValue(viewStyleOverride.Id, out View view))
+        {
+          viewStyleOverride.Apply(view);
+        }        
+      }
     }
     #endregion
-  }
-
-#if ODIN_INSPECTOR
-  [Sirenix.OdinInspector.Toggle("enabled")]
-#endif
-  [System.Serializable]
-  public abstract class StyleOverride<T>
-  {
-    public bool enabled;
-    public T value;
-
-    public abstract void TryApply(VisualElement visualElement);
-
-    public static implicit operator bool (StyleOverride<T> styleOverride) => styleOverride != null && styleOverride.enabled;
-  }
-
-
-
-  [System.Serializable]
-  public sealed class JustifyOverride : StyleOverride<Justify>
-  {
-    public override void TryApply(VisualElement visualElement)
-    {
-      if(enabled)
-        visualElement.style.justifyContent = value;
-    }
-  }
-
-  [System.Serializable]
-  public sealed class AlignItemsOverride : StyleOverride<Align>
-  {
-    public override void TryApply(VisualElement visualElement)
-    {
-      if (enabled)
-        visualElement.style.alignItems = value;
-    }
-  }
-
-  [System.Serializable]
-  public sealed class FlexDirectionOverride : StyleOverride<FlexDirection>
-  {
-    public override void TryApply(VisualElement visualElement)
-    {
-      if (enabled)
-        visualElement.style.flexDirection = value;
-    }
-  }
-  [System.Serializable]
-  public sealed class WrapOverride : StyleOverride<Wrap>
-  {
-    public override void TryApply(VisualElement visualElement)
-    {
-      if (enabled)
-        visualElement.style.flexWrap = value;
-    }
   }
 }

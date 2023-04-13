@@ -76,21 +76,31 @@ namespace Graphene
     }
 
     void RegisterEvents()
-    {
-      if(context is IBindableToVisualElement bindable)
+    {      
+      if (context is IHasTooltip hasTooltip)
       {
-        bindable.onSetEnabled += element.SetEnabled;
-        bindable.onShowHide += element.SetShowHide;
-        element.SetEnabled(bindable.isEnabled);
+		element.tooltip = hasTooltip.Tooltip;
 
-        if (bindable.isShown)
-          element.Show();
-        else
-          element.Hide();
+		if (context is IBindableToVisualElement bindable)
+		{
+		  bindable.onSetEnabled += element.SetEnabled;
+		  bindable.onShowHide += element.SetShowHide;
+		  bindable.onSetActive += element.SetActive;
 
-        element.RegisterCallback<DetachFromPanelEvent>(OnDetach);
-        //bindable.syncVisualElement += SyncVisualElementToModel;
-      }
+		  element.SetEnabled(bindable.isEnabled);
+		  element.SetActive(bindable.isActive2);
+
+		  // Need to fix this
+		  //element.SetShowHide(bindable.isShown);
+		  //if (bindable.isShown)
+		  //  element.Show();
+		  //else
+		  //  element.Hide();
+
+		  element.RegisterCallback<DetachFromPanelEvent>(OnDetach);
+		  //bindable.syncVisualElement += SyncVisualElementToModel;
+		}
+	  }
     }
 
     void OnDetach(DetachFromPanelEvent evt) => UnregisterEvents();
@@ -101,6 +111,7 @@ namespace Graphene
       {
         bindable.onSetEnabled -= element.SetEnabled;
         bindable.onShowHide -= element.SetShowHide;
+        bindable.onSetActive -= element.SetActive;
       }
     }
 

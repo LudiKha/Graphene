@@ -29,7 +29,7 @@ namespace Graphene
   [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property)]
   public class BindAttribute : UIAttribute
   {
-    string path; public string Path => path;
+    string path = ""; public string Path => path;
     /// <summary>
     /// The binding mode for this binding. When left null, the system will pick a binding mode based on the control type (recommended).
     /// </summary>
@@ -143,8 +143,6 @@ namespace Graphene
       this.multiLine = multiLine;
     }
   }
-
-
 
   [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property)]
   public class BindTooltip : BindAttribute

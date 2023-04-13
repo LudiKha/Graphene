@@ -13,7 +13,7 @@ namespace Graphene.ViewModel
     [Bind("Render")]
     public bool Render { get; set; } = true;
 
-    [Draw(ControlType.ListItem)]
+    [Draw(ControlType.Button)]
     [SerializeField]
     protected List<T> items = new List<T>();
 

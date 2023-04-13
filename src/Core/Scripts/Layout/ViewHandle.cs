@@ -7,15 +7,6 @@ using Graphene.Elements;
 
 namespace Graphene
 {
-  public class ElementSelectorAttribute : Attribute
-  {
-    System.Type t;
-    public ElementSelectorAttribute(System.Type elementType)
-    {
-     t = elementType;
-    }
-  }
-
   [System.Serializable]
   public class ViewRef
   {
@@ -41,10 +32,10 @@ namespace Graphene
     {
       if (!plate)
         return Enumerable.Empty<string>();
-
-      var root = plate.Root!= null ? plate.Root : plate.VisualTreeAsset.CloneTree();
-      // Get views
-      return root?.Query<View>().ToList().Select(v => v.id);
+      else if (plate.viewIds != null && plate.viewIds.Count > 0)
+        return plate.viewIds;
+      else
+        return new List<string> { "" };
     }
 
     public ViewRef(string defaultId)
@@ -54,7 +45,7 @@ namespace Graphene
 
     public static implicit operator bool(ViewRef viewRef) => viewRef != null && !string.IsNullOrWhiteSpace(viewRef.id);
 
-    public void OnValidate(Plate plate)
+    public void ResolveView(Plate plate)
     {
       this.plate = plate;
 
@@ -62,7 +53,16 @@ namespace Graphene
       if (string.IsNullOrWhiteSpace(id))
         id = defaultSelector;
 
-      view = plate.Root.Q<View>(id);
+      view = plate.GetViewById(id);
+      //if(view == null)
+      //{
+      //  Debug.LogError($"No view found for Id {id} {plate}", plate);
+      //}
+    }
+
+    public void SetPlate(Plate plate)
+    {
+      this.plate = plate;
     }
 
     public void NoParent()
