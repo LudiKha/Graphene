@@ -80,9 +80,9 @@ namespace Graphene
 
     internal void BindStatic(IModel viewModelContext)
     {
-      if (viewModelContext is ICustomBindContext customBindContext)
+      if (viewModelContext is ICustomBindContext customBindContext && customBindContext != null)
         Binder.BindRecursive(plate.Root, customBindContext.GetCustomBindContext, null, plate, true);
-      else if (viewModelContext != null)
+      if (viewModelContext != null)
         Binder.BindRecursive(plate.Root, viewModelContext, null, plate, true);
       // Bind empty model -> routes (NOTE: Not that great of an option)
       else
@@ -109,13 +109,26 @@ namespace Graphene
       if (viewModel == null)
         return;
 
-      if(viewModel is ICustomDrawContext customDrawContext)
+      if (!templates)
+		templates = GetTemplatesFromParentsRecursive(this);
+
+	  if (viewModel is ICustomDrawContext customDrawContext)
         RenderUtils.DrawDataContainer(plate, container, customDrawContext.GetCustomDrawContext, templates);
       else
         RenderUtils.DrawDataContainer(plate, container, viewModel, templates);
 
       if (viewModel != null)
         viewModel.onModelChange?.Invoke();
+    }
+
+    TemplatePreset GetTemplatesFromParentsRecursive(Renderer current)
+    {
+      if(current.templates)
+        return current.templates;
+      else if(current.plate?.Parent?.Renderer)
+        return GetTemplatesFromParentsRecursive(current.plate.Parent.Renderer);
+      else
+        return null;
     }
 
     #region Public API

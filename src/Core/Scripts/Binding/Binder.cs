@@ -51,6 +51,11 @@ namespace Graphene
       // Bind class with its own context
       else
       {
+        if (context is ICustomAddClasses customAddClasses)
+          clone.AddMultipleToClassList(customAddClasses.ClassesToAdd);
+        if (context is ICustomName customName && !string.IsNullOrWhiteSpace(customName.CustomName))
+          clone.name = customName.CustomName;
+
         // Get members
         List<ValueWithAttribute<BindAttribute>> members = new List<ValueWithAttribute<BindAttribute>>();
         TypeInfoCache.GetMemberValuesWithAttribute<BindAttribute>(context, members);
@@ -125,10 +130,10 @@ namespace Graphene
         BindRoute(route, ref context, plate);
       }
 
-	  BindChildren(element, context, members, plate, notFullyDrilledDown);
-	}
+      BindChildren(element, context, members, plate, notFullyDrilledDown);
+    }
 
-	static void BindChildren(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate, bool scopeDrillDown)
+    static void BindChildren(VisualElement element, object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate, bool scopeDrillDown)
     {
       //element.BindValues(data);
       if (element.childCount == 0)
@@ -151,6 +156,17 @@ namespace Graphene
     /// <param name="data"></param>
     private static void BindElementValues<V>(V el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate) where V : BindableElement
     {
+      if (el.binding != null/* || el.userData != null*/)
+      {
+        Debug.LogError($"Binding twice! {el}");
+        return;
+      }
+      else
+      {
+        plate.Graphene?.BroadcastBindCallback(el, context, plate);
+        OnBindElement?.Invoke(el);
+      }
+
       // Pass in list of properties for possible custom logic spanning multiple properties
       if (el is Label)
         BindLabel(el as Label, ref context, members, plate);
@@ -191,6 +207,7 @@ namespace Graphene
         if (BindingPathOrTypeMatch<string>(el, in item))
         {
           BindText(el, ref context, in item, plate);
+          break;
         }
       }
     }
@@ -201,6 +218,7 @@ namespace Graphene
         if (BindingPathOrTypeMatch<string>(el, in item))
         {
           BindText(el, ref context, in item, plate);
+          break;
         }
       }
     }
@@ -212,23 +230,41 @@ namespace Graphene
       {
         if (BindingPathAndTypeMatch<BindableObject>(el, in item))
         {
+          //Debug.Log($"Binding BindableObject click {el.bindingPath} {context}", context as UnityEngine.Object);
+
           //var data = item.Value as BindableObject;
           BindRecursive(el, item.Value, null, plate, false);
           var bindable = (BindableObject)item.Value;
           el.tooltip = bindable.Tooltip;
+          BindCallbacks(el, context);
           //Debug.Log(bindable);
+          break;
         }
-        else if(BindingPathAndTypeMatch<ActionButton>(el, in item))
+        else if (BindingPathAndTypeMatch<ActionButton>(el, in item))
         {
-		  BindRecursive(el, item.Value, null, plate, false);
-		  el.tooltip = ((ActionButton)item.Value).Tooltip;
-		}
-		else if (BindingPathAndTypeMatch<string>(el, in item))
+          //Debug.Log($"Binding ActionButton click {el.bindingPath} {context}", context as UnityEngine.Object);
+          BindRecursive(el, item.Value, null, plate, false);
+          el.tooltip = ((ActionButton)item.Value).Tooltip;
+          break;
+        }
+        else if (BindingPathAndTypeMatch<string>(el, in item))
+        {
+          //Debug.Log($"Binding string click {el.bindingPath} {item.Value} {context}", context as UnityEngine.Object);
           BindText(el, ref context, in item, plate);
+          //break;
+        }
         else if (BindingPathOrTypeMatch<Action>(el, in item))
+        {
+          //Debug.Log($"Binding click {el.GetType().Name} {el.bindingPath} ({item.MemberInfo.Name} {item.Type.Name} in {context})", context as UnityEngine.Object);
           BindClick(el, (Action)item.Value, context, plate);
+          break;
+        }
         else if (BindingPathOrTypeMatch<UnityEngine.Events.UnityEvent>(el, in item))
+        {
+          //Debug.Log($"Binding UnityEvent click {el.GetType().Name} {el.bindingPath} ({item.MemberInfo.Name} {item.Type.Name} in {context})", context as UnityEngine.Object);
           BindClick(el, (UnityEngine.Events.UnityEvent)item.Value, context, plate);
+          break;
+        }
       }
     }
 
@@ -250,8 +286,6 @@ namespace Graphene
           else if (item is ButtonGroup btnGroup)
           {
             btnGroup.clicked += (int index, string route) => { el.route = route; el.clicked?.Invoke(); }; // A bit hacky perhaps
-            OnBindElement?.Invoke(btnGroup);
-            plate.Graphene?.BroadcastBindCallback(el, context, plate);
           }
         }
       }
@@ -318,7 +352,7 @@ namespace Graphene
 
       //el.showMixedValue = true;
       el.showInputField = true;
-      
+
       // Bind base field value & callback
       BindBaseField(el, ref context, members, plate);
     }
@@ -406,9 +440,6 @@ namespace Graphene
     {
       var results = BindNotifyValueChange<BaseField<TValueType>, TValueType>(el, ref context, members, plate);
       el.label = results.label;
-
-      plate.Graphene?.BroadcastBindCallback(el, context, plate);
-      OnBindElement?.Invoke(el);
     }
 
     private static void BindDropdownField(DropdownField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
@@ -417,30 +448,29 @@ namespace Graphene
       foreach (var item in members)
       {
         // Model items
-         if (BindingPathMatch(item.Attribute.Path, SelectField.itemsPath))
+        if (BindingPathMatch(item.Attribute.Path, SelectField.itemsPath))
         {
           el.choices = item.Value as List<string>;
           break;
         }
-		else if (item.Type.IsEnum) // Primitive -> Can only do two way
-		{
-		  el.choices = Enum.GetNames(item.Type).ToList();
-		  el.SetValueWithoutNotify(ObjectToString(item.Value, item.Type) ?? el.value);
+        else if (item.Type.IsEnum) // Primitive -> Can only do two way
+        {
+          el.choices = Enum.GetNames(item.Type).ToList();
+          el.SetValueWithoutNotify(ObjectToString(item.Value, item.Type) ?? el.value);
 
-		  var t = item.Type;
-		  var memberName = item.MemberInfo.Name;
-		  var accessor = TypeInfoCache.GetExtendedTypeInfo(context.GetType()).Accessor;
-		  var ctx = context;
+          var t = item.Type;
+          var memberName = item.MemberInfo.Name;
+          var accessor = TypeInfoCache.GetExtendedTypeInfo(context.GetType()).Accessor;
+          var ctx = context;
 
-		  // Filthy hax
-		  el.RegisterValueChangedCallback<string>((evt) =>
+          // Filthy hax
+          el.RegisterValueChangedCallback<string>((evt) =>
           {
-			var val = Enum.Parse(t, evt.newValue);
-			accessor[ctx, memberName] = val;
-            Debug.Log("Filth!");
+            var val = Enum.Parse(t, evt.newValue);
+            accessor[ctx, memberName] = val;
           });
         }
-	  }
+      }
 
       // First bind base field (string)
       BindBaseField(el, ref context, members, plate);
@@ -466,58 +496,70 @@ namespace Graphene
     private static void BindListView(ListView el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       foreach (var bindMember in members)
-      { 
-		// Primary
-		if (BindingPathMatch(bindMember.Attribute.Path, el.bindingPath))
+      {
+        // Primary
+        if (BindingPathMatch(bindMember.Attribute.Path, el.bindingPath))
         {
           ControlType controlType = ControlType.ListItem;
-          if(context is IListViewBindable listViewBindable)
+          if (context is IListViewBindable listViewBindable)
           {
             controlType = listViewBindable.ItemControlType;
           }
 
-		  IList list = bindMember.Value as IList;
+          IList list = bindMember.Value as IList;
 
-		  var templateAsset = RenderUtils.templatesDefault.TryGetTemplateAsset(controlType);
-		  InternalBindListView(el, in context, list, templateAsset, plate);
+          var templateAsset = RenderUtils.templatesDefault.TryGetTemplateAsset(controlType);
+          InternalBindListView(el, in context, list, templateAsset, plate);
 
-		  BindingManager.TryCreate<IList>(el, in context, in bindMember, plate);
+          BindingManager.TryCreate<IList>(el, in context, in bindMember, plate);
           break;
         }
       }
 
       // Fallback
-	  if (context is IListViewBindable listViewBindable2)
-	  {
-		var templateAsset = RenderUtils.templatesDefault.TryGetTemplateAsset(listViewBindable2.ItemControlType);
-		InternalBindListView(el, in context, listViewBindable2.ItemsSource, templateAsset, plate);
-	  }
-	}
+      if (context is IListViewBindable listViewBindable2)
+      {
+        var templateAsset = RenderUtils.templatesDefault.TryGetTemplateAsset(listViewBindable2.ItemControlType);
+        InternalBindListView(el, in context, listViewBindable2.ItemsSource, templateAsset, plate);
+      }
+    }
 
-	internal static void BindListView(ListView el, in object context, Plate plate, VisualTreeAsset templateAsset, in ValueWithAttribute<BindAttribute> member)
+    internal static void BindListView(ListView el, in object context, Plate plate, VisualTreeAsset templateAsset, in ValueWithAttribute<BindAttribute> member)
     {
       IList list = member.Value as IList;
-	  InternalBindListView(el, in context, list, templateAsset, plate);
+      InternalBindListView(el, in context, list, templateAsset, plate);
       BindingManager.TryCreate<IList>(el, in context, in member, plate);
     }
 
-	internal static void InternalBindListView(ListView el, in object context, IList itemsSource, VisualTreeAsset templateAsset, Plate plate)
-	{
-	  Func<VisualElement> makeItem = () => { return InternalInstantiate(templateAsset, plate); };
-	  Action<VisualElement, int> bindItem = (e, i) => { Binder.BindRecursive(e, itemsSource[i], null, plate, false); };
-	  el.makeItem = makeItem;
-	  el.bindItem = bindItem;
-	  el.itemsSource = itemsSource;
 
-	  if (context is IListViewBindable bindable)
-	  {
-		bindable.onRebuild += el.Rebuild;
-		bindable.onRefresh += () => bindable.Apply(el);
-		bindable.Apply(el);
-	  }
-	}
+    internal static void InternalBindListView(ListView el, in object context, IList itemsSource, VisualTreeAsset templateAsset, Plate plate)
+    {
+      Func<VisualElement> makeItem = () =>
+      {
+        var e = InternalInstantiate(templateAsset, plate);
+        return e;
+      };
+      Action<VisualElement, int> bindItem = (e, i) =>
+      {
+        Binder.BindRecursive(e, itemsSource[i], null, plate, false);
+        if (!(e is BindableElement))
+        {
+          BindCallbacks(e, itemsSource[i]);
+        }
+      };
 
-	private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+      el.makeItem = makeItem;
+      el.bindItem = bindItem;
+      el.itemsSource = itemsSource;
+
+      if (context is IListViewBindable bindable)
+      {
+        bindable.Apply(el);
+        BindCallbacks(el, context);
+      }
+    }
+
+    private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       // Then bind the items
       foreach (var item in members)
@@ -568,8 +610,6 @@ namespace Graphene
       }
     }
 
-
-
     private static void BindFoldout(Foldout el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       foreach (var member in members)
@@ -590,9 +630,9 @@ namespace Graphene
 
       foreach (var member in members)
       {
-        if(member.Value is bool)
+        if (member.Value is bool)
           BindingManager.TryCreate<bool>(el, in context, in member, plate);
-        else if(member.Value is string)
+        else if (member.Value is string)
           BindingManager.TryCreate<string>(el, in context, in member, plate);
       }
 
@@ -610,35 +650,25 @@ namespace Graphene
           el.items = item.Value as List<string>;
           break;
         }
-		else if (BindingPathAndTypeMatch<ICollection<ActionButton>>(el, item))
-		{
+        else if (BindingPathAndTypeMatch<ICollection<ActionButton>>(el, item))
+        {
           el.items.Clear();
-		  var items = item.Value as List<ActionButton>;
+          var items = item.Value as List<ActionButton>;
           if (items == null || items.Count == 0)
             continue;
 
           el.ClearItems();
           foreach (var action in items)
             el.AddItem(action.Label, action.Tooltip);
-          el.clicked += (int i, string name) => items[i].OnClick?.Invoke();
-		  break;
-		}
-	  }
-    }
 
-    //private static void BindFoldout(Foldout el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
-    //{
-    //  foreach (var item in members)
-    //  {
-    //    if (BindingPathOrTypeMatch<string>(el, in item))
-    //      el.text = ObjectToString(in item.Value);
-    //    else if (BindingPathAndTypeMatch<bool>(el.bindingPath, in item))
-    //    {
-    //      el.value = (bool)item.Value;
-    //      BindingManager.TryCreate<bool>(el, in context, in item, plate);
-    //    }
-    //  }
-    //}
+          el.SourceData = items;
+
+          //el.ClearCallback();
+          //el.clicked += (int i, string name) => items[i].OnClick?.Invoke();
+          break;
+        }
+      }
+    }
 
     private static void BindText(TextElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate plate)
     {
@@ -651,43 +681,37 @@ namespace Graphene
     private static void BindClick(Button el, System.Action action, in object context, Plate plate)
     {
       el.clicked += action;
-
-	  if (context is IHasTooltip tooltip)
-	  {
-		el.tooltip = tooltip.Tooltip;
-		if (context is IBindableToVisualElement bindable)
-		{
-		  el.SetEnabled(bindable.isEnabled);
-		  el.SetShowHide(bindable.isShown);
-          el.SetActive(bindable.isActive2);
-		}
-	  }
-
-	  OnBindElement?.Invoke(el);
-      plate.Graphene?.BroadcastBindCallback(el, context, plate);
+      BindCallbacks(el, context);
     }
 
     private static void BindClick(Button el, UnityEngine.Events.UnityEvent unityEvent, in object context, Plate plate)
     {
       el.clicked += delegate { unityEvent?.Invoke(); };
+      BindCallbacks(el, context);
+    }
 
+    [System.Obsolete("Use IBindableToVisualElement and apply in bindable object")]
+    static void BindCallbacks(VisualElement el, in object context)
+    {
       if (context is IHasTooltip tooltip)
       {
         el.tooltip = tooltip.Tooltip;
-        if(context is IBindableToVisualElement bindable)
+        if (context is IBindableToVisualElement bindable)
         {
-		  el.SetEnabled(bindable.isEnabled);
-		  el.SetShowHide(bindable.isShown);
-		  el.SetActive(bindable.isActive2);
-		}
+          el.SetEnabled(bindable.isEnabled);
+          el.SetShowHide(bindable.isShown);
+
+          bindable.onSetEnabled += el.SetEnabled;
+          bindable.onShowHide += el.SetShowHide;
+          bindable.onSetActive += el.SetActive;
+          bindable.SetBinding(el);
+		  
+          //Debug.Log($"On bind element {el} to context <b>{context}</b> ");
+        }
       }
+    }
 
-	  OnBindElement?.Invoke(el);
-      plate.Graphene?.BroadcastBindCallback(el, context, plate);
-
-	}
-
-	public static string[] stringSplitOptions = new string[] { ".", "~", "::", "_" };
+    public static string[] stringSplitOptions = new string[] { ".", "~", "::", "_" };
 
     public const char nestedScopeChar = '.';
     public const char relativeScopeChar = '_';

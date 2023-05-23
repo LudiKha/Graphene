@@ -66,7 +66,8 @@ namespace Graphene
       if (isPrefab)
         return;
 
-      graphene ??= GetComponent<Graphene>();
+      if(!graphene)
+        graphene = GetComponent<Graphene>();
     }
   }
 
@@ -81,7 +82,7 @@ namespace Graphene
 #if ODIN_INSPECTOR
     [Sirenix.OdinInspector.ValueDropdown(nameof(GetStateKeys))]
 #endif
-    [SerializeField] protected T startingState; public T StartingState => startingState;
+    [SerializeField] public T startingState; public T StartingState => startingState;
 
     public T CurrentState => activeStates.LastOrDefault();
 
@@ -108,6 +109,9 @@ namespace Graphene
     internal IEnumerable<T> StateKeys => states.Keys;
     IEnumerable<T> GetStateKeys()
     {
+      if(!graphene)
+        graphene = GetComponent<Graphene>();
+
       foreach (var plate in graphene.Plates)
       {
         if (!plate)

@@ -4,7 +4,7 @@ namespace Graphene
 {
   public class GrapheneComponent : MonoBehaviour, IGrapheneDependent
   {
-    protected Graphene graphene; public Graphene Graphene => graphene;
+    [SerializeField, HideInInspector] protected Graphene graphene; public Graphene Graphene => graphene;
 
     public virtual void Inject(Graphene graphene) => this.graphene = graphene;
   }

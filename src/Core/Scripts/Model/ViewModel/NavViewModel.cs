@@ -7,17 +7,13 @@ using UnityEngine.UIElements;
 
 namespace Graphene.ViewModel
 {
-  public class NavViewModel : MonoBehaviour, IModel
+  public class NavViewModel : ViewModelComponent
   {
-    [Bind("Title")]
-    [field: SerializeField] public string Title { get; private set; }
-
-
     [Bind("HasContent")] public bool HasContent => Routes != null && Routes.Count > 0;
 
     public enum RenderMode
     {
-      None,
+      Manual,
       Siblings,
       SiblingsWithState
     }
@@ -25,21 +21,16 @@ namespace Graphene.ViewModel
     [field: SerializeField]
     public RenderMode renderMode { get; private set; } = NavViewModel.RenderMode.SiblingsWithState;
 
-    public bool Render => true;
-
-    public Action onModelChange { get; set; }
-
-
     [field: SerializeField] public Plate OverridePlate { get; private set; }
 
     [Bind("Routes")]
     public List<string> Routes =  new List<string>();
 
-    public void Initialize(VisualElement container, Plate plate)
+    public override void Initialize(VisualElement container, Plate plate)
     {
       switch (renderMode)
-      {
-        case RenderMode.SiblingsWithState:
+	  {
+		case RenderMode.SiblingsWithState:
           CreateBindableObjectsFromSiblingsWithState(OverridePlate ?? plate);
           break;
       }
@@ -48,7 +39,13 @@ namespace Graphene.ViewModel
     void CreateBindableObjectsFromSiblingsWithState(Plate plate)
     {
       this.Routes.Clear();
-      foreach (var sibling in plate.Parent.Children)
+
+      IReadOnlyList<Plate> children = plate.Parent ? plate.Parent.Children : null;
+
+      if (children == null || children.Count == 0)
+        return;
+
+      foreach (var sibling in children)
       {
         if (!sibling || !(sibling.StateHandle is StringStateHandle stringStateHandle))
           continue;

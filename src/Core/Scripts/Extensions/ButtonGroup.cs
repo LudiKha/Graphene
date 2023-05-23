@@ -1,4 +1,5 @@
 ﻿
+using Graphene.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -134,6 +135,8 @@ namespace Graphene.Elements
       RefreshButtons();
     }
 
+    public IList<ActionButton> SourceData = new List<ActionButton>();
+
     public void RefreshButtons()
 	{
 	  Clear();
@@ -148,12 +151,20 @@ namespace Graphene.Elements
     {
       value = i;
       clicked?.Invoke(i, items[i]);
+
+      if (SourceData != null && i < SourceData.Count)
+        SourceData[i].OnClick?.Invoke();
     }
 
     public void ClearItems()
     {
       m_Items.Clear();
       Clear();
+    }
+
+    public void ClearCallback()
+    {
+      clicked = null;
     }
 
     public void AddItem(string text, string tooltip = null)

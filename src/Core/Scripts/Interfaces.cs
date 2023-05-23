@@ -1,6 +1,7 @@
 ﻿namespace Graphene
 {
   using Elements;
+  using UnityEngine.UIElements;
 
   public interface IGrapheneDependent
   {
@@ -9,7 +10,11 @@
   public interface IHasTooltip
   {
 	string Tooltip { get; }
+  }
 
+  public interface IHasCustomVisualTreeAsset
+  {
+    VisualTreeAsset VisualTreeAsset {get;}
   }
 
   public interface IBindableToVisualElement : IHasTooltip
@@ -23,7 +28,13 @@
 	bool isActive2 { get; }
 	System.Action<bool> onSetActive { get; set; }
 
+    //event System.Action<VisualElement> onBindToElement;// { get; set; }
+
+	VisualElement boundToElement { get; }
+
 	void ResetCallbacks ();
+
+    void SetBinding(VisualElement boundToElement);
 
     //System.Action syncVisualElement { get; set; }
   }

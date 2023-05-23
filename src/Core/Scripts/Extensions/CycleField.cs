@@ -92,8 +92,8 @@ namespace Graphene.Elements
     Button m_Next;
     Button m_Previous;
 
-	public string plusSymbol = "〉";   // ▶〉→
-	public string minusSymbol = "〈";  // ◀〈 ←
+	public string plusSymbol = "›";   // › ▶〉→
+	public string minusSymbol = "‹";  // ‹ ◀〈 ←
 
 	public CycleField()
         : this(null) {

@@ -4,7 +4,7 @@ namespace Graphene
 {
   public enum ChildActivationMode
   {
-    None,
+    Manual,
     ShowWithParent,
     DefaultState
   }
@@ -20,7 +20,7 @@ namespace Graphene
     /// <summary>
     /// This will Show the plate when the parent is activated.
     /// </summary>
-    [SerializeField] protected ChildActivationMode activationMode = ChildActivationMode.None;
+    [SerializeField] protected ChildActivationMode activationMode = ChildActivationMode.Manual;
 
     public bool Initialized { get; private set; }
     public virtual void Initialize()
@@ -36,6 +36,8 @@ namespace Graphene
     }
 
     protected abstract void Plate_onEvaluateState();
+
+    public virtual bool TryActivate() => throw new System.NotImplementedException();
   }
 
   public class StateHandle<T> : StateHandle
@@ -69,7 +71,13 @@ namespace Graphene
       router.onStateChange += Router_onStateChange;
     }
 
-    private void Router_onStateChange(T address)
+	private void OnDestroy()
+	{
+      if(router)
+        router.onStateChange -= Router_onStateChange;
+	}
+
+	private void Router_onStateChange(T address)
     {
       if (!router.ValidState(stateID))
         return;
@@ -77,15 +85,16 @@ namespace Graphene
       bool parentWasTarget = router.StateIsActive(parentStateID) && router.LeafStateFromAddress(address).Equals(parentStateID);
 
       // Try Change state to this
-      if (activationMode == ChildActivationMode.DefaultState && parentWasTarget) {
-        if(router.TryChangeState(stateID))
+      if (activationMode == ChildActivationMode.DefaultState && parentWasTarget)
+      {
+        if (router.TryChangeState(stateID))
           return;
       }
 
       // Check if our state is active
-        if (router.StateIsActive(stateID))
+      if (router.StateIsActive(stateID))
         plate.Show();
-      else if(activationMode == ChildActivationMode.ShowWithParent && parentWasTarget)
+      else if (activationMode == ChildActivationMode.ShowWithParent && parentWasTarget)
         plate.Show();
       else
         plate.Hide();
@@ -94,6 +103,14 @@ namespace Graphene
     protected override void Plate_onEvaluateState()
     {
       Router_onStateChange(router.CurrentState);
+    }
+
+#if ODIN_INSPECTOR
+    [Sirenix.OdinInspector.ResponsiveButtonGroup]
+#endif
+    public override bool TryActivate()
+    {
+      return router.TryChangeState(stateID);
     }
   }
 }

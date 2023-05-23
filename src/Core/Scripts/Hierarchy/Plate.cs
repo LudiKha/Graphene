@@ -63,8 +63,8 @@ namespace Graphene
 
     [SerializeField] public BindingRefreshMode bindingRefreshMode = BindingRefreshMode.ModelChange;
 
-    [SerializeField, FoldoutGroup("Styles Overrides")] InlineStyleOverrides styleOverrides = new InlineStyleOverrides();
-    [SerializeField, FoldoutGroup("Styles Overrides"), ListDrawerSettings(HideAddButton = true, HideRemoveButton = true)] List<SerializedView> viewStyleOverrides = new List<SerializedView>();
+    [SerializeField, FoldoutGroup("Styles Overrides")] InlineStyleOverrides styleOverrides = new InlineStyleOverrides() { positionMode = PositionMode.Relative };
+    [SerializeField, FoldoutGroup("Styles Overrides"), ListDrawerSettings(HideAddButton = true, HideRemoveButton = true, ListElementLabelName = "Id")] List<SerializedView> viewStyleOverrides = new List<SerializedView>();
 	#endregion
 
 	#region State
@@ -214,27 +214,33 @@ namespace Graphene
       }
 
       // Fadeout events
-      Root.RegisterCallback<TransitionStartEvent>(Root_StartTransition);
-      Root.RegisterCallback<TransitionEndEvent>(Root_EndTransition);
+      //Root.RegisterCallback<TransitionStartEvent>(Root_StartTransition);
 
       Profiler.EndSample();
     }
 
     void Root_StartTransition(TransitionStartEvent evt)
     {
+      //Debug.Log($"Start transition {evt.target}");
     }
     void Root_EndTransition(TransitionEndEvent evt)
-    {
-      ApplyActiveState();
-      //if (!isActive || Root.ClassListContains(VisualElementExtensions.fadeoutUssClassName))
-      //{
-        
-      //}
-      //else
-      //  Show();
-    }
+	{
+	  //Debug.Log($"End transition {evt.target}");
+	  if (evt.target != Root)
+        return;
 
-    void ChangeEvent()
+      ApplyActiveState();
+	  Root.UnregisterCallback<TransitionEndEvent>(Root_EndTransition);
+
+	  //if (!isActive || Root.ClassListContains(VisualElementExtensions.fadeoutUssClassName))
+	  //{
+
+	  //}
+	  //else
+	  //  Show();
+	}
+
+	void ChangeEvent()
     {
       wasChangedThisFrame = true;
     }
@@ -394,6 +400,9 @@ namespace Graphene
 
       if (isActive) return;
 
+      if (canShow != null && !canShow.Invoke())
+        return;
+
       SetActive(true);
       ApplyActiveState(); // Immediately activate GO
 
@@ -422,7 +431,10 @@ namespace Graphene
       if (styleOverrides.showHideMode == ShowHideMode.Immediate)
         ApplyActiveState();
       else
-        Root.FadeOut();
+      {
+		Root.RegisterCallback<TransitionEndEvent>(Root_EndTransition);
+		Root.FadeOut();
+      }
     }
 
     internal void HideImmediately()
@@ -453,13 +465,13 @@ namespace Graphene
         {
           Root.Show();
           ContentContainer?.Focus();
-          onShow.Invoke();
+          onShow?.Invoke();
           ChangeEvent();
         }
         else
         {
           Root.Hide();
-          onHide.Invoke();
+          onHide?.Invoke();
         }
       }
 
@@ -489,6 +501,7 @@ namespace Graphene
       onEvaluateState?.Invoke();
     }
 
+    public Func<bool> canShow;
     void Parent_OnShow()
     {
       if (!stateHandle)

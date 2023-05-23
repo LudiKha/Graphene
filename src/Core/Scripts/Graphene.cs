@@ -25,7 +25,7 @@ namespace Graphene
     [NaughtyAttributes.InfoBox("bindingsInfo")]
 #endif
     [SerializeField] float bindingRefreshRate = 0.2f;
-    
+
     #region ReadOnlyAttribute
 #if ODIN_INSPECTOR
     [Sirenix.OdinInspector.ReadOnly]
@@ -34,7 +34,6 @@ namespace Graphene
 #endif
     #endregion
     [SerializeField] float lastRefreshTime;
-
     [SerializeField] List<Plate> plates = new List<Plate>(); public IReadOnlyList<Plate> Plates => plates;
 
     List<IGrapheneDependent> dependents = new List<IGrapheneDependent>();
@@ -56,7 +55,7 @@ namespace Graphene
     /// </summary>
     [SerializeField] Router router; public Router Router => router;
 
-    public bool IsInitialized => grapheneRoot!= null;
+    public bool IsInitialized => grapheneRoot != null;
 
     public bool IsActiveAndInitialized => isActiveAndEnabled && IsInitialized;
 
@@ -131,7 +130,7 @@ namespace Graphene
     public void GetChildPlates()
     {
       plates = GetComponentsInChildren<Plate>(true).ToList();
-    }
+	}
 
     protected void RunInstallation()
     {
@@ -142,7 +141,7 @@ namespace Graphene
       GetChildPlates();
 
       // Inject Graphene into
-      foreach(var c in dependents)
+      foreach (var c in dependents)
       {
         if (c is GrapheneComponent gc)
           gc.Inject(this);
@@ -189,15 +188,15 @@ namespace Graphene
           continue;
         }
 
-		try
-		{
-		  plate.ConstructVisualTree();
-		}
-		catch (System.Exception e)
-		{
-		  UnityEngine.Debug.LogError(e, plate);
-		}
-	  }
+        try
+        {
+          plate.ConstructVisualTree();
+        }
+        catch (System.Exception e)
+        {
+          UnityEngine.Debug.LogError(e, plate);
+        }
+      }
 
       // Refresh hierarchy -> render & compose children
       foreach (Plate plate in plates)
@@ -227,12 +226,12 @@ namespace Graphene
       }
 
       plate.Root.name = $"{plate.gameObject.name}-container";
-      plate.RenderAndComposeChildren();      
+      plate.RenderAndComposeChildren();
       plate.HideImmediately(); // Hide immediately by default
 
       plate.onShow.AddListener(() => { plateOnShow?.Invoke(plate); });
       plate.onHide.AddListener(() => { plateOnHide?.Invoke(plate); });
-      
+
       plate.ReevaluateState();
     }
 
@@ -276,7 +275,7 @@ namespace Graphene
     {
       /// Needs to go here because UIDocuments may initialize late
       grapheneRoot.BringToFront();
-      lastRefreshTime = Time.time;
+      lastRefreshTime = Time.unscaledTime;
     }
 
     void Update()
@@ -284,7 +283,7 @@ namespace Graphene
       if (!Application.isPlaying && !runInEditMode)
         return;
 
-      if (Time.time - lastRefreshTime < bindingRefreshRate)
+      if (Time.unscaledTime - lastRefreshTime < bindingRefreshRate)
         return;
 
       if (grapheneRoot == null || !grapheneRoot.visible || grapheneRoot.IsHidden())
@@ -292,7 +291,7 @@ namespace Graphene
 
       Profiler.BeginSample($"Update Graphene bindings ({BindingManager.bindingsCount} bindings)", this);
       BindingManager.OnUpdate();
-      lastRefreshTime = Time.time;
+      lastRefreshTime = Time.unscaledTime;
       Profiler.EndSample();
     }
 
@@ -310,8 +309,8 @@ namespace Graphene
 #endif
 
       if (grapheneRoot != null && initializeOnStart)
-      // Live reload
-      Rebuild();
+        // Live reload
+        Rebuild();
       return;
     }
 
@@ -337,6 +336,7 @@ namespace Graphene
 
     bool canRebuild => Initialized && doc.enabled && isActiveAndEnabled;
 
+    public event System.Action onRebuild;
     #region ButtonAttribute
 #if ODIN_INSPECTOR
     [Sirenix.OdinInspector.ResponsiveButtonGroup]
@@ -361,6 +361,7 @@ namespace Graphene
 
       ConstructVisualTree(plates);
       FinalizeInitialzation();
+      onRebuild?.Invoke();
     }
 
 #if UNITY_EDITOR

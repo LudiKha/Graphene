@@ -9,6 +9,7 @@ namespace Graphene
 {
     using Elements;
     using Kinstrife.Core.ReflectionHelpers;
+  using UnityEditor;
 
   /// <summary>
   /// Non-generic base class
@@ -48,6 +49,8 @@ namespace Graphene
       this.attribute = member.Attribute;
       this.memberName = member.MemberInfo.Name;
 
+      //el.binding = this;
+
       DetermineBindingMode();
       RegisterEvents();
     }
@@ -80,6 +83,8 @@ namespace Graphene
       if (context is IHasTooltip hasTooltip)
       {
 		element.tooltip = hasTooltip.Tooltip;
+		if (element is BaseField<T> baseField)
+		  baseField.labelElement.tooltip = hasTooltip.Tooltip;
 
 		if (context is IBindableToVisualElement bindable)
 		{
@@ -87,18 +92,10 @@ namespace Graphene
 		  bindable.onShowHide += element.SetShowHide;
 		  bindable.onSetActive += element.SetActive;
 
-		  element.SetEnabled(bindable.isEnabled);
+		  element.SetEnabled(bindable.isEnabled);          
 		  element.SetActive(bindable.isActive2);
-
-		  // Need to fix this
-		  //element.SetShowHide(bindable.isShown);
-		  //if (bindable.isShown)
-		  //  element.Show();
-		  //else
-		  //  element.Hide();
-
+          bindable.SetBinding(element);
 		  element.RegisterCallback<DetachFromPanelEvent>(OnDetach);
-		  //bindable.syncVisualElement += SyncVisualElementToModel;
 		}
 	  }
     }
@@ -167,7 +164,7 @@ namespace Graphene
         else if (element is IBindableElement<object> bindableEl)
           bindableEl.OnModelChange(newValue);
         else
-          Debug.LogError("No binding found");
+          Debug.LogError($"No binding found for {element?.bindingPath} {context}", context as UnityEngine.Object);
       }
 
       lastValue = newValue;

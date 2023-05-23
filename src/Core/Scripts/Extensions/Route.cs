@@ -42,7 +42,7 @@ namespace Graphene.Elements
       get { return m_Route; }
       set
       {
-        m_Route = value;
+        m_Route = value?.ToLower();
       }
     }
 

@@ -95,8 +95,11 @@ namespace Graphene
         router.TryChangeState(navigationButtonGroup.items[navigationButtonGroup.value]);
       }
       else if (state == nextCommand)
+      {
         navigationButtonGroup.value += 1;
-      else
+		router.TryChangeState(navigationButtonGroup.items[navigationButtonGroup.value]);
+	  }
+	  else
         return false;
 
       return true;

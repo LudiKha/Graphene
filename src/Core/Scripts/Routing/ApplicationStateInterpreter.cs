@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Graphene
 {
-  using Elements;
-  using Sirenix.OdinInspector;
   using UnityEngine.Events;
 
   public enum RouterCommand
@@ -15,14 +17,41 @@ namespace Graphene
     None,
     Back,
     Previous,
-    Exit
+    Exit,
+    Root
+  }
+
+  [System.Flags]
+  public enum NavigationInput
+  {
+    None = 0,
+    NavigationMove = 1 << 0,
+    NavigationSubmit = 1 << 1,
+    NavigationCancel = 1 << 2
+  }
+
+#if ODIN_INSPECTOR
+  [Toggle("enabled", CollapseOthersOnExpand = false)]
+#endif
+  [System.Serializable]
+  public class InputOverride
+  {
+	public string name => input.ToString();
+	public bool enabled;
+	public NavigationInput input;
+    public TrickleDown trickleDown = TrickleDown.TrickleDown;
+	[BoxGroup("Output")] public RouterCommand routerCommand;
+	[BoxGroup("Output")] public UnityEvent OnInput;
+	[BoxGroup("Output")] public bool preventDefault = true;
   }
 
   //[RequireComponent(typeof(Plate))]
   public class ApplicationStateInterpreter : StateInterpreter<string>, IGrapheneInjectable, IGrapheneInitializable
   {
-
-    [System.Serializable, Toggle("enabled", CollapseOthersOnExpand = false)]
+#if ODIN_INSPECTOR
+    [Toggle("enabled", CollapseOthersOnExpand = false)]
+#endif
+    [System.Serializable]
     public struct StateCommandHandle
     {
       public string name => stateCommand;
@@ -45,8 +74,11 @@ namespace Graphene
 #endif
     }
 
-    [ListDrawerSettings(ListElementLabelName = nameof(StateCommandHandle.name))]
+#if ODIN_INSPECTOR
+	[ListDrawerSettings(ListElementLabelName = nameof(StateCommandHandle.name))]
+#endif
     public StateCommandHandle[] commands = new StateCommandHandle[0];
+    public InputOverride[] inputs = new InputOverride[0];
 
     Router<string> router;
     Plate plate;
@@ -65,14 +97,16 @@ namespace Graphene
       router = graphene.Router as Router<string>;
       router.RegisterInterpreter(this);
 
-      if (plate ??= GetComponent<Plate>())
+      if (plate || TryGetComponent<Plate>(out plate))
       {
         plate.onShow.AddListener(Plate_OnShow);
         plate.onHide.AddListener(Plate_OnHide);
+		RegisterInput();
+		plate.onRefreshVisualTree += RegisterInput;
       }
     }
 
-    public override bool TryCatch(object state)
+	public override bool TryCatch(object state)
     {
       return TryCatch((string)state);
     }
@@ -84,39 +118,42 @@ namespace Graphene
 
       foreach (var command in commands)
       {
-        if(command.stateCommand == state)
-        {
-          if(command.OnStateEnter != null || command.routerCommand != RouterCommand.None || command.hasCustomState)
-          {
-            if (command.hasCustomState)
-              router.TryChangeState(command.customState);
-            else
-            {
-              switch (command.routerCommand)
-              {
-                case RouterCommand.None:
-                  break;
-                case RouterCommand.Back:
-                  router.TryGoToPreviousState();
-                  break;
-                case RouterCommand.Previous:
-                  break;
-                case RouterCommand.Exit:
-                  TryExit();
-				  break;
-                default:
-                  break;
-              }
-            }
-
-            command.OnStateEnter?.Invoke();
-            return true;
-          }
-        }
-      }
+        if (!command.enabled || command.stateCommand != state)
+          continue;
+		if (command.OnStateEnter != null || command.routerCommand != RouterCommand.None || command.hasCustomState)
+		{
+		  if (command.hasCustomState)
+			router.TryChangeState(command.customState);
+		  else
+			HandleRouterCommand(command.routerCommand);
+		  command.OnStateEnter?.Invoke();
+		  return true;
+		}
+	  }
 
       return false;
   }
+    void HandleRouterCommand(RouterCommand routerCommand)
+    {
+	  switch (routerCommand)
+	  {
+		case RouterCommand.None:
+		  break;
+		case RouterCommand.Back:
+		  router.TryGoToPreviousState();
+		  break;
+		case RouterCommand.Previous:
+		  break;
+		case RouterCommand.Exit:
+		  TryExit();
+		  break;
+		case RouterCommand.Root:
+		  router.ResetState();
+		  break;
+		default:
+		  break;
+	  }
+	}
 
     public virtual void TryExit()
     {
@@ -131,7 +168,7 @@ namespace Graphene
 
 	internal void Plate_OnShow()
     {
-      enabled = true; 
+      enabled = true;
     }
 
     internal void Plate_OnHide()
@@ -154,5 +191,61 @@ namespace Graphene
 
       router.UnregisterInterpreter(this);
     }
+
+    bool inputRegistered;
+    void RegisterInput()
+    {
+      if (inputRegistered || !plate || plate.Root == null)
+        return;
+      inputRegistered = true;
+      foreach (var item in inputs)
+	  {
+		Debug.Log($"Registering Input {item.routerCommand}");
+
+		if ((item.input & NavigationInput.NavigationCancel) != 0)
+        {
+		  plate.Root.RegisterCallback<NavigationCancelEvent>(ctx => OnNavigationCancel(item, ctx), item.trickleDown);
+		  Debug.Log($"Registering Input Event {typeof(NavigationCancelEvent).Name} {item.routerCommand}");
+		}
+
+		if ((item.input & NavigationInput.NavigationSubmit) != 0)
+		  plate.Root.RegisterCallback<NavigationSubmitEvent>(ctx => OnNavigationSubmit(item, ctx), item.trickleDown);
+
+		if ((item.input & NavigationInput.NavigationMove) != 0)
+		  plate.Root.RegisterCallback<NavigationMoveEvent>(ctx => OnNavigationMove(item, ctx), item.trickleDown);
+	  }
+    }
+
+	void OnNavigationSubmit(InputOverride item, NavigationSubmitEvent evt)
+	{
+	  Debug.Log($"isActiveAndEnabled {item.routerCommand}");
+	  if (!isActiveAndEnabled) return;
+	  Handle(item, evt);
+	}
+	void OnNavigationCancel(InputOverride item, NavigationCancelEvent evt)
+	{
+	  Debug.Log($"isActiveAndEnabled {item.routerCommand}");
+	  if (!isActiveAndEnabled) return;
+	  Handle(item, evt);
+	}
+	void OnNavigationMove(InputOverride item, NavigationMoveEvent evt)
+	{
+	  Debug.Log($"isActiveAndEnabled {item.routerCommand}");
+	  if (!isActiveAndEnabled) return;
+      Handle(item, evt);
+	}
+
+    void Handle(InputOverride item, EventBase evt)
+	{
+      Debug.Log($"Handling {item.routerCommand}");
+	  if (item.routerCommand != RouterCommand.None || item.OnInput != null)
+	  {
+		Debug.Log($"Valid Handling {item.routerCommand}");
+
+		item.OnInput?.Invoke();
+		HandleRouterCommand(item.routerCommand);
+		evt.PreventDefault();
+	  }
+	}
   }
 }

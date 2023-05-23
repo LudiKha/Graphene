@@ -30,14 +30,15 @@ namespace Graphene
 	[SerializeField] protected string addClasses;
 
 	[SerializeField, EnumToggleButtons, HideLabel] internal PickingMode pickingMode = PickingMode.Position;
-	[SerializeField, EnumToggleButtons, HideLabel] internal PositionMode positionMode = PositionMode.Relative;
+	[SerializeField, EnumToggleButtons, HideLabel] internal PositionMode positionMode = PositionMode.None;
 	[SerializeField, EnumToggleButtons, HideLabel] internal ShowHideMode showHideMode = ShowHideMode.Immediate;
 	[SerializeField, FoldoutGroup("Detail")] FlexGrowOverride flexGrowOverride = new FlexGrowOverride();
 	[SerializeField, FoldoutGroup("Detail")] JustifyOverride justifyContent = new JustifyOverride();
 	[SerializeField, FoldoutGroup("Detail")] AlignItemsOverride alignItemsOverride = new AlignItemsOverride();
 	[SerializeField, FoldoutGroup("Detail")] FlexDirectionOverride flexDirectionOverride = new FlexDirectionOverride();
 	[SerializeField, FoldoutGroup("Detail")] WrapOverride wrapOverride = new WrapOverride();
-
+	[SerializeField, FoldoutGroup("Detail")] WidthOverride widthOverride = new WidthOverride();
+	[SerializeField, FoldoutGroup("Detail")] HeightOverride heightOverride = new HeightOverride();
 
 	internal void Apply(VisualElement el)
 	{
@@ -74,6 +75,8 @@ namespace Graphene
 	  alignItemsOverride.TryApply(el);
 	  flexDirectionOverride.TryApply(el);
 	  wrapOverride.TryApply(el);
+	  widthOverride.TryApply(el);
+	  heightOverride.TryApply(el);
 	}
   }
 }

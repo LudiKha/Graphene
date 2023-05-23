@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UIElements;
 
 namespace Graphene.ViewModel
 {
@@ -28,6 +29,15 @@ namespace Graphene.ViewModel
 #endif
 	[field: SerializeField, IgnoreDataMember] public bool isActive2 { get; set; } = false;
 	public Action<bool> onSetActive { get; set; }
+
+	public VisualElement boundToElement { get; private set; }
+	public System.Action<VisualElement> onBindToElement;// { get; set; }
+
+	public void SetBinding(VisualElement el)
+	{
+	  boundToElement = el;
+	  onBindToElement?.Invoke(el);
+	}
 
 	[field: SerializeField] public string Tooltip { get; set; }
 
@@ -61,10 +71,13 @@ namespace Graphene.ViewModel
 
   // Atomic "Über" object for the view
   [System.Serializable, Draw(ControlType.Button)]
-  public class BindableObject : BindableObjectBase, IRoute, ICustomControlType, ICustomAddClasses, ICustomName
+  public class BindableObject : BindableObjectBase, IRoute, ICustomControlType, ICustomAddClasses, ICustomName, IHasCustomVisualTreeAsset
   {
 	[field: SerializeField]
 	public ControlType ControlType { get; set; }
+
+	[field: SerializeField]
+	public VisualTreeAsset VisualTreeAsset { get; set; }
 
 	[field: SerializeField]
 	[Bind("Label", BindingMode.OneWay)]
@@ -84,7 +97,7 @@ namespace Graphene.ViewModel
 
 	[field: SerializeField]
 	[Bind("Image")]
-	public Texture Image { get; private set; }
+	public Texture Image { get; set; }
 
 	#region FoldoutAttribute
 #if ODIN_INSPECTOR
@@ -117,9 +130,18 @@ namespace Graphene.ViewModel
 	#region Util
 	public override string ToString()
 	{
-	  return $"{this.GetType().Name} - {this.Name}";
+	  return $"{this.GetType().Name} - [{this.Name}]";
 	}
 	#endregion
+
+	public BindableObject()
+	{
+	}
+
+	public BindableObject(UnityAction callback) : this()
+	{
+	  OnClick.AddListener(callback);
+	}
   }
 
   // Atomic "Über" object for the view
