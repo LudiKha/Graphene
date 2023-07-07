@@ -30,6 +30,12 @@ namespace Graphene
 	/// <param name="templates"></param>
 	internal static void DrawDataContainer(Plate plate, VisualElement container, in object context, TemplatePreset templates)
 	{
+	  if (context is ICustomDrawContext customDrawContext)
+	  {
+		DrawDataContainer(plate, container, customDrawContext.GetCustomDrawContext, templates);
+		return;
+	  }
+
 	  if (!templates)
 	  {
 		UnityEngine.Debug.LogError($"Assign templates to Renderer for plate for {plate}", plate);
@@ -75,7 +81,7 @@ namespace Graphene
 	  }
 	}
 
-	internal static void DrawFromObjectContext(Plate panel, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember)
+	static void DrawFromObjectContext(Plate panel, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember)
 	{
 	  VisualTreeAsset template;
 
@@ -112,7 +118,7 @@ namespace Graphene
 	  container.Add(clone);
 	}
 
-	internal static void DrawFromPrimitiveContext(Plate panel, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember, List<ValueWithAttribute<BindAttribute>> bindableMembers)
+	static void DrawFromPrimitiveContext(Plate panel, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember, List<ValueWithAttribute<BindAttribute>> bindableMembers)
 	{
 	  var bind = bindableMembers.Find(x => x.MemberInfo.Equals(drawMember.MemberInfo));
 	  if (bind.MemberInfo == null)
@@ -130,7 +136,7 @@ namespace Graphene
 	  container.Add(clone);
 	}
 
-	internal static void DrawFromEnumerableContext(Plate plate, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember, List<ValueWithAttribute<BindAttribute>> bindableMembers)
+	static void DrawFromEnumerableContext(Plate plate, VisualElement container, in object context, TemplatePreset templates, ValueWithAttribute<DrawAttribute> drawMember, List<ValueWithAttribute<BindAttribute>> bindableMembers)
 	{
 	  // Don't support primitives or string
 	  //if (typeof(T).IsPrimitive)
@@ -166,7 +172,7 @@ namespace Graphene
 	  }
 	}
 
-	internal static void DrawListView(Plate plate, ListView listView, in object context, TemplatePreset templates, in ValueWithAttribute<DrawAttribute> drawMember, in ValueWithAttribute<BindAttribute> bindMember)
+	static void DrawListView(Plate plate, ListView listView, in object context, TemplatePreset templates, in ValueWithAttribute<DrawAttribute> drawMember, in ValueWithAttribute<BindAttribute> bindMember)
 	{
 	  var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute);
 

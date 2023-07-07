@@ -140,9 +140,10 @@ namespace Graphene
 		case RouterCommand.None:
 		  break;
 		case RouterCommand.Back:
-		  router.TryGoToPreviousState();
+		  router.TryGoUpOneState();
 		  break;
 		case RouterCommand.Previous:
+		  router.TryGoToPreviousState();
 		  break;
 		case RouterCommand.Exit:
 		  TryExit();

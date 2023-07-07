@@ -129,8 +129,10 @@ namespace Graphene.Elements
 
       m_Previous.AddToClassList(previousButtonUssClassName);
       m_Next.AddToClassList(nextButtonUssClassName);
+	  m_Previous.AddToClassList("nomargin");
+	  m_Next.AddToClassList("nomargin");
 
-      visualInput.Add(m_Previous);
+	  visualInput.Add(m_Previous);
 
       m_Label = new Label
       {

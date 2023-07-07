@@ -112,12 +112,12 @@ namespace Graphene
       if (!templates)
 		templates = GetTemplatesFromParentsRecursive(this);
 
-	  if (viewModel is ICustomDrawContext customDrawContext)
-        RenderUtils.DrawDataContainer(plate, container, customDrawContext.GetCustomDrawContext, templates);
-      else
+      //else
         RenderUtils.DrawDataContainer(plate, container, viewModel, templates);
+	 // if (viewModel is ICustomDrawContext customDrawContext)
+		//RenderUtils.DrawDataContainer(plate, container, customDrawContext.GetCustomDrawContext, templates);
 
-      if (viewModel != null)
+	  if (viewModel != null)
         viewModel.onModelChange?.Invoke();
     }
 

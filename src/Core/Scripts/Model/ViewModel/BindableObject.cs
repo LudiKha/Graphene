@@ -30,7 +30,7 @@ namespace Graphene.ViewModel
 	[field: SerializeField, IgnoreDataMember] public bool isActive2 { get; set; } = false;
 	public Action<bool> onSetActive { get; set; }
 
-	public VisualElement boundToElement { get; private set; }
+	public VisualElement boundToElement { get; set; }
 	public System.Action<VisualElement> onBindToElement;// { get; set; }
 
 	public void SetBinding(VisualElement el)

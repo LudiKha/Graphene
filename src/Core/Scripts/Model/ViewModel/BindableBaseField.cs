@@ -15,6 +15,10 @@ namespace Graphene.ViewModel
 	[System.Serializable]
   public abstract class BindableBaseField : BindableObjectBase
   {
+	[field: SerializeField]
+	[Bind(nameof(Label), BindingMode.OneWay)]
+	[IgnoreDataMember]
+	public virtual string Label { get; set; }
   }
 
   [System.Serializable][DataContract]
@@ -35,9 +39,6 @@ namespace Graphene.ViewModel
       } 
     }
 
-    [field: SerializeField]
-    [Bind(nameof(Label), BindingMode.OneWay)][IgnoreDataMember]
-    public virtual string Label { get; set; }
 
     /*[BindValueChangeCallback(nameof(ValueChange))]*/[IgnoreDataMember]
     public EventCallback<ChangeEvent<T>> ValueChange => (changeEvent) => { ValueChangeCallback(changeEvent.newValue); };
@@ -69,6 +70,7 @@ namespace Graphene.ViewModel
   [System.Serializable, Draw(ControlType.Toggle), DataContract]
   public class BindableBool : BindableBaseField<bool>
   {
+    public BindableBool([CallerMemberName] string label = null) : base(label) { }
   }
 
 
@@ -106,7 +108,7 @@ namespace Graphene.ViewModel
   {
     public override float normalizedValue => Normalize(m_Value, min, max);
 
-    public BindableFloat()
+    public BindableFloat([CallerMemberName] string label = null) : base(label)
     {
       min = 0;
       max = 1;
@@ -124,7 +126,7 @@ namespace Graphene.ViewModel
   {
 	public override float normalizedValue => Normalize(m_Value, min, max);
 
-	public BindableInt()
+	public BindableInt([CallerMemberName] string label = null) : base(label)
     {
       min = 0;
       max = 10;
@@ -164,6 +166,10 @@ namespace Graphene.ViewModel
       this.items.Clear();
       this.items = list.ToList();
     }
+
+	public BindableNamedInt([CallerMemberName] string label = null) : base(label) 
+    {
+    }
   }
 
   [System.Serializable, Draw(ControlType.DropdownField), DataContract]
@@ -195,12 +201,15 @@ namespace Graphene.ViewModel
       this.items.Clear();
       this.items = list.ToList();
     }
+
+    public BindableStringSelect([CallerMemberName] string label = null) : base(label) { }
   }
 
 
   [System.Serializable, Draw(ControlType.TextField), DataContract]
   public class BindableInput : BindableBaseField<string>
   {
+    public BindableInput([CallerMemberName] string label = null) : base(label) { }
   }
 
 

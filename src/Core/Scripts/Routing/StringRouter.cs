@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Graphene
@@ -42,21 +43,22 @@ namespace Graphene
     {
       string[] states = GetStatesFromAddress(relativeAddress);
 
-      // Starting at the leaf, finding n parent states
-      //string current = default;
-      //for (int i = states.Length - 1; i >= 0; i++)
-      //{
-      //  current = states[i];
-      //  if (this.states.ContainsKey(current))
-      //    continue;
-      //  else
-      //    return false;
-      //}
-      // Get parent states
-      var parentStates = GetParentStatesRecursive(states.First(), states.ToList());
-      // Add relative states
-      parentStates.AddRange(states);
-      return parentStates.ToArray();
+	  // Starting at the leaf, finding n parent states
+	  //string current = default;
+	  //for (int i = states.Length - 1; i >= 0; i++)
+	  //{
+	  //  current = states[i];
+	  //  if (this.states.ContainsKey(current))
+	  //    continue;
+	  //  else
+	  //    return false;
+	  //}
+	  // Get parent states
+	  var parentStates = GetParentStatesRecursive(states.First(), states.ToList());
+
+	  // Add relative states
+	  parentStates.AddRange(states);
+      return parentStates.Distinct().ToArray();
     }
 
     List<string> GetParentStatesRecursive(string state, List<string> list)

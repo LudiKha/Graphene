@@ -182,7 +182,7 @@ namespace Graphene.ViewModel
   {
 	[ShowInInspector] T originalCached;
 	[System.NonSerialized, ShowInInspector, InlineEditor] public T viewModelCopy;
-	object ICustomDrawContext.GetCustomDrawContext => viewModelCopy;
+	object ICustomDrawContext.GetCustomDrawContext { get => viewModelCopy; }
 
 	public abstract void UpdateSourceData();
   }

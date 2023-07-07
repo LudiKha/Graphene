@@ -174,26 +174,11 @@ namespace Graphene
     {
       if (element is INotifyValueChanged<T> notifyValChangedEl)
       {
-        notifyValChangedEl.RegisterValueChangedCallback((evt) =>
+		notifyValChangedEl.RegisterValueChangedCallback((evt) =>
         {
-          SetValueFromMemberInfo(evt.newValue);
+		  SetValueFromMemberInfo(evt.newValue);
         });
       }
-      return;
-
-      //if (context is INotifyValueChanged<T> notifyChangeContext && element is INotifyValueChanged<T> notifyChangeEl)
-      //{
-      //  notifyChangeEl.RegisterValueChangedCallback((evt) => { notifyChangeContext.SetValueWithoutNotify(evt.newValue); });
-
-      //  notifyChangeContext.RegisterValueChangedCallback((evt) => { notifyChangeEl.SetValueWithoutNotify(evt.newValue); });
-      //}
-      //else if(element is INotifyValueChanged<T> notifyValChangedEl)
-      //{
-      //  notifyValChangedEl.RegisterValueChangedCallback((evt) =>
-      //  {
-      //    SetValueFromMemberInfo(evt.newValue);
-      //  });
-      //}
     }
 
     protected abstract bool IsValidBinding();

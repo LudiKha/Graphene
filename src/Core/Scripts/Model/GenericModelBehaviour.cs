@@ -6,7 +6,9 @@ namespace Graphene.ViewModel
 {
   public abstract class GenericModelBehaviour<T> : ViewModelComponent
   {
-    [Draw(ControlType.Button)]
+	public override bool HasContent => items?.Count > 0; 
+
+	[Draw(ControlType.Button)]
     [SerializeField]
     protected List<T> items = new List<T>();
 

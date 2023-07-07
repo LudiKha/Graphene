@@ -28,6 +28,7 @@ namespace Graphene
     public abstract void BindRoute(Route el, object data);
     public abstract void TryGoToPreviousState();
     public abstract void TryGoToNextState();
+    public abstract void TryGoUpOneState();
     public abstract void ResetState();
 
     public void RegisterInterpreter(IStateInterpreter stateInterpreter)
@@ -268,11 +269,17 @@ namespace Graphene
         return false;
 
       // See if the router
-      foreach (var interpreter in interpreters)
+      for (int i = interpreters.Count - 1; i >= 0; i--)
       {
-        if (interpreter != null && interpreter.TryCatch(state))
-          return true;
-      }
+        var interpreter = interpreters[i];
+		if (interpreter != null && interpreter.TryCatch(state))
+		  return true;
+	  }
+      //foreach (var interpreter in interpreters)
+      //{
+      //  if (interpreter != null && interpreter.TryCatch(state))
+      //    return true;
+      //}
 
       // Only contained keys allowed
       if (!AddressExists(state))
@@ -297,7 +304,19 @@ namespace Graphene
       TryChangeState(previousState);
     }
 
-    public override void TryGoToNextState()
+	public override void TryGoUpOneState()
+	{
+      // Already at root
+      if (activeStates.Count <= 1)
+      {
+        ResetState();
+		return;
+      }
+
+	  T previousState = activeStates[activeStates.IndexOf(CurrentState) - 1];
+	  TryChangeState(previousState);
+	}
+	public override void TryGoToNextState()
     {
     }
 
