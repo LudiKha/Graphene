@@ -534,9 +534,19 @@ namespace Graphene
 
     internal static void InternalBindListView(ListView el, in object context, IList itemsSource, VisualTreeAsset templateAsset, Plate plate)
     {
-      Func<VisualElement> makeItem = () =>
+      bool elementsPickable = true;
+
+	  if (context is IListViewBindable bindable)
+	  {
+		bindable.Apply(el);
+		BindCallbacks(el, context);
+        elementsPickable = bindable.ElementsPickable;
+	  }
+
+	  Func<VisualElement> makeItem = () =>
       {
         var e = InternalInstantiate(templateAsset, plate);
+        e.pickingMode = elementsPickable ? PickingMode.Position : PickingMode.Ignore;
         return e;
       };
       Action<VisualElement, int> bindItem = (e, i) =>
@@ -552,11 +562,6 @@ namespace Graphene
       el.bindItem = bindItem;
       el.itemsSource = itemsSource;
 
-      if (context is IListViewBindable bindable)
-      {
-        bindable.Apply(el);
-        BindCallbacks(el, context);
-      }
     }
 
     private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)

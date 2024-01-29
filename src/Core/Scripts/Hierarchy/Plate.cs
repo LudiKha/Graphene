@@ -55,7 +55,7 @@ namespace Graphene
 	#endregion
 
 	#region Inspector/Authoring
-	[SerializeField, OnValueChanged(nameof(OnChangeDocument))] VisualTreeAsset visualAsset; public VisualTreeAsset VisualTreeAsset => visualAsset;
+	[SerializeField, OnValueChanged(nameof(OnChangeDocument))] VisualTreeAsset visualAsset; public VisualTreeAsset VisualTreeAsset { get =>  visualAsset;  set => SetVisualTreeAsset(value); }
     [SerializeField, HideInInspector] VisualTreeAsset cachedAsset;
 
 
@@ -337,8 +337,10 @@ namespace Graphene
 
       if (!defaultViewRef.initialized)
       {
+#if UNITY_ASSERTIONS
         if(children.Count > 0 || renderer != null)
-          Debug.LogError($"No default view {defaultViewRef.Id}", this);
+          Debug.LogWarning($"No default view {defaultViewRef.Id}", this);
+#endif
       }
 
 	  contentViewRef.ResolveView(this);
@@ -365,6 +367,14 @@ namespace Graphene
           this.viewStyleOverrides.Add(new SerializedView(view));
 	  }
     }
+
+    void SetVisualTreeAsset(VisualTreeAsset asset)
+    {
+      if(this.visualAsset == asset) 
+        return;
+      this.visualAsset = asset;
+      OnChangeDocument();
+	}
 
     void OnChangeDocument()
     {

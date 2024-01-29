@@ -44,7 +44,7 @@ namespace Graphene
 	  else if (container == null)
 	  {
 #if UNITY_ASSERTIONS
-		UnityEngine.Debug.LogError($"Trying to draw to null VisualElement container {plate.name}", plate);
+		UnityEngine.Debug.LogWarning($"Trying to draw to null VisualElement container {plate.name}", plate);
 #endif
 		return;
 	  }

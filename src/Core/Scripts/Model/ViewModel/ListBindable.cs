@@ -1,8 +1,6 @@
 ﻿using Sirenix.OdinInspector;
-using Sirenix.Utilities;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -24,6 +22,8 @@ namespace Graphene.ViewModel
 	bool ShowCollectionSize { get; }
 
 	void Apply(ListView el);
+
+	bool ElementsPickable { get; }
   }
 
   public abstract class ListBindable : BindableObjectBase
@@ -41,11 +41,13 @@ namespace Graphene.ViewModel
 	public bool reorderable; public bool Reorderable => reorderable;
 	public ListViewReorderMode reorderMode; public ListViewReorderMode ReorderMode => reorderMode;
 	public bool showCollectionSize; public bool ShowCollectionSize => showCollectionSize;
+	public bool elementsPickable = true; public bool ElementsPickable => elementsPickable;
 
 	// Bound element
 	public ListView listView;
 
-	[ResponsiveButtonGroup] public void Rebuild()
+	[ResponsiveButtonGroup]
+	public void Rebuild()
 	{
 	  if (listView == null)
 		return;
@@ -78,21 +80,6 @@ namespace Graphene.ViewModel
 	[Bind("Items")] public List<TObjectType> SourceItems = new List<TObjectType>();
 
 	public IList ItemsSource => SourceItems;
-	public void Apply(ListView el)
-	{
-	  this.listView = el;
-	  el.virtualizationMethod = collectionVirtualizationMethod;
-	  el.fixedItemHeight = this.height;
-	  el.selectionType= selectionType;
-	  el.showBorder= showBorder;
-	  el.headerTitle = headerTitle;
-	  el.showFoldoutHeader = showFoldoutHeader;
-	  el.showAddRemoveFooter= showAddRemoveFooter;
-	  el.showAlternatingRowBackgrounds = alternatingRowBackground;
-	  el.reorderable = reorderable;
-	  el.reorderMode = reorderMode;
-	  el.showBoundCollectionSize = showCollectionSize;
-	}
 
 	#region IList<T>
 	public TObjectType this[int index] { get => SourceItems[index]; set => SourceItems[index] = value; }

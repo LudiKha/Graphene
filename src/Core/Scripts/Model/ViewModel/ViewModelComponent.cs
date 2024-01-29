@@ -46,7 +46,7 @@ namespace Graphene.ViewModel
 #if ODIN_INSPECTOR
 	[Sirenix.OdinInspector.ResponsiveButtonGroup]
 #endif
-	public void ModelChange()
+	public virtual void ModelChange()
 	{
 	  onModelChange?.Invoke();
 	}
