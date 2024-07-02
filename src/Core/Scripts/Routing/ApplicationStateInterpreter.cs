@@ -18,7 +18,9 @@ namespace Graphene
     Back,
     Previous,
     Exit,
-    Root
+    Root,
+    Menu,
+    ToggleUI
   }
 
   [System.Flags]
@@ -122,10 +124,15 @@ namespace Graphene
           continue;
 		if (command.OnStateEnter != null || command.routerCommand != RouterCommand.None || command.hasCustomState)
 		{
-		  if (command.hasCustomState)
-			router.TryChangeState(command.customState);
-		  else
-			HandleRouterCommand(command.routerCommand);
+          if (command.hasCustomState)
+          {
+            if (command.customState.IndexOf("http") == 0)
+			  Application.OpenURL(command.customState);
+            else
+			  router.TryChangeState(command.customState);
+          }
+          else
+            HandleRouterCommand(command.routerCommand);
 		  command.OnStateEnter?.Invoke();
 		  return true;
 		}

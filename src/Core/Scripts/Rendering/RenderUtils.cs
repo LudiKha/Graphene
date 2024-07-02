@@ -21,6 +21,7 @@ namespace Graphene
 	/// <returns></returns>
 	internal static bool IsPrimitiveContext(this System.Type type) => type.IsPrimitive || type.IsEnum || type == stringType;
 
+	static int recursiveCheck = 0;
 	/// <summary>
 	/// Draws controls for all members of a context object
 	/// </summary>
@@ -30,9 +31,16 @@ namespace Graphene
 	/// <param name="templates"></param>
 	internal static void DrawDataContainer(Plate plate, VisualElement container, in object context, TemplatePreset templates)
 	{
+	  if (recursiveCheck > 5)
+	  {
+		Debug.LogError($"Recursive error {plate}", plate);
+		return;
+	  }
 	  if (context is ICustomDrawContext customDrawContext)
 	  {
+		recursiveCheck++;
 		DrawDataContainer(plate, container, customDrawContext.GetCustomDrawContext, templates);
+		recursiveCheck--;
 		return;
 	  }
 
@@ -89,13 +97,26 @@ namespace Graphene
 		template = customVisualTreeAsset.VisualTreeAsset;
 	  else
 	  {
-		ControlType? controlType = null;
-		if (drawMember.Value is ICustomControlType customControl)
+		ControlType controlType = ControlType.None;
+
+		// Override control for class
+		if (drawMember.Value is ICustomControlType customControl && customControl.ControlType != ControlType.None)
 		  controlType = customControl.ControlType;
+		else
+		  controlType = TemplatePreset.ResolveControlType(drawMember.Value, isPrimitiveContext: false, drawMember.Attribute);
 
-		template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute, controlType);
 
-		if (!template)
+		// Drill down to subcontext
+		if (controlType == ControlType.None || controlType == ControlType.SubContext)
+		{
+		  //Debug.Log($"{controlType} {panel.name} {drawMember} {context}", panel);
+		  recursiveCheck++;
+		  DrawDataContainer(panel, container, drawMember.Value, templates);
+		  recursiveCheck--;
+		  return;
+		}
+
+		if (!templates.TryGetTemplateAsset(controlType, out template))
 		{
 		  Debug.LogError($"Failed to instantiate template {controlType} for field {drawMember.MemberInfo.Name}", panel);
 		  return;
@@ -104,15 +125,6 @@ namespace Graphene
 
 	  // Clone & bind the control
 	  VisualElement clone = Binder.Instantiate(in drawMember.Value, template, panel);
-
-	  // Needs optimization      
-	  //foreach (var child in clone.Children())
-	  //   {
-	  //     if (drawMember.Value is ICustomAddClasses customAddClasses)
-	  //       child.AddMultipleToClassList(customAddClasses.ClassesToAdd);
-	  //     if (drawMember.Value is ICustomName customName && !string.IsNullOrWhiteSpace(customName.CustomName))
-	  //       child.name = customName.CustomName;
-	  //   }
 
 	  // Add the control to the container
 	  container.Add(clone);
@@ -125,7 +137,8 @@ namespace Graphene
 		bind = new ValueWithAttribute<BindAttribute>(drawMember.Value, new BindAttribute("Label", BindingMode.OneTime), drawMember.MemberInfo);
 
 	  // Get template, clone & bind the control
-	  var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute);
+	  ControlType controlType = TemplatePreset.ResolveControlType(drawMember.Value, isPrimitiveContext: true, drawMember.Attribute);
+	  templates.TryGetTemplateAsset(controlType, out VisualTreeAsset template);
 	  VisualElement clone = Binder.InstantiatePrimitive(in context, ref bind, template, panel);
 
 	  // Add any custom typography
@@ -174,8 +187,8 @@ namespace Graphene
 
 	static void DrawListView(Plate plate, ListView listView, in object context, TemplatePreset templates, in ValueWithAttribute<DrawAttribute> drawMember, in ValueWithAttribute<BindAttribute> bindMember)
 	{
-	  var template = templates.TryGetTemplateAsset(drawMember.Value, drawMember.Attribute);
-
+	  ControlType controlType = TemplatePreset.ResolveControlType(drawMember.Value, isPrimitiveContext: false, drawMember.Attribute);
+	  templates.TryGetTemplateAsset(controlType, out VisualTreeAsset template);
 	  Binder.BindListView(listView, in context, plate, template, in bindMember);
 	}
   }

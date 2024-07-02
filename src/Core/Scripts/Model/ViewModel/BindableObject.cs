@@ -1,5 +1,4 @@
 
-using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -7,25 +6,32 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Graphene.ViewModel
 {
   [System.Serializable]
+#if ODIN_INSPECTOR
+  [Toggle("<isEnabled>k__BackingField")]
+#endif
   public abstract class BindableObjectBase : IBindableToVisualElement
   {
 #if ODIN_INSPECTOR
-	[field: InlineButton(nameof(ToggleEnable))]
+	[field: LabelText(SdfIconType.TypeStrikethrough)]
 #endif
-	[field: SerializeField, IgnoreDataMember] public bool isEnabled { get; set; } = true;
+	[field: SerializeField, IgnoreDataMember, OnValueChanged(nameof(SetEnabled))] public bool isEnabled { get; set; } = true;
 	public Action<bool> onSetEnabled { get; set; }
 
 #if ODIN_INSPECTOR
-	[field: InlineButton(nameof(ToggleShow))]
+	[field: LabelText(SdfIconType.Eye), OnValueChanged(nameof(SetShow))]
 #endif
 	[field: SerializeField, IgnoreDataMember] public bool isShown { get; set; } = true;
 	public Action<bool> onShowHide { get; set; }
 
 #if ODIN_INSPECTOR
-	[field: InlineButton(nameof(ToggleActive))]
+	[field: LabelText(SdfIconType.Check), OnValueChanged(nameof(SetActive))]
 #endif
 	[field: SerializeField, IgnoreDataMember] public bool isActive2 { get; set; } = false;
 	public Action<bool> onSetActive { get; set; }
@@ -146,7 +152,7 @@ namespace Graphene.ViewModel
 
   // Atomic "Über" object for the view
   [System.Serializable, Draw(ControlType.Button)]
-  public class ContextBindableObject : BindableObject
+  public class ContextBindableObject : BindableObject, IBindableInteractionType
   {
 	[Bind("Content")]
 	[field: SerializeField] public List<ContextBindableObject> Content { get; private set; }
@@ -160,6 +166,12 @@ namespace Graphene.ViewModel
 	[Bind("HasActions")]
 	public bool HasActions => Actions != null && Actions.Count > 0;
 
+
+	[field: SerializeField]
+	public InteractionMode InteractionType { get; set; }
+
+	[field: SerializeField]
+	public int Size { get; set; }
 
 	public void AddAction(string name, Action callback, string tooltip = null)
 	{

@@ -80,7 +80,6 @@ namespace Graphene
     public bool RequiresRebuild => cachedAsset != visualAsset || viewIds.Count != viewStyleOverrides.Count;
 	#endregion
 
-
     #region Component Reference
     [ShowInInspector] Plate parent; public Plate Parent => parent;
     [ShowInInspector] List<Plate> children = new List<Plate>(); public IReadOnlyList<Plate> Children => children;
@@ -141,8 +140,9 @@ namespace Graphene
       }
     }
 
-    private void Awake()
-    {
+	protected override void Awake()
+	{
+	  base.Awake();
       // Clear events
       onRefreshDynamic = null;
       onRefreshStatic = null;
@@ -213,10 +213,14 @@ namespace Graphene
         Root.AddToClassList("unity-ui-document__child");
       }
 
-      // Fadeout events
-      //Root.RegisterCallback<TransitionStartEvent>(Root_StartTransition);
+	  // Hide on start
+	  if (styleOverrides.showHideMode == ShowHideMode.Transition)
+		Root.FadeOut();
 
-      Profiler.EndSample();
+	  // Fadeout events
+	  //Root.RegisterCallback<TransitionStartEvent>(Root_StartTransition);
+
+	  Profiler.EndSample();
     }
 
     void Root_StartTransition(TransitionStartEvent evt)
@@ -280,7 +284,7 @@ namespace Graphene
     #endregion
     internal virtual void RenderAndComposeChildren()
     {
-      Profiler.BeginSample("Graphene Plate RenderAndComposeChildren");
+      Profiler.BeginSample("RenderAndComposeChildren", this);
       // Detach the children so they don't get bound to the scope
       DetachChildPlates();
       Clear();
@@ -299,7 +303,7 @@ namespace Graphene
     {
       if (!Initialized)
         return;
-
+      Show();
       //ConstructVisualTree();
       //RenderAndComposeChildren();
       //ReevaluateState();
@@ -411,6 +415,10 @@ namespace Graphene
       if (isActive) return;
 
       if (canShow != null && !canShow.Invoke())
+        return;
+
+      // Cannot show
+      if (transform.parent?.gameObject.activeInHierarchy == false)
         return;
 
       SetActive(true);
@@ -668,7 +676,8 @@ namespace Graphene
     }
     public void Dispose()
     {
-      BindingManager.DisposePlate(this);
+      if(BindingsManager)
+        BindingsManager.DisposePlate(this, false);
     }
 
     void OnValidate()

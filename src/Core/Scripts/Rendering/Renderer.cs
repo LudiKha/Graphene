@@ -27,8 +27,8 @@ namespace Graphene
     {
       if (plate || (plate = GetComponent<Plate>()))
       {
-        plate.onRefreshStatic += Plate_onRefreshStatic;
-        plate.onRefreshDynamic += Plate_onRefreshDynamic;
+        plate.onRefreshStatic += RebindStatic;
+        plate.onRefreshDynamic += HardRefresh;
 
         if ((Model && Model is IModel || (Model = GetComponent<IModel>() as Object)))
         {
@@ -49,7 +49,7 @@ namespace Graphene
       viewModel.onModelChange = Model_onModelChange;
     }
 
-    internal void Plate_onRefreshStatic()
+    public void RebindStatic()
     {     
       // Render the template components
       plate.Root.Query<TemplateRef>().ForEach(t => {
@@ -114,11 +114,11 @@ namespace Graphene
 
       //else
         RenderUtils.DrawDataContainer(plate, container, viewModel, templates);
-	 // if (viewModel is ICustomDrawContext customDrawContext)
-		//RenderUtils.DrawDataContainer(plate, container, customDrawContext.GetCustomDrawContext, templates);
+      // if (viewModel is ICustomDrawContext customDrawContext)
+      //RenderUtils.DrawDataContainer(plate, container, customDrawContext.GetCustomDrawContext, templates);
 
-	  if (viewModel != null)
-        viewModel.onModelChange?.Invoke();
+      viewModel.Refresh(container);
+      viewModel.onModelChange?.Invoke();
     }
 
     TemplatePreset GetTemplatesFromParentsRecursive(Renderer current)
@@ -138,15 +138,32 @@ namespace Graphene
 #elif NAUGHTY_ATTRIBUTES
     [NaughtyAttributes.Button]
 #endif
-    public void HardRefresh()
+    public void Refresh()
     {
-      ClearContent();
-      RenderToContainer(GetDrawContainer());
+      viewModel?.Refresh(GetDrawContainer());
     }
 
+	bool isRefreshing;
+#if ODIN_INSPECTOR
+	[Sirenix.OdinInspector.ResponsiveButtonGroup("Actions")]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.Button]
+#endif
+	public void HardRefresh()
+	{
+      if (isRefreshing)
+      {
+        Debug.LogError($"Recursing refresh {name}", this);
+        return;
+      }
+      isRefreshing = true;
+	  ClearContent();
+	  RenderToContainer(GetDrawContainer());
+      isRefreshing = false;
+	}
 
 #if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.ResponsiveButtonGroup("Actions")]
+	[Sirenix.OdinInspector.ResponsiveButtonGroup("Actions")]
 #elif NAUGHTY_ATTRIBUTES
     [NaughtyAttributes.Button]
 #endif

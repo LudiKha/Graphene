@@ -7,6 +7,10 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Graphene.ViewModel
 {
   [System.Serializable]
@@ -57,10 +61,20 @@ namespace Graphene.ViewModel
 	  m_Value = newValue;
 	}
 
+#if UNITY_EDITOR
+	PropertyChangedEventArgs propertyChangedArgs;
+#endif
+
 	protected virtual void ValueChangeCallback(T value)
 	{
 	  OnValueChange?.Invoke(this, value);
-	  PropertyChanged?.Invoke(null, null);
+#if UNITY_EDITOR
+	  if (propertyChangedArgs == null)
+		propertyChangedArgs = new PropertyChangedEventArgs(Label);
+	  PropertyChanged?.Invoke(this, propertyChangedArgs);
+#else
+	  PropertyChanged?.Invoke(this, null);
+#endif
 	}
 
 	public override void ResetCallbacks()
@@ -86,17 +100,24 @@ namespace Graphene.ViewModel
   {
 	public abstract float normalizedValue { get; }
 
+	// These come first, so the ranges are deserialized _before_ the value
+#if ODIN_INSPECTOR
+	[PropertyOrder(1)]
+#endif
+	[Bind("Min"), DataMember(Name = "Min")]
+	public TValueType min;
+#if ODIN_INSPECTOR
+	[PropertyOrder(1)]
+#endif
+	[Bind("Max"), DataMember(Name = "Max")]
+	public TValueType max;
+
 	[BindBaseField("Value")]
 	[DataMember(Name = "Value")]
 #if ODIN_INSPECTOR
 	[Sirenix.OdinInspector.ShowInInspector, Sirenix.OdinInspector.PropertyRange(0, 1, MinGetter = nameof(min), MaxGetter = nameof(max))]
 #endif
 	public override TValueType value { get => base.value; set => base.value = value; }
-
-	[Bind("Min"), DataMember(Name = "Min")]
-	public TValueType min;
-	[Bind("Max"), DataMember(Name = "Max")]
-	public TValueType max;
 
 	public TValueType Min { get => min; set => min = value; }
 	public TValueType Max { get => max; set => max = value; }
@@ -107,7 +128,6 @@ namespace Graphene.ViewModel
 	{
 	  return Mathf.InverseLerp(min, max, value);
 	}
-
   }
 
   public interface INumericBindable
@@ -116,7 +136,7 @@ namespace Graphene.ViewModel
 	float value { get; set; }
 
 	float Min { get; set; }
-	float Max { get; set; }	
+	float Max { get; set; }
 
 	void SetValueWithoutNotify(float value);
   }
@@ -152,12 +172,13 @@ namespace Graphene.ViewModel
 
 	float INumericBindable.value { get => value; set => base.value = (int)value; }
 	float INumericBindable.Min { get => min; set => min = (int)value; }
-	float INumericBindable. Max { get => max; set => max = (int)value; }
+	float INumericBindable.Max { get => max; set => max = (int)value; }
 
 	public BindableInt() : base()
 	{
 	  min = 0;
-	  max = 10;
+	  max = 100;
+	  m_Value = 50;
 	  //m_Value = 5;
 	}
 
@@ -169,7 +190,7 @@ namespace Graphene.ViewModel
 	void INumericBindable.SetValueWithoutNotify(float value) => SetValueWithoutNotify((int)value);
   }
 
-  [System.Serializable, Draw(ControlType.SelectField), DataContract]
+  [System.Serializable, Draw(ControlType.CycleField), DataContract]
   public class BindableNamedInt : BindableBaseField<int>
   {
 	[field: SerializeField]
@@ -187,6 +208,7 @@ namespace Graphene.ViewModel
 		string item = s;
 		if (splitUppercase)
 		  item = StringUtility.InsertSpaceBeforeUpperCase(s);
+		item = item.Replace("_", " ").Trim();
 
 		this.items.Add(item);
 	  }
@@ -241,6 +263,37 @@ namespace Graphene.ViewModel
 	public BindableInput() : base() { }
   }
 
+
+  [System.Serializable, Draw(ControlType.MinMaxSlider), DataContract]
+  public class BindableRange : BindableBaseField<Vector2>
+  {
+	[BindBaseField("Value")]
+	[DataMember(Name = "Value")]
+#if ODIN_INSPECTOR
+	[Sirenix.OdinInspector.ShowInInspector, Sirenix.OdinInspector.MinMaxSlider(0, 1, MinValueGetter = nameof(min), MaxValueGetter = nameof(max))]
+#endif
+	public override Vector2 value { get => base.value; set => base.value = value; }
+
+	[Bind("Min"), DataMember(Name = "Min")]
+	public float min;
+	[Bind("Max"), DataMember(Name = "Max")]
+	public float max;
+
+	public float Min { get => min; set => min = value; }
+	public float Max { get => max; set => max = value; }
+
+	public BindableRange() : base()
+	{
+	  min = 0;
+	  max = 1;
+	  m_Value = new Vector2(0, 1);
+	}
+
+	protected float Normalize(float value, float min, float max)
+	{
+	  return Mathf.InverseLerp(min, max, value);
+	}
+  }
 
   public static class StringUtility
   {

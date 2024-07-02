@@ -330,10 +330,23 @@ namespace Graphene
       return activeStates.IndexOf(state) != -1;
     }
 
-    #endregion
+    public bool IsSiblingState(T state, T otherState)
+    {
+      return EqualityComparer<T>.Default.Equals(states[state], states[otherState]);
+    }
 
-    #region Helper Methods
-    public abstract bool ValidState(T state);
+	public bool IsSiblingToCurrentState(T state)
+	{
+      if (!states.TryGetValue(state, out var parent))
+        return false;
+      //Debug.Log($"{state}@{parent} {CurrentState}@{states[CurrentState]}");
+	  return EqualityComparer<T>.Default.Equals(parent, states[CurrentState]);
+	}
+
+	#endregion
+
+	#region Helper Methods
+	public abstract bool ValidState(T state);
 
     public abstract bool AddressExists(T address);
     public abstract T[] GetStatesFromAddress(T address);
@@ -354,7 +367,7 @@ namespace Graphene
       else
         traversedStates.Add(newState);
     }
-
+    
     #endregion
   }
 }

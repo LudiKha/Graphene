@@ -9,8 +9,9 @@ namespace Graphene
     [field: SerializeField] public bool StateFromGameObjectName { get; private set; } = true;
     public override string StateID => Application.isPlaying ? stateID : StateFromGameObjectName ? GameObjectNameAsStateId() : base.StateID;
 
-    private void Awake()
+    protected override void Awake()
     {
+      base.Awake();
       if (StateFromGameObjectName)
         this.stateID = GameObjectNameAsStateId();
     }

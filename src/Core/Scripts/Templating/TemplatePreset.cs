@@ -30,7 +30,9 @@ namespace Graphene
     Border,
     DropdownField,
     Card,
-    ButtonGroup
+    ButtonGroup,
+    SubContext,
+    MinMaxSlider
   }
 
   public interface ICustomControlType
@@ -48,6 +50,11 @@ namespace Graphene
     string CustomName { get; }
   }
 
+  public interface ISubContext
+  {
+
+  }
+
   [Serializable] public class ControlVisualTreeAssetMapping : SerializableDictionary<ControlType, VisualTreeAsset> { }
 
 
@@ -58,37 +65,28 @@ namespace Graphene
 
     [SerializeField] ControlVisualTreeAssetMapping data = new ControlVisualTreeAssetMapping();
 
+	public static ControlType ResolveControlType(object data, bool isPrimitiveContext, DrawAttribute drawAttribute = null)
+	{
+	  ControlType controlType = ControlType.None;
+	  // Try get from attributes
+	  // No member draw attribute -> try get ControlType from class attribute
+	  if (!isPrimitiveContext && (drawAttribute == null || drawAttribute.controlType == ControlType.None))
+	  {
+		var info = TypeInfoCache.GetExtendedTypeInfo(data.GetType());
+		if (info.HasTypeAttribute<DrawAttribute>())
+		  drawAttribute = info.GetTypeAttribute<DrawAttribute>();
+	  }
+	  // Set ControlType from attribute (if present)
+	  if (drawAttribute != null && drawAttribute.controlType != ControlType.None)
+		controlType = drawAttribute.controlType;
+	  // Didn't find in attribute
+	  else
+		controlType = GetControlTypeFromData(data, isPrimitiveContext);
 
-    public VisualTreeAsset TryGetTemplateAsset(object data, DrawAttribute drawAttribute = null, ControlType? overrideControlType = null)
-    {
-      ControlType controlType = ControlType.None;
+      return controlType;
+	}
 
-      // Try get control type from method param
-      if (overrideControlType.HasValue && overrideControlType != ControlType.None)
-        controlType = overrideControlType.Value;
-
-      // Try get from attributes
-      if (controlType == ControlType.None)
-      {
-        // No member draw attribute -> try get ControlType from class attribute
-        if ((drawAttribute == null || drawAttribute.controlType == ControlType.None) && !RenderUtils.IsPrimitiveContext(data.GetType()))
-        {
-          var info = TypeInfoCache.GetExtendedTypeInfo(data.GetType());
-          if(info.HasTypeAttribute<DrawAttribute>())
-            drawAttribute = info.GetTypeAttribute<DrawAttribute>();
-        }
-        // Set ControlType from attribute (if present)
-        if (drawAttribute != null)
-          controlType = drawAttribute.controlType;
-      }
-      // Didn't find in attribute
-      if (controlType == ControlType.None)
-        controlType = GetControlTypeFromData(data);
-
-      return TryGetTemplateAsset(controlType);
-    }
-
-    public static ControlType GetControlTypeFromData(object data)
+	public static ControlType GetControlTypeFromData(object data, bool isPrimitiveContext)
     {
       if (data is bool)
         return ControlType.Toggle;
@@ -100,23 +98,27 @@ namespace Graphene
         return ControlType.Label;
       else if (data is System.Action || data is UnityEvent)
         return ControlType.Button;
-      else if (data is IList)
+	  else if (data is Vector2)
+		return ControlType.MinMaxSlider;
+	  else if (data is IList)
         return ControlType.ListView;
       else if (data is Enum)
         return ControlType.DropdownField;
+      else if (!isPrimitiveContext) // Use nested scope
+        return ControlType.SubContext;
       return ControlType.None;
     }
 
-    public VisualTreeAsset TryGetTemplateAsset(ControlType controlType)
+    public bool TryGetTemplateAsset(ControlType controlType, out VisualTreeAsset visualTreeAsset)
     {
-      if (data.TryGetValue(controlType, out var result))
-        return result;
+      if (data.TryGetValue(controlType, out visualTreeAsset))
+        return true;
       else if (parent)
-        return parent.TryGetTemplateAsset(controlType);
+        return parent.TryGetTemplateAsset(controlType, out visualTreeAsset);
       else
         Debug.LogError($"Didn't find template for control {controlType}", this);
 
-      return null;
+      return false;
     }
   }
 }

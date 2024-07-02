@@ -10,7 +10,7 @@ namespace Graphene.ViewModel
 	[SerializeField, HideInInspector] protected new Renderer renderer; public Renderer Renderer => renderer;
 	[SerializeField, HideInInspector] protected Plate plate; public Plate Plate => plate;
 
-	[Bind("Title")]
+	[Bind("Title", BindingMode.OneWay)]
     [field: SerializeField] public virtual string Title { get; set; }
 
 	[Bind("HasContent")]
@@ -18,6 +18,15 @@ namespace Graphene.ViewModel
 
 	[field: SerializeField] public bool Render { get; set; } = true;
     public Action onModelChange { get; set; }
+
+	protected override void Awake()
+	{
+	  base.Awake();
+	  if (!this.plate)
+		this.plate = GetComponent<Plate>();
+	  if (!this.renderer)
+		renderer = GetComponent<Renderer>();
+	}
 
 	public override void Inject(Graphene graphene)
 	{
@@ -35,20 +44,18 @@ namespace Graphene.ViewModel
     {
     }
 
-	void Awake()
-	{
-	  if(!plate)
-		plate = GetComponent<Plate>();
-	  if (!this.renderer)
-		renderer = GetComponent<Renderer>();
-	}
-
 #if ODIN_INSPECTOR
 	[Sirenix.OdinInspector.ResponsiveButtonGroup]
 #endif
 	public virtual void ModelChange()
 	{
 	  onModelChange?.Invoke();
+	}
+#if ODIN_INSPECTOR
+	[Sirenix.OdinInspector.ResponsiveButtonGroup]
+#endif
+	public virtual void Refresh(VisualElement container)
+	{
 	}
   }
 }

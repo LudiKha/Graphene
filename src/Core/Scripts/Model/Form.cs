@@ -12,6 +12,8 @@ namespace Graphene
     bool Render { get; }
 
     System.Action onModelChange { get; set; }
+
+    void Refresh(VisualElement container);
   }
 
   /// <summary>
@@ -50,10 +52,14 @@ namespace Graphene
 
     public abstract void Initialize(VisualElement container, Plate plate);
 
+	public void Refresh(VisualElement container)
+	{
+	}
 
-    #region ButtonAttribute
+
+	#region ButtonAttribute
 #if ODIN_INSPECTOR
-    [Sirenix.OdinInspector.Button]
+	[Sirenix.OdinInspector.Button]
 #elif NAUGHTY_ATTRIBUTES
     [NaughtyAttributes.Button]
 #endif

@@ -86,7 +86,7 @@ namespace Graphene.Elements
 
 	void InstantiateTemplate()
 	{
-	  VisualTreeAsset template = renderer.Templates.TryGetTemplateAsset(this.type);
+	  renderer.Templates.TryGetTemplateAsset(this.type, out VisualTreeAsset template);
 	  var clone = Binder.InternalInstantiate(template, renderer.Plate);
 
 	  string name = this.name.Replace("Template", "").Replace("TemplateRef", "");

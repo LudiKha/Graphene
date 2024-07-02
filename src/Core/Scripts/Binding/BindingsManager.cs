@@ -8,57 +8,116 @@ using UnityEngine.UIElements;
 
 namespace Graphene
 {
+  using global::Graphene.Elements;
   using Kinstrife.Core.ReflectionHelpers;
+  using UnityEngine;
+  using UnityEngine.Profiling;
 
-  public static class BindingManager
+  public class BindingsManager : GrapheneComponent
   {
-    /// <summary>
-    /// Mapping of all current bindings, keyed by panels
-    /// </summary>
-    static Dictionary<Plate, List<Binding>> bindings = new Dictionary<Plate, List<Binding>>();
+	#region ShowInInspectorAttribute
+#if ODIN_INSPECTOR
+	[Sirenix.OdinInspector.ShowInInspector]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.ShowInInspector]
+#endif
+	#endregion
+	/// <summary>
+	/// Mapping of all current bindings, keyed by panels
+	/// </summary>
+	Dictionary<Plate, List<Binding>> bindings = new Dictionary<Plate, List<Binding>>();
 
-    static Dictionary<Plate, List<Binding>> disposePostUpdate = new Dictionary<Plate, List<Binding>>();
-    static Dictionary<Plate, List<Binding>> createPostUpdate = new Dictionary<Plate, List<Binding>>();
+	#region ShowInInspectorAttribute
+#if ODIN_INSPECTOR
+	[Sirenix.OdinInspector.ShowInInspector]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.ShowInInspector]
+#endif
+	#endregion
+	Dictionary<Plate, List<Binding>> disposePostUpdate = new Dictionary<Plate, List<Binding>>();
+    Dictionary<Plate, List<Binding>> createPostUpdate = new Dictionary<Plate, List<Binding>>();
 
-    internal static uint bindingsCount;
+    internal uint bindingsCount;
+
+
+#if ODIN_INSPECTOR
+	[Sirenix.OdinInspector.InfoBox("$bindingsInfo")]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.InfoBox("bindingsInfo")]
+#endif
+	[SerializeField] float bindingRefreshRate = 0.2f;
+
 
 #if UNITY_EDITOR
-    [UnityEditor.InitializeOnEnterPlayMode]
-    public static void InitializeOnEnterPlayMode()
-    {
-      bindings = new Dictionary<Plate, List<Binding>>();
-      disposePostUpdate = new Dictionary<Plate, List<Binding>>();
-      createPostUpdate = new Dictionary<Plate, List<Binding>>();
-      bindingsCount = 0;
-    }
+	public string bindingsInfo => $"{bindingsCount} bindings";
 #endif
 
-    public static void OnUpdate()
-    {
+	#region ReadOnlyAttribute
+#if ODIN_INSPECTOR
+	[Sirenix.OdinInspector.ReadOnly, Sirenix.OdinInspector.ShowInInspector]
+#elif NAUGHTY_ATTRIBUTES
+    [NaughtyAttributes.ReadOnly, NaughtyAttributes.ShowInInspector]
+#endif
+	#endregion
+	float lastRefreshTime;
+
+	//#if UNITY_EDITOR
+	//    [UnityEditor.InitializeOnEnterPlayMode]
+	//    public static void InitializeOnEnterPlayMode()
+	//    {
+	//      bindings = new Dictionary<Plate, List<Binding>>();
+	//      disposePostUpdate = new Dictionary<Plate, List<Binding>>();
+	//      createPostUpdate = new Dictionary<Plate, List<Binding>>();
+	//    }
+	//#endif
+
+
+	void LateUpdate()
+	{
+#if UNITY_EDITOR
+      if (!Application.isPlaying && !runInEditMode)
+		return;
+#endif
+
+      if (Time.unscaledTime - lastRefreshTime < bindingRefreshRate)
+		return;
+
+	  if (!graphene || !graphene.IsActiveAndVisible)
+		return;
+
+	  OnUpdate();
+	  lastRefreshTime = Time.unscaledTime;
+	}
+	public void OnUpdate()
+	{
       bindingsCount = 0;
-      // Update the bindings for active/visible panels
-      foreach (var kvp in bindings)
-      {
-        var plate = kvp.Key;
+#if UNITY_ASSERTIONS
+	  Profiler.BeginSample("Update Bindings", this);
+#endif
+	  // Update the bindings for active/visible panels
+	  foreach (var kvp in bindings)
+     {
+		var plate = kvp.Key;
         // Was disposed
         if (!plate)
           continue;
-
-        // The panel is invisible, or inactive
-        if (!plate.IsActive)
+		// The panel is invisible, or inactive
+		if (!plate.IsActive || !plate.Graphene.IsActiveAndVisible)
           continue;
 
         if (plate.bindingRefreshMode == BindingRefreshMode.None || (plate.bindingRefreshMode == BindingRefreshMode.ModelChange && !plate.wasChangedThisFrame))
           continue;
         plate.wasChangedThisFrame = false;
 
-        foreach (var binding in kvp.Value)
+#if UNITY_ASSERTIONS
+		Profiler.BeginSample(plate.DebugName, plate);
+#endif
+		foreach (var binding in kvp.Value)
         {
           // Needs to be disposed
           if (binding.scheduleDispose)
           {
             ScheduleDispose(kvp.Key, binding);
-            continue;
           }
           // Update the binding
           else
@@ -67,10 +126,19 @@ namespace Graphene
             bindingsCount++;
           }
         }
-      }
+#if UNITY_ASSERTIONS
+        Profiler.EndSample();
+#endif
+	  }
+#if UNITY_ASSERTIONS
+	  Profiler.EndSample();
+#endif
 
-      // Create bindings
-      foreach (var kvp in createPostUpdate)
+#if UNITY_ASSERTIONS
+	  Profiler.BeginSample("CreateDispose");
+#endif
+	  // Create bindings
+	  foreach (var kvp in createPostUpdate)
       {
         var list = GetList(kvp.Key, bindings);
         foreach (var binding in kvp.Value)
@@ -85,9 +153,13 @@ namespace Graphene
 
       createPostUpdate.Clear();
       disposePostUpdate.Clear();
-    }
 
-    internal static List<Binding> GetList(Plate panel, Dictionary<Plate, List<Binding>> bindings)
+#if UNITY_ASSERTIONS
+	  Profiler.EndSample();
+#endif
+	}
+
+	List<Binding> GetList(Plate panel, Dictionary<Plate, List<Binding>> bindings)
     {
       if (bindings.ContainsKey(panel))
         return bindings[panel];
@@ -104,7 +176,7 @@ namespace Graphene
     /// <param name="context"></param>
     /// <param name="bindingPath"></param>
     /// <param name="panel"></param>
-    public static void TryCreate(TextElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    public void TryCreate(TextElement el, ref object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       // Specifically set to one-time -> cancel binding
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value == BindingMode.OneTime)
@@ -121,7 +193,7 @@ namespace Graphene
     /// <param name="context"></param>
     /// <param name="member"></param>
     /// <param name="panel"></param>
-    public static void TryCreate<TValueType>(BaseField<TValueType> el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    public void TryCreate<TValueType>(BaseField<TValueType> el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       // Specifically set to one-time
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value != BindingMode.OneTime)
@@ -138,7 +210,7 @@ namespace Graphene
     /// <param name="context"></param>
     /// <param name="bindingPath"></param>
     /// <param name="panel"></param>
-    public static void TryCreate<TValueType>(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    public void TryCreate<TValueType>(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       // Specifically set to one-time -> cancel binding
       if (member.Attribute.bindingMode.HasValue && member.Attribute.bindingMode.Value == BindingMode.OneTime)
@@ -147,7 +219,7 @@ namespace Graphene
       CreateBinding<TValueType>(el, in context, in member, panel);
     }
 
-    internal static void CreateBinding<TValueType>(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
+    internal void CreateBinding<TValueType>(BindableElement el, in object context, in ValueWithAttribute<BindAttribute> member, Plate panel)
     {
       Binding binding = null;
       // Collection binding
@@ -161,24 +233,29 @@ namespace Graphene
         GetList(panel, createPostUpdate).Add(binding);
     }
 
-    public static void ScheduleDispose(Plate panel, Binding binding)
+    void ScheduleDispose(Plate panel, Binding binding)
     {
       GetList(panel, disposePostUpdate).Add(binding);
     }
 
-    internal static void Destroy(Plate panel, Binding binding)
+    void Destroy(Plate panel, Binding binding)
     {
       GetList(panel, bindings).Remove(binding);
       binding.Dispose();
       binding = null;
     }
 
-    public static void DisposePlate(Plate plate)
+    internal void DisposePlate(Plate plate, bool isDestroyed)
     {
-      if (bindings.ContainsKey(plate))
-        bindings.Remove(plate);
+      if(bindings.TryGetValue(plate, out var list))
+      {
+        if (isDestroyed)
+          bindings.Remove(plate);
+        else
+          list.Clear();
+	  }
       if (disposePostUpdate.ContainsKey(plate))
-        bindings.Remove(plate);
+		disposePostUpdate.Remove(plate);
     }
   }
 

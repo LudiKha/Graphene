@@ -48,6 +48,19 @@
     void OnModelChange(TValue newValue);
   }
 
+  public enum InteractionMode
+  {
+    Button,
+    Submit,
+    Cancel
+  }
+
+  public interface IBindableInteractionType
+  {
+    public InteractionMode InteractionType { get; }
+    public int Size { get; }
+  }
+
   public interface IGrapheneElement
   {
     void Inject(GrapheneRoot root, Plate plate, Renderer renderer);

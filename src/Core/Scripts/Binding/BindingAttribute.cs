@@ -117,6 +117,27 @@ namespace Graphene
       this.highValue = max;
     }
   }
+  // For fields & properties
+  [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property)]
+  public class BindRangeAttribute : BindBaseFieldAttribute
+  {
+	public Vector2 startingValue;
+	public float lowLimit;
+	public float highLimit;
+
+	public BindRangeAttribute(string path, Vector2 startingValue, float min, float max, string label = null) : base(path, label, showInput:false)
+	{
+	  this.startingValue = startingValue;
+	  this.lowLimit = min;
+	  this.highLimit = max;
+	}
+	public BindRangeAttribute(string path, BindingMode bindingMode, Vector2 startingValue, float min, float max, string label = null) : base(path, bindingMode, label, showInput: false)
+	{
+	  this.startingValue = startingValue;
+	  this.lowLimit = min;
+	  this.highLimit = max;
+	}
+  }
 
   // For fields & properties
   [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property)]

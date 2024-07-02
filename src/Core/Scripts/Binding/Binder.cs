@@ -17,22 +17,10 @@ namespace Graphene
 
   public static class Binder
   {
-    public static event System.Action<BindableElement> OnBindElement;
-
-#if UNITY_EDITOR
-    [UnityEditor.InitializeOnEnterPlayMode]
-    static void InitializeOnEnterPlayMode()
-    {
-      OnBindElement = null;
-    }
-#endif
-
     internal static VisualElement InternalInstantiate(VisualTreeAsset template, Plate plate)
     {
       var clone = template.Instantiate();
       return clone.Children().First();
-      clone.pickingMode = plate.Graphene.defaultPickingMode;
-      return clone;
     }
 
     /// <summary>
@@ -163,8 +151,8 @@ namespace Graphene
       }
       else
       {
-        plate.Graphene?.BroadcastBindCallback(el, context, plate);
-        OnBindElement?.Invoke(el);
+        el.userData = context;
+        plate.Graphene.BroadcastBindCallback(el, context, plate);
       }
 
       // Pass in list of properties for possible custom logic spanning multiple properties
@@ -188,9 +176,11 @@ namespace Graphene
         BindBaseField<bool>(el as Toggle, ref context, members, plate);
       else if (el is Slider)
         BindSlider(el as Slider, ref context, members, plate);
-      else if (el is SliderInt)
-        BindSlider(el as SliderInt, ref context, members, plate);
-      else if (el is Foldout foldout)
+      else if (el is SliderInt sliderInt)
+        BindSlider(sliderInt, ref context, members, plate);
+	  else if (el is MinMaxSlider minMax)
+		BindMinMaxSlider(minMax, ref context, members, plate);
+	  else if (el is Foldout foldout)
         BindFoldout(foldout, ref context, members, plate);
       else if (el is ButtonGroup buttonGroup)
         BindButtonGroup(buttonGroup, ref context, members, plate);
@@ -350,15 +340,41 @@ namespace Graphene
           el.highValue = (int)item.Value;
       }
 
-      //el.showMixedValue = true;
-      el.showInputField = true;
+      //el./*showMixedValue*/ = true;
+      //el.showInputField = true;
 
       // Bind base field value & callback
       BindBaseField(el, ref context, members, plate);
     }
 
+	private static void BindMinMaxSlider(MinMaxSlider el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+	{
+	  el.Q("unity-dragger").pickingMode = PickingMode.Ignore;
+	  // Slider specifics
+	  foreach (var item in members)
+	  {
+		// Primary
+		if (BindingPathOrTypeMatch<Vector2>(el, in item))
+		{
+		  if (item.Attribute is BindRangeAttribute floatAttribute)
+		  {
+			el.value = floatAttribute.startingValue;
+            el.lowLimit = floatAttribute.lowLimit;
+			el.highLimit = floatAttribute.highLimit;
+			break;
+		  }
+		}
+		else if (BindingPathAndTypeMatch<float>("Min", item))
+		  el.lowLimit = (float)item.Value;
+		else if (BindingPathAndTypeMatch<float>("Max", item))
+		  el.highLimit = (float)item.Value;
+	  }
 
-    private static void BindTextField(TextField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
+	  // Bind base field value & callback
+	  BindBaseField(el, ref context, members, plate);
+	}
+
+	private static void BindTextField(TextField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
     {
       foreach (var item in members)
       {
@@ -394,14 +410,14 @@ namespace Graphene
           if (item.Value is TValueType value)
           {
             el.SetValueWithoutNotify(value);
-            BindingManager.TryCreate<TValueType>(el, in context, in item, plate);
+            plate.BindingsManager.TryCreate<TValueType>(el, in context, in item, plate);
           }
           else if (item.Value is BindableBaseField<TValueType> baseField)
           {
             el.SetValueWithoutNotify(baseField.value);
             if (!string.IsNullOrWhiteSpace(baseField.Label))
               label = baseField.Label;
-            BindingManager.TryCreate<TValueType>(el, in item.Value, in item, plate);
+			plate.BindingsManager.TryCreate<TValueType>(el, in item.Value, in item, plate);
           }
 
           // Set label from attribute
@@ -508,10 +524,10 @@ namespace Graphene
 
           IList list = bindMember.Value as IList;
 
-          var templateAsset = RenderUtils.templatesDefault.TryGetTemplateAsset(controlType);
-          InternalBindListView(el, in context, list, templateAsset, plate);
+		  RenderUtils.templatesDefault.TryGetTemplateAsset(controlType, out VisualTreeAsset template);
+          InternalBindListView(el, in context, list, template, plate);
 
-          BindingManager.TryCreate<IList>(el, in context, in bindMember, plate);
+		  plate.BindingsManager.TryCreate<IList>(el, in context, in bindMember, plate);
           break;
         }
       }
@@ -519,8 +535,8 @@ namespace Graphene
       // Fallback
       if (context is IListViewBindable listViewBindable2)
       {
-        var templateAsset = RenderUtils.templatesDefault.TryGetTemplateAsset(listViewBindable2.ItemControlType);
-        InternalBindListView(el, in context, listViewBindable2.ItemsSource, templateAsset, plate);
+        RenderUtils.templatesDefault.TryGetTemplateAsset(listViewBindable2.ItemControlType, out VisualTreeAsset template);
+        InternalBindListView(el, in context, listViewBindable2.ItemsSource, template, plate);
       }
     }
 
@@ -528,7 +544,7 @@ namespace Graphene
     {
       IList list = member.Value as IList;
       InternalBindListView(el, in context, list, templateAsset, plate);
-      BindingManager.TryCreate<IList>(el, in context, in member, plate);
+	  plate.BindingsManager.TryCreate<IList>(el, in context, in member, plate);
     }
 
 
@@ -551,17 +567,18 @@ namespace Graphene
       };
       Action<VisualElement, int> bindItem = (e, i) =>
       {
-        Binder.BindRecursive(e, itemsSource[i], null, plate, false);
+        var src = itemsSource[i];
+        e.userData = src;
+        Binder.BindRecursive(e, src, null, plate, false);
         if (!(e is BindableElement))
         {
-          BindCallbacks(e, itemsSource[i]);
+          BindCallbacks(e, src);
         }
       };
 
       el.makeItem = makeItem;
       el.bindItem = bindItem;
       el.itemsSource = itemsSource;
-
     }
 
     private static void BindCycleField(CycleField el, ref object context, List<ValueWithAttribute<BindAttribute>> members, Plate plate)
@@ -590,7 +607,7 @@ namespace Graphene
         if (BindingPathMatch(el, in item))
         {
           el.OnModelChange(item.Value);
-          BindingManager.TryCreate<object>(el, in context, in item, plate);
+		  plate.BindingsManager.TryCreate<object>(el, in context, in item, plate);
           return;
         }
       }
@@ -636,9 +653,9 @@ namespace Graphene
       foreach (var member in members)
       {
         if (member.Value is bool)
-          BindingManager.TryCreate<bool>(el, in context, in member, plate);
+		  plate.BindingsManager.TryCreate<bool>(el, in context, in member, plate);
         else if (member.Value is string)
-          BindingManager.TryCreate<string>(el, in context, in member, plate);
+		  plate.BindingsManager.TryCreate<string>(el, in context, in member, plate);
       }
 
       //var results = BindNotifyValueChange<Foldout, bool>(el, ref context, members, plate);
@@ -680,7 +697,7 @@ namespace Graphene
       // Add translation here
       el.text = ObjectToString(in member.Value, member.Type);
 
-      BindingManager.TryCreate(el, ref context, in member, plate);
+      plate.BindingsManager.TryCreate(el, ref context, in member, plate);
     }
 
     private static void BindClick(Button el, System.Action action, in object context, Plate plate)
@@ -703,14 +720,15 @@ namespace Graphene
         el.tooltip = tooltip.Tooltip;
         if (context is IBindableToVisualElement bindable)
         {
-          el.SetEnabled(bindable.isEnabled);
-          el.SetShowHide(bindable.isShown);
+		  el.SetEnabled(bindable.isEnabled);
+		  el.SetActive(bindable.isActive2);
+		  el.SetShowHide(bindable.isShown);
+		  bindable.SetBinding(el);
 
-          bindable.onSetEnabled += el.SetEnabled;
-          bindable.onShowHide += el.SetShowHide;
-          bindable.onSetActive += el.SetActive;
-          bindable.SetBinding(el);
-		  
+
+		  bindable.onSetEnabled += el.SetEnabled;
+		  bindable.onShowHide += el.SetShowHide;
+		  bindable.onSetActive += el.SetActive;
           //Debug.Log($"On bind element {el} to context <b>{context}</b> ");
         }
       }
