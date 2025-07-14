@@ -90,7 +90,8 @@ namespace Graphene.ViewModel
   [System.Serializable, Draw(ControlType.Toggle), DataContract]
   public class BindableBool : BindableBaseField<bool>
   {
-	public BindableBool() : base() { }
+	public BindableBool(string name = null) : base(name) { }
+	public BindableBool() : base(null) 	{}
   }
 
 

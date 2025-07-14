@@ -35,6 +35,8 @@ namespace Graphene
     /// </summary>
     public BindingMode? bindingMode = null; // By default don't override binding mode
 
+    public bool hideIfEmpty;
+
     public BindAttribute()
     {
     }
@@ -51,7 +53,13 @@ namespace Graphene
     {
       this.path = path;
       this.bindingMode = bindingMode;
-    }
+	}
+	public BindAttribute(string path, BindingMode bindingMode, bool hideIfEmpty)
+	{
+	  this.path = path;
+	  this.bindingMode = bindingMode;
+      this.hideIfEmpty = hideIfEmpty;
+	}
   }
 
   [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property)]

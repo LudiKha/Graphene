@@ -37,7 +37,6 @@ namespace Graphene.Elements
       }
     }
 
-    [SerializeField]
     private bool m_Value = false;
     public virtual bool value
     {
@@ -74,9 +73,11 @@ namespace Graphene.Elements
     {
       if (newValue is bool b)
         value = b;
+      else if (ReferenceEquals(newValue, null))
+        value = false;
       else if (newValue is null || newValue.Equals(false))
         value = false;
-      else if (newValue is string s && string.IsNullOrWhiteSpace(s))
+      else if (newValue is string s && (string.IsNullOrEmpty(s) || string.IsNullOrWhiteSpace(s)))
         value = false;
       else
         value = true;

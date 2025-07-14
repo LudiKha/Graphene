@@ -77,7 +77,8 @@
   }
 
   public interface IGrapheneInjectable : IGrapheneDependent
-  {    
+  {
+    void Inject(Graphene graphene);
   }
 #endif
 }

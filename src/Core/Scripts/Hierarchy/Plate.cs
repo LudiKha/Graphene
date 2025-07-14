@@ -482,7 +482,7 @@ namespace Graphene
         if (isActive)
         {
           Root.Show();
-          ContentContainer?.Focus();
+          //ContentContainer?.Focus();
           onShow?.Invoke();
           ChangeEvent();
         }

@@ -32,7 +32,8 @@ namespace Graphene
     Card,
     ButtonGroup,
     SubContext,
-    MinMaxSlider
+    MinMaxSlider,
+    ProgressBar
   }
 
   public interface ICustomControlType

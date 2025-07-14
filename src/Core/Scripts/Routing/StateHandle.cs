@@ -73,8 +73,11 @@ namespace Graphene
 
 	private void OnDestroy()
 	{
-      if(router)
+      if (router)
+      {
         router.onStateChange -= Router_onStateChange;
+        router.UnregisterState(stateID);
+      }
 	}
 
 	private void Router_onStateChange(T address)

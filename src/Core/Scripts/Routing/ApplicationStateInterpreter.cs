@@ -106,7 +106,33 @@ namespace Graphene
 		RegisterInput();
 		plate.onRefreshVisualTree += RegisterInput;
       }
-    }
+
+	 // foreach (var command in commands)
+	 // {
+		//if (command.enabled && !string.IsNullOrEmpty(command.stateCommand))
+		//  router.RegisterState(command.stateCommand, null);
+	 // }
+	}
+
+	public override bool CanCatch(object state)
+	{
+	  return CanCatch((string)state);
+	}
+
+    public override bool CanCatch(string state)
+	{
+	  if (!enabled)
+		return false;
+
+	  foreach (var command in commands)
+	  {
+		if (!command.enabled)
+		  continue;
+        if(state.Equals(command.stateCommand, System.StringComparison.OrdinalIgnoreCase))
+          return true;
+	  }
+      return false;
+	}
 
 	public override bool TryCatch(object state)
     {
@@ -174,33 +200,48 @@ namespace Graphene
 #endif
 	}
 
-	internal void Plate_OnShow()
+	protected virtual void Plate_OnShow()
     {
       enabled = true;
     }
 
-    internal void Plate_OnHide()
+	protected virtual void Plate_OnHide()
     {
       enabled = false;
     }
 
     private void OnEnable()
     {
-      if (!Initialized)
-        return;
+	  if (!router)
+		return;
 
       router.RegisterInterpreter(this);
-    }
+	 // foreach (var command in commands)
+	 // {
+		//if (command.enabled && !string.IsNullOrEmpty(command.stateCommand))
+		//  router.RegisterState(command.stateCommand, null);
+	 // }
+	}
 
     private void OnDisable()
     {
-      if (!Initialized)
-        return;
+	  if (!router)
+		return;
 
       router.UnregisterInterpreter(this);
-    }
+	 // foreach (var command in commands)
+	 // {
+		//if (!string.IsNullOrEmpty(command.stateCommand))
+		//  router.UnregisterState(command.stateCommand);
+	 // }
+	}
 
-    bool inputRegistered;
+	private void OnDestroy()
+    {
+	  router?.InterpreterDestroyed(this);
+	}
+
+	bool inputRegistered;
     void RegisterInput()
     {
       if (inputRegistered || !plate || plate.Root == null)

@@ -1,11 +1,7 @@
-using JetBrains.Annotations;
 using Sirenix.OdinInspector;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.Lumin;
 using UnityEngine.UIElements;
 
 namespace Graphene.ViewModel
@@ -18,7 +14,7 @@ namespace Graphene.ViewModel
 #if ODIN_INSPECTOR
 	[ShowInInspector]
 #endif
-	IEnumerable<IFormViewModel> childForms;
+	List<IFormViewModel> childForms;
 	bool formsInitialized;
 
 	#region LifeCycle
@@ -52,12 +48,20 @@ namespace Graphene.ViewModel
 		{
 		  Name = "CANCEL",
 		  customName = "CancelButton",
-		  addClass = "cancel",
+		  addClass = "return",
 		  route = "index"
+		});
+		buttonsViewModel.Items.Add(new BindableObject
+		{
+		  Name = "RESET",
+		  customName = "ResetButton",
+		  addClass = "cancel",
+		  //route = "index"
 		});
 
 		buttonsViewModel.Items[0].OnClick.AddListener(Submit);
 		buttonsViewModel.Items[1].OnClick.AddListener(Cancel);
+		buttonsViewModel.Items[2].OnClick.AddListener(Reset);
 	  }
 	}
 	#endregion
@@ -80,6 +84,20 @@ namespace Graphene.ViewModel
 	  }
 	}
 
+	public override void Reset()
+	{
+	  foreach (var form in childForms)
+	  {
+		if (form.PlateIsActive)
+		  form.PromptReset();
+	  }
+	}
+
+	public override void PromptReset()
+	{
+	  throw new System.NotImplementedException();
+	}
+
 	protected override void SetButtonsDirty(bool dirty)
 	{
 	  if (buttonsViewModel && buttonsViewModel.Items.Count > 1)
@@ -88,5 +106,6 @@ namespace Graphene.ViewModel
 		buttonsViewModel.Items[1].SetEnabled(dirty);
 	  }
 	}
+
   }
 }

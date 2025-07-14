@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 namespace Graphene.ViewModel
 {
-  public class NavViewModel : GenericModelBehaviour, IGrapheneInitializable
+  public class NavViewModel : GenericModelBehaviour
   {
 	[Bind("HasContent")]
 	public override bool HasContent => Routes != null && Routes.Count > 0 || base.HasContent;
@@ -38,13 +38,12 @@ namespace Graphene.ViewModel
 	  }
 	}
 
-	StringRouter router;
-	void IGrapheneInitializable.Initialize()
+	public override void Inject(Graphene graphene)
 	{
-	  router = graphene.Router as StringRouter;
-	  router.onStateChange += Router_onStateChange;
+	  base.Inject(graphene);
+	  if(router)
+		router.onStateChange += Router_onStateChange;
 	}
-
 	private void Router_onStateChange(string newState)
 	{
 	  if (TitleFromRoutes)

@@ -19,6 +19,8 @@ namespace Graphene.ViewModel
 	[field: SerializeField] public bool Render { get; set; } = true;
     public Action onModelChange { get; set; }
 
+	public bool PlateIsActive => plate && plate.IsActive;
+
 	protected override void Awake()
 	{
 	  base.Awake();
@@ -35,6 +37,9 @@ namespace Graphene.ViewModel
 		this.plate = GetComponent<Plate>();
 	  if(!this.renderer)
 		renderer = GetComponent<Renderer>();
+
+	  plate.onShow.AddListener(OnShow);
+	  plate.onHide.AddListener(OnHide);
 	}
 
 	public abstract void Initialize(VisualElement container, Plate plate);
@@ -43,6 +48,9 @@ namespace Graphene.ViewModel
     void Start()
     {
     }
+
+	protected virtual void OnShow() { }
+	protected virtual void OnHide() { }
 
 #if ODIN_INSPECTOR
 	[Sirenix.OdinInspector.ResponsiveButtonGroup]

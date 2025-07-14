@@ -105,7 +105,23 @@ namespace Graphene
       return true;
     }
 
-    internal void Plate_OnShow()
+	public override bool CanCatch(object state)
+	{
+	  return CanCatch((string)state);
+	}
+
+	public override bool CanCatch(string state)
+	{
+      if (!enabled || !gameObject.activeInHierarchy)
+        return false;
+      else if (state == previousCommand)
+		return true;
+	  else if (state == nextCommand)
+        return true;
+	  else
+		return false;
+	}
+	internal void Plate_OnShow()
     {
       if (!HasElements())
         return;

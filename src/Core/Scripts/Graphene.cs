@@ -118,7 +118,7 @@ namespace Graphene
 #endif
 	public void GetChildPlates()
 	{
-	  plates = GetComponentsInChildren<Plate>(true).ToList();
+	  GetComponentsInChildren<Plate>(includeInactive: true, plates);
 	  foreach (var p in plates)
 		p.Inject(this);
 	}
@@ -128,21 +128,25 @@ namespace Graphene
 	  var sw = new Stopwatch();
 	  sw.Start();
 
-	  dependents = GetComponentsInChildren<IGrapheneDependent>(true).ToList();
+	  // Get all dependents
+	  GetComponentsInChildren<IGrapheneDependent>(true, dependents);
 	  GetChildPlates();
 
 	  // Inject Graphene into
 	  foreach (var c in dependents)
 	  {
-		if (c is GrapheneComponent gc)
+		if (c is IGrapheneInjectable gc)
 		  gc.Inject(this);
 	  }
 
 	  Profiler.BeginSample("Graphene Initialize", this);
 	  onPreInitialize?.Invoke(dependents);
 	  // First initialize
-	  foreach (var item in dependents.Where(x => x is IGrapheneInitializable).Select(x => x as IGrapheneInitializable))
-		item.Initialize();
+	  foreach (var item in dependents)
+	  {
+		if (item is IGrapheneInitializable i)
+		  i.Initialize();
+	  }
 	  Profiler.EndSample();
 
 	  Profiler.BeginSample("Graphene Construct VisualTree", this);
@@ -152,16 +156,19 @@ namespace Graphene
 
 	  Profiler.BeginSample("Graphene Late Initialize", this);
 	  // Second initialize
-	  foreach (var item in dependents.Where(x => x is IGrapheneLateInitializable).Select(x => x as IGrapheneLateInitializable))
-		item.LateInitialize();
+	  // First initialize
+	  foreach (var item in dependents)
+	  {
+		if (item is IGrapheneLateInitializable i)
+		  i.LateInitialize();
+	  }
 	  onPostInitialize?.Invoke(dependents);
 	  Profiler.EndSample();
-
 	  sw.Stop();
 
-#if UNITY_EDITOR
-	  UnityEngine.Debug.Log($"Graphene ({gameObject.scene.name}/{gameObject.name}) initialization: {sw.ElapsedMilliseconds}ms", this);
-#endif
+	  //#if UNITY_EDITOR
+	  //	  UnityEngine.Debug.Log($"Graphene ({gameObject.scene.name}/{gameObject.name}) initialization: {sw.ElapsedMilliseconds}ms", this);
+	  //#endif
 	}
 
 
@@ -229,7 +236,7 @@ namespace Graphene
 
 	  // Enable on start
 	  //if(plate.gameObject.activeSelf)
-		plate.ReevaluateState();
+	  plate.ReevaluateState();
 	}
 
 	#region Build VisualElement
@@ -354,9 +361,9 @@ namespace Graphene
 	  if (!canRebuild)
 		return;
 
-#if UNITY_EDITOR
-	  UnityEngine.Debug.Log($"Rebuilding Graphene {name} {gameObject.scene.name}", this);
-#endif
+//#if UNITY_EDITOR
+//		UnityEngine.Debug.Log($"Rebuilding Graphene {name} {gameObject.scene.name}", this);
+//#endif
 
 	  if (grapheneRoot != null)
 	  {

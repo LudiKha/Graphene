@@ -9,8 +9,14 @@ namespace Graphene.ViewModel
 	bool IsModelDirty { get; }
 	bool BlockRoutingOnDirty { get; set; }
 	bool HideButtons { get; set; }
+
+	bool PlateIsActive { get; }
+
 	void Submit();
 	void Cancel();
+	void Reset();
+
+	void PromptReset();
 
 	public event System.Action onSubmit;
 	public event System.Action onCancel;
@@ -25,11 +31,14 @@ namespace Graphene.ViewModel
 
 	public event System.Action onSubmit;
 	public event System.Action onCancel;
+	public event System.Action onReset;
 
 	[Bind("Submit")]
 	public BindableObject submitBinding =  new BindableObject();
 	[Bind("Cancel")]
 	public BindableObject cancelBinding =  new BindableObject();
+	[Bind("Reset")]
+	public BindableObject resetBinding = new BindableObject();
 
 	bool initialized;
 
@@ -45,16 +54,19 @@ namespace Graphene.ViewModel
 	#region VisualElement
 	Button submitButton;
 	Button cancelButton;
+	Button resetButton;
 	#endregion
 
 	Router<string> router;
 	#region LifeCycle
-	void Awake()
+	protected override void Awake()
 	{
+	  base.Awake();
 	  //submitBinding = Submit;
 	  //cancelBinding = Cancel;
 	  submitBinding.OnClick.AddListener(Submit);
 	  cancelBinding.OnClick.AddListener(Cancel);
+	  resetBinding.OnClick.AddListener(Reset);
 	  MarkDirty(false);
 	}
 
@@ -107,6 +119,27 @@ namespace Graphene.ViewModel
 	  return true;
 	}
 
+	public bool TryReset()
+	{
+	  Reset();
+	  return true;
+	}
+	bool IStateInterpreter.CanCatch(object state) => TryCatch((string)state);
+	public bool CanCatch(string state)
+	{
+	  if (!enabled || !gameObject.activeInHierarchy)
+		return false;
+
+	  if (state == "submit")
+		return true;
+	  else if (state == "cancel")
+		return true;
+	  else if (state == "reset")
+		return true;
+	  return false;
+	}
+	bool IStateInterpreter.TryCatch(object state) => TryCatch((string)state);
+
 	public bool TryCatch(string state)
 	{
 	  if (!enabled || !gameObject.activeInHierarchy)
@@ -123,6 +156,11 @@ namespace Graphene.ViewModel
 		TryCancel();
 		return true;
 	  }
+	  else if (state == "reset")
+	  {
+		TryReset();
+		return true;
+	  }
 
 	  // Show confirmation dialog here
 	  if (IsModelDirty)
@@ -131,12 +169,14 @@ namespace Graphene.ViewModel
 	  return false;
 	}
 
-	bool IStateInterpreter.TryCatch(object state) => TryCatch((string)state);
 
 	[ResponsiveButtonGroup]
 	public abstract void Cancel();
 	[ResponsiveButtonGroup]
 	public abstract void Submit();
+
+	public abstract void Reset();
+	public abstract void PromptReset();
 
 	protected void MarkDirty(bool dirty)
 	{
@@ -161,8 +201,10 @@ namespace Graphene.ViewModel
 	  cancelButton?.SetEnabled(dirty && CanCancel());
 	  submitBinding?.SetEnabled(dirty && CanSubmit());
 	  cancelBinding?.SetEnabled(dirty && CanCancel());
-	  //OnSubmit?.SetEnabled(dirty);
-	  //OnCancel?.SetEnabled(dirty);
+
+
+	  resetButton?.SetEnabled(CanReset());
+	  resetBinding?.SetEnabled(CanReset());
 	}
 	public void UpdateFormButtonsState(bool enabled, bool active)
 	{
@@ -171,13 +213,17 @@ namespace Graphene.ViewModel
 	  cancelButton?.SetActive(active);
 	  submitBinding?.SetActive(active);
 	  cancelBinding?.SetActive(active);
-	  //OnSubmit?.SetActive(active);
-	  //OnCancel?.SetActive(active);
+
+
+	  resetButton?.SetActive(active);
+	  resetBinding?.SetActive(active);
 	}
 
 	public virtual bool CanSubmit() => true;
 	public virtual bool CanCancel() => true;
+	public virtual bool CanReset() => true;
   }
+
   public abstract class FormViewModel<T> : FormViewModel, ICustomDrawContext
   {
 	[ShowInInspector] T originalCached;

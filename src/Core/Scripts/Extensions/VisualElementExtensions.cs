@@ -8,7 +8,9 @@ namespace Graphene
     internal const string documentRootUssClassName = "unity-ui-document__root";
     internal const string documentChildUssClassName = "unity-ui-document__child";
     internal const string hiddenUssClassName = "hidden";
-    internal const string fadeoutUssClassName = "fadeout";
+    internal const string invisibleUssClassName = "invisible";
+	internal const string fadeoutUssClassName = "fadeout";
+    internal const string transitioningUssClassName = "transitioning";
     //internal const string fadeinUssClassName = "fadein";
 
     internal const string activeUssClassName = "active";
@@ -36,15 +38,31 @@ namespace Graphene
         el.Hide();
     }
 
-    public static void SetActive(this VisualElement el, bool value)
+	public static void SetVisibility(this VisualElement el, bool value)
+	{
+	  if (value)
+		el.RemoveFromClassList(invisibleUssClassName);
+	  else
+		el.AddToClassList(invisibleUssClassName);
+	}
+	public static void SetActive(this VisualElement el, bool value)
     {
       if(value)
         el.AddToClassList(activeUssClassName);
       else
         el.RemoveFromClassList(activeUssClassName);
-    }
+	}
 
-    public static void FadeIn(this VisualElement el)
+	public static void ToggleClass(this VisualElement el, string className, bool value)
+	{
+	  if (value)
+		el.AddToClassList(className);
+	  else
+		el.RemoveFromClassList(className);
+	}
+
+
+	public static void FadeIn(this VisualElement el)
     {
       el.RemoveFromClassList(fadeoutUssClassName);
     }
@@ -53,8 +71,25 @@ namespace Graphene
     {
       el.AddToClassList(fadeoutUssClassName);
     }
+	public static void StartTransition(this VisualElement el)
+	{
+	  el.AddToClassList(transitioningUssClassName);
+	}
+	public static void StopTransition(this VisualElement el)
+	{
+	  el.RemoveFromClassList(transitioningUssClassName);
+	}
 
-    public static VisualElement TopRoot(this VisualElement el)
+	public static bool IsFadingOut(this VisualElement el)
+	{
+	  return el.ClassListContains(fadeoutUssClassName);
+	}
+
+	public static bool IsTransitioning(this VisualElement el)
+	{
+	  return el.ClassListContains(transitioningUssClassName);
+	}
+	public static VisualElement TopRoot(this VisualElement el)
     {
       return el.panel?.visualTree.Q(null, documentRootUssClassName);
     }
@@ -99,8 +134,7 @@ namespace Graphene
     {
       if (string.IsNullOrWhiteSpace(classes))
         return;
-
-      AddMultipleToClassList(el, Parse(classes));
+        AddMultipleToClassList(el, Parse(classes));
     }
 
     public static void AddMultipleToClassList(this VisualElement el, IEnumerable<string> classes)

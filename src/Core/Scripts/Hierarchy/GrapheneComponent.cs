@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Graphene
 {
-  public class GrapheneComponent : MonoBehaviour, IGrapheneDependent
+  public class GrapheneComponent : MonoBehaviour, IGrapheneInjectable
   {
 	internal string debugNameCached; public string DebugName => debugNameCached;
 #if ODIN_INSPECTOR
