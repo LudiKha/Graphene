@@ -159,10 +159,19 @@ The following components and logic depends on plates:
 These can be authored in the familiar GameObject hierarchy. Graphene then constructs the VisualElement tree at runtime into a nested view.
 
 ## Views
+A `View` represents a section of the screen, and is defined as a VisualElement within the `Plate`'s UXML asset. It contains an 'id', which serves as a unique identifier within the plate. Examples of views include a sidebar, a content area, a header or footer.
+
+Views can be used to compose static content (i.e. child Plates composing into parent Views), or to render dynamic content into (i.e. a renderer drawing a list of items into a View).
+
+By default, Graphene components assume these two types of views will be present on a `Plate`:
+- **Content View**: A view that is used to render dynamic content into, using a `Renderer` component.
+- **Children View**: A view that is used to compose child plates into, based on the GameObject hierarchy.
 
 ## Rendering
+Rendering refers to the process of drawing and binding a model to the view. This is done using a `Renderer` component. It requires a `Model` to be assigned, which serves as the data container for the binding.
 
 ## Model
+A `Model` is a data container that serves as the model for the data-binding. Any class or struct can be used as a model, as long as it has been decorated with the `[Bind]` attribute on the members you wish to expose for binding.
 
 ## Templating
 ### Template
@@ -228,33 +237,24 @@ Graphene supports 3 modes of binding a model to the view. These can either be sp
 ### Binding Passes
 1. Static
 2. Dynamic
+
 ### Static Binding
+Static binding refers to binding elements that are part of the static UXML asset assigned to the `Plate`'s `VisualTreeAsset`. It allows you to bind elements that are always present in the view, such as titles, labels, buttons or other controls that may have a binding-path assigned. 
+
+Common use-cases include binding a title label to `Model.Title`, or binding a button's `Route` to a member in the model.
 
 ### Dynamic Binding
+Dynamic binding refers to binding elements that have been instantiated dynamically via the `Renderer`'s `Template` configuration, or viewmodel's `Instantiate` method. 
+
+Common use-cases include rendering a list of items from a collection, or rendering detail fields from a complex object, such as a Settings ScriptableObject.
 
 ## Routing
+Graphene supports url-like state routing via the `Router` component. This allows you to construct a state hierarchy using the GameObject hierarchy, and navigate between states using `Route` elements.
 
-## Theming
-### Theme
-A `Theme` is a data asset that can be used to author high-level styling configurations for (parts of) the VisualTree. It consists of a collection of [StyleSheets][3ca719d7], and can be nested to create reusable styling configurations using overrides.
-
-  [3ca719d7]: https://docs.unity3d.com/Manual/UIE-USS.html "Unity USS Stylesheet"
-
-#### Using themes
-
-Create a theme via the following menu command:
->  `Assets/Create/Graphene/Theming/Theme`
-
-Themes are assigned to the VisualTree when assigned to the `Graphene` component, or a sub-section when assigned to a `Plate`.
-
-To manually apply a theme to a VisualElement, the following method is available.
-
-```csharp
-myTheme.ApplyStyles(el);
-
-```
+The routing system is inspired by web standards, and mimics url-based addresses: `index/settings/video`. 
 
 ## Localization
+TBD
 
 ## Step-by-step process
 1. Static view composition
