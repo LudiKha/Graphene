@@ -167,8 +167,14 @@ By default, Graphene components assume these two types of views will be present 
 - **Content View**: A view that is used to render dynamic content into, using a `Renderer` component.
 - **Children View**: A view that is used to compose child plates into, based on the GameObject hierarchy.
 
-## Rendering
+## Rendering & Binding
 Rendering refers to the process of drawing and binding a model to the view. This is done using a `Renderer` component. It requires a `Model` to be assigned, which serves as the data container for the binding.
+
+It consists of two passes:
+1. A static binding pass, where elements that are part of the static UXML asset assigned to the `Plate`'s `VisualTreeAsset` are bound to the model.
+2. A dynamic rendering and binding pass, where templates are rendered and bound from the model.
+
+A manager class called `Binder` takes care of the binding process and lifecycle management, and supports one-way and two-way binding modes.
 
 ## Model
 A `Model` is a data container that serves as the model for the data-binding. Any class or struct can be used as a model, as long as it has been decorated with the `[Bind]` attribute on the members you wish to expose for binding.
