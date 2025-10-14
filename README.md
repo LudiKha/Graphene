@@ -180,6 +180,8 @@ A manager class called `Binder` takes care of the binding process and lifecycle 
 A `Model` is a data container that serves as the model for the data-binding. Any class or struct can be used as a model, as long as it has been decorated with the `[Bind]` attribute on the members you wish to expose for binding.
 
 ## Templating
+Templating refers to the process of dynamically instantiating static UXML assets at runtime, based on a predetermined type of `Control` (i.e. a button, a toggle, a slider etc). UXML templates are mapped to a `ControlType` enum in a `TemplateAsset`, and DrawAttributes are used to instruct the `Renderer` which templates to instantiate.
+
 ### Template
 A `Template` is a semantic name for static asset that represents a chunk of UXML of varying granularity and complexity, which are used as building blocks to build and render the application. Moreover, templates can be declared directly in UXML based, and will be rendered at runtime based on the `Renderer` template configuration. Templates are wrapped in a `TemplateAsset` ScriptableObject, where additional variants can be created without needing to create and maintain copies of the base template.
 
